@@ -1,0 +1,4 @@
+name: mtg-gym
+dependencies:
+  - numpy
+  - pandas
