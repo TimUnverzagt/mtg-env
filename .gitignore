@@ -1,2 +1,2 @@
 envs/
-src/environment/
+src/**/*.pyc

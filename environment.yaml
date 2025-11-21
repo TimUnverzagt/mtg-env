@@ -1,4 +1,7 @@
 name: mtg-py-env
+channels:
+  - conda-forge
 dependencies:
   - numpy
   - pandas
+  - pyright
