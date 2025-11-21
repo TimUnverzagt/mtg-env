@@ -14,6 +14,8 @@ def main():
     print(25*"-")
     print("Environment Turn 3:")
     print(env)
+    print(25*"-")
+    print(env.players[0])
     return 0
 
 if __name__ == "__main__":
