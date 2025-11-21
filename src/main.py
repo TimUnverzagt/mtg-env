@@ -3,6 +3,7 @@ from environment.base import BaseEnvironment as MtgEnv
 def main():
     """ Main program """
     env: MtgEnv = MtgEnv()
+    print(25*"-")
     print("Starting Environment:")
     print(env)
     env.pass_turn()
