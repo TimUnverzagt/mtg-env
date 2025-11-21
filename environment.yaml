@@ -1,4 +1,4 @@
-name: mtg-gym
+name: mtg-py-env
 dependencies:
   - numpy
   - pandas
