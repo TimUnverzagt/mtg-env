@@ -1,21 +1,18 @@
 from environment.base import BaseEnvironment as MtgEnv
+from environment.player import Player
 
 def main():
     """ Main program """
-    env: MtgEnv = MtgEnv()
+    alice: Player = Player("Alice")
+    bob: Player = Player("Bob")
+    env: MtgEnv = MtgEnv([alice, bob])
     print(25*"-")
     print("Starting Environment:")
-    print(env)
-    env.pass_turn()
+    print(env.step(alice, (0, "Pass")))
     print(25*"-")
-    print("Environment Turn 2:")
-    print(env)
-    env.pass_turn()
+    print(env.step(alice, (1, "Pass")))
     print(25*"-")
-    print("Environment Turn 3:")
-    print(env)
-    print(25*"-")
-    print(env.players[0])
+    print(env.step(bob, (0, "Pass")))
     return 0
 
 if __name__ == "__main__":
