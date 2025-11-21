@@ -2,16 +2,13 @@ from environment.player import Player
 from operator import attrgetter as getter
 
 class BaseEnvironment:
-    halfturns_completed: int
-    active_player_index: int
-    players: list[Player]
 
 
     def __init__(self) -> None:
         print("Creating new base environment")
-        self.halfturns_completed = 0
-        self.active_player_index = 0
-        self.players = [Player("Alice"), Player("Bob")]
+        self.halfturns_completed: int = 0
+        self.active_player_index: int = 0
+        self.players: list[Player] = [Player("Alice"), Player("Bob")]
 
     def __str__(self) -> str:
         return "\n".join([
