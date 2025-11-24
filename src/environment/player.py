@@ -16,6 +16,7 @@ class Player:
         return "\n".join([
             "Name: {}".format(self.name),
             "Current Life: {}".format(self.current_life),
-            "Cards in Hand: {}".format(" | ".join(map(Card.__str__, self.cards_in_hand))),
+            "Cards in Hand:",
+            " | ".join(map(Card.__str__, self.cards_in_hand)),
             "Cards in Library: {}".format(self.cards_in_library)
         ])
