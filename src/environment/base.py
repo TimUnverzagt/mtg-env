@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class BaseEnvironment:
     action_event_catalog: list[ActionEvent] = [
         ActionEvent(const.MAINPHASE, [const.MAINPHASE_PASS, const.MAINPHASE_PLAY_CREATURE]),
-        ActionEvent(const.COMBAT, [const.COMBAT_PASS, const.COMBAT_ATTACK])
+        ActionEvent(const.COMBAT, [const.COMBAT_PASS, const.COMBAT_ATTACK])        
     ]
 
 
@@ -19,6 +19,7 @@ class BaseEnvironment:
         self.halfturns_completed: int = 0
         self.action_events_completed: int = 0
         self.active_player_index: int = 0
+        self.game_over: bool = False
         self.players: list[Player] = players
 
     def __str__(self) -> str:
@@ -29,6 +30,7 @@ class BaseEnvironment:
             "Completed Halfturns: {}".format(self.halfturns_completed),
             "Completed ActionEvents: {}".format(self.action_events_completed),
             "Active Player Index: {}".format(self.active_player_index),
+            "Game over: {}".format(self.game_over),
             "---------------------------------------------",
             "Player 0:",
             str(self.players[0]),
@@ -39,6 +41,10 @@ class BaseEnvironment:
         ])
     
     def step(self, acting_player: Player, action_info: tuple[int, str]) -> ActionEvent:
+        # Don't respond if the game is over
+        if(self.game_over):
+            return ActionEvent(const.GAMEOVER, [])
+        
         # Handle action of step
         # TODO-1: How to handle exceptions/enforcement for nonsensical action inputs
         action_event_from_agent: ActionEvent = BaseEnvironment.action_event_catalog[action_info[0]]
@@ -48,6 +54,7 @@ class BaseEnvironment:
             self.handle_combat_action(acting_player, action_info[1])
 
         # Update environment with step completion
+        self.check_state_based_action()
         self.action_events_completed += 1
         if(self.action_events_completed >= len(BaseEnvironment.action_event_catalog)):
             self.pass_turn()
@@ -60,6 +67,18 @@ class BaseEnvironment:
             # Just decrease health by flat amount for poc
             defending_player.current_life -= 1
         return
+    
+    def check_state_based_action(self) -> None:
+        # Check for dead players
+        losing_players: list[Player] = list(filter(lambda player: player.current_life <= 0, self.players))
+        surviving_players: list[Player] = list(filter(lambda player: player not in losing_players, self.players))
+        if len(surviving_players) <= 1:
+            self.game_over = True
+            logger.info("Game ended by death of player(s)")
+        if len(surviving_players) == 1:
+            logger.info("{} won by survival".format(surviving_players[0].name))
+        return
+
 
     def pass_turn(self) -> None:
         self.halfturns_completed += 1

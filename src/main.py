@@ -19,9 +19,10 @@ def main():
     alice: Player = Player("Alice")
     bob: Player = Player("Bob")
     env: MtgEnv = MtgEnv([alice, bob])
-
-    for i in range(0, 5):
-        logger.info("Starting Turn {}".format(i+1))
+    turns_started: int= 0
+    while not env.game_over:
+        turns_started += 1
+        logger.info("Starting Turn {}".format(turns_started))
         env.step(alice, (0, MtgEnvConst.MAINPHASE_PASS))
         env.step(alice, (1, MtgEnvConst.COMBAT_ATTACK))
         env.step(bob, (0, MtgEnvConst.MAINPHASE_PASS))

@@ -1,3 +1,6 @@
+#MISC
+GAMEOVER : str = "Game over!"
+
 #Phases
 MAINPHASE: str = "Mainphase"
 COMBAT: str = "Combat"
