@@ -79,7 +79,7 @@ class SimpleVisualization:
 
         life_text: Font = Font(None, 30)
         life_display: Surface = life_text.render(
-            "Player1: {} hp".format(player.current_life),
+            "{}: {} hp".format(player.name, player.current_life),
             True,
             const.WHITE,
             const.BLACK)
