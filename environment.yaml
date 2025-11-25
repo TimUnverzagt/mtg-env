@@ -2,6 +2,9 @@ name: mtg-py-env
 channels:
   - conda-forge
 dependencies:
+  - python=3.13
   - numpy
   - pandas
   - pyright
+  - pygame 
+  - keyboard
