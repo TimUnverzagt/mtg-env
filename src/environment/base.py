@@ -16,8 +16,8 @@ class BaseEnvironment:
 
     def __init__(self, players: list[Player]) -> None:
         logger.info("Creating new base environment")
-        self.halfturns_completed: int = 0
-        self.action_events_completed: int = 0
+        self.player_turns_completed: int = 0
+        self.steps_in_turn_completed: int = 0
         self.active_player_index: int = 0
         self.game_over: bool = False
         self.players: list[Player] = players
@@ -27,8 +27,8 @@ class BaseEnvironment:
             "---------------------------------------------",
             "---------------- Environment ----------------",
             "---------------------------------------------",
-            "Completed Halfturns: {}".format(self.halfturns_completed),
-            "Completed ActionEvents: {}".format(self.action_events_completed),
+            "Completed Halfturns: {}".format(self.player_turns_completed),
+            "Completed ActionEvents: {}".format(self.steps_in_turn_completed),
             "Active Player Index: {}".format(self.active_player_index),
             "Game over: {}".format(self.game_over),
             "---------------------------------------------",
@@ -55,10 +55,10 @@ class BaseEnvironment:
 
         # Update environment with step completion
         self.check_state_based_action()
-        self.action_events_completed += 1
-        if(self.action_events_completed >= len(BaseEnvironment.action_event_catalog)):
+        self.steps_in_turn_completed += 1
+        if(self.steps_in_turn_completed >= len(BaseEnvironment.action_event_catalog)):
             self.pass_turn()
-        return self.action_event_catalog[self.action_events_completed]
+        return self.action_event_catalog[self.steps_in_turn_completed]
     
     def handle_combat_action(self, acting_player: Player, action: str) -> None:
         if(action==const.COMBAT_ATTACK):
@@ -81,6 +81,6 @@ class BaseEnvironment:
 
 
     def pass_turn(self) -> None:
-        self.halfturns_completed += 1
-        self.action_events_completed = 0
+        self.player_turns_completed += 1
+        self.steps_in_turn_completed = 0
         self.active_player_index = (self.active_player_index + 1) % len(self.players)
