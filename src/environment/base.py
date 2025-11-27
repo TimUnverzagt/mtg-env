@@ -78,6 +78,9 @@ class BaseEnvironment:
         if len(surviving_players) == 1:
             logger.info("{} won by survival".format(surviving_players[0].name))
         return
+    
+    def get_active_player(self) -> Player:
+        return self.players[self.active_player_index]
 
 
     def pass_turn(self) -> None:

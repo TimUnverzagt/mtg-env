@@ -14,13 +14,15 @@ class PlayerController:
     def __init__(self):
         self.terminate: bool = False
 
-class PlayerSocket:
-    def __init__(self, player_name: str, env: BaseEnvironment, controller: PlayerController) -> None:
-        self.player: Player = Player(player_name)
+class SessionSeat:
+    def __init__(self, player: Player, env: BaseEnvironment, controller: PlayerController) -> None:
+        logger.info("Connecting player {} to the session".format(player.name))
+        self.player: Player = player
         self.env: BaseEnvironment = env
-        self.player_thread: Thread = Thread(target=self.run_player_thread, args=[controller])
+        self.player_thread: Thread = Thread(target=self.run_player_thread, daemon=True, args=[controller])
+        self.player_thread.start()
 
-    def run_player_thread(self) -> None:
+    def run_player_thread(self, controller: PlayerController) -> None:
         seconds_connected:int = 0
         while True:
             time.sleep(1)
