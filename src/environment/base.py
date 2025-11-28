@@ -40,17 +40,18 @@ class BaseEnvironment:
             "---------------------------------------------"
         ])
     
-    def step(self, acting_player: Player, action_info: tuple[int, str]) -> ActionEvent:
+    def step(self, acting_player: Player, action_info: str) -> None:
         # Don't respond if the game is over
         if(self.game_over):
-            return ActionEvent(const.GAMEOVER, [])
+            return
         
+        applicable_action: ActionEvent = self.get_upcoming_action()
+
         # Handle action of step
-        # TODO-1: How to handle exceptions/enforcement for nonsensical action inputs
-        action_event_from_agent: ActionEvent = BaseEnvironment.action_event_catalog[action_info[0]]
-        logger.info("Handling action {}:{} from {}".format(action_event_from_agent.name, action_info[1], acting_player.name))
-        if ((action_event_from_agent.name == "Combat") and
-            (action_info[1] in action_event_from_agent.possible_actions)):
+        # TODO: How to handle exceptions/enforcement for nonsensical action inputs
+        logger.info("Handling intent {} for action {} from {}".format(action_info, applicable_action.name, acting_player.name))
+        if ((applicable_action.name == "Combat") and
+            (action_info[1] in applicable_action.possible_actions)):
             self.handle_combat_action(acting_player, action_info[1])
 
         # Update environment with step completion
@@ -58,10 +59,11 @@ class BaseEnvironment:
         self.steps_in_turn_completed += 1
         if(self.steps_in_turn_completed >= len(BaseEnvironment.action_event_catalog)):
             self.pass_turn()
-        return self.action_event_catalog[self.steps_in_turn_completed]
+        return 
     
     def handle_combat_action(self, acting_player: Player, action: str) -> None:
         if(action==const.COMBAT_ATTACK):
+            logger.warning("{} is attacking!".format(acting_player.name))
             # Just use the only other player as target
             defending_player: Player = self.players[(self.active_player_index + 1) % len(self.players)]
             # Just decrease health by flat amount for poc
@@ -81,6 +83,9 @@ class BaseEnvironment:
     
     def get_active_player(self) -> Player:
         return self.players[self.active_player_index]
+    
+    def get_upcoming_action(self) -> ActionEvent:
+        return self.action_event_catalog[self.steps_in_turn_completed]
 
 
     def pass_turn(self) -> None:

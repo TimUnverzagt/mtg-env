@@ -1,9 +1,6 @@
-from environment.base import BaseEnvironment as MtgEnv
-from environment.player import Player
-import environment.constants as MtgEnvConst
-from rendering.simple import SimpleVisualization
 from server.multi_client_session import MultiClientSession as GameSession
 from agents.simple import Goldfish
+from threading import Thread
 
 import time
 import sys
@@ -22,28 +19,22 @@ def main():
 
     logger.info("Setup GameSession")
     session: GameSession = GameSession()
-    turns_started: int= 0
-    vis: SimpleVisualization = SimpleVisualization()    
-    agent1: Goldfish = Goldfish(session)
-    time.sleep(3)
-    agent2: Goldfish = Goldfish(session)
-    time.sleep(2)
-
     logger.info("Started Game")
 
-#    vis.step(env)
-#    while not env.game_over:
-#        turns_started += 1
-#        logger.info("Starting Turn {}".format(turns_started))
-#        env.step(alice, (0, MtgEnvConst.MAINPHASE_PASS))
-#        vis.step(env)
-#        env.step(alice, (1, MtgEnvConst.COMBAT_ATTACK))
-#        vis.step(env)
-#        env.step(bob, (0, MtgEnvConst.MAINPHASE_PASS))
-#        vis.step(env)
-#        env.step(bob, (1, MtgEnvConst.COMBAT_PASS))
-#        print(env)
-        
+    session_thread: Thread = Thread(target=session.run_game)
+    session_thread.start()
+
+    agent1: Goldfish = Goldfish(session)
+    #TODO: Migrate Thread to PlayerController
+    agent1_thread: Thread = Thread(target=agent1.play_game, daemon=True)
+    agent1_thread.start()
+    time.sleep(3)
+    agent2: Goldfish = Goldfish(session)
+    agent2_thread: Thread = Thread(target=agent2.play_game, daemon=True)
+    agent2_thread.start()
+    time.sleep(2)
+    
+    session_thread.join()
     logger.info("Finished Game")
     return 0
 
