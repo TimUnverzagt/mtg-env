@@ -1,29 +1,14 @@
 from server.multi_client_session import MultiClientSession as GameSession
-from server.player_connection import PlayerController
 from environment.action_event import ActionEvent
 import environment.constants as EnvConsts
+from agents.abstractions.base import AgentBase
 
-import time
 import logging
 logger = logging.getLogger(__name__)
 
-class Goldfish:
+class Goldfish(AgentBase):
     def __init__(self, session: GameSession) -> None:
-        self.session: GameSession = session
-        self.controller: PlayerController | None = session.connect()
-
-    def play_game(self) -> None:
-        cont: PlayerController | None = self.controller
-        if cont is None:
-            logger.error("Agent has no Connection to an active GameSession!")
-            return
-        while not self.session.env.game_over:
-            time.sleep(1)
-            if cont.upcoming_action is not None:
-                logger.info("{}: Thinking on next action.".format(cont.player.name))
-                cont.intended_next_action = self.decide_on_action(cont.upcoming_action)
-            else:
-                logger.info("{}: Waiting on game session.".format(cont.player.name))
+        super().__init__(session)
 
     def decide_on_action(self, upcoming_action: ActionEvent) -> str:
         if upcoming_action.name == EnvConsts.COMBAT:

@@ -2,8 +2,7 @@ from environment.player import Player
 from environment.action_event import ActionEvent
 import environment.constants as const
 
-import logging
-logger = logging.getLogger(__name__)
+from logging_config import env_log
 
 
 
@@ -15,7 +14,7 @@ class BaseEnvironment:
 
 
     def __init__(self, players: list[Player]) -> None:
-        logger.info("Creating new base environment")
+        env_log.info("Creating new base environment")
         self.player_turns_completed: int = 0
         self.steps_in_turn_completed: int = 0
         self.active_player_index: int = 0
@@ -40,7 +39,7 @@ class BaseEnvironment:
             "---------------------------------------------"
         ])
     
-    def step(self, acting_player: Player, action_info: str) -> None:
+    def step(self, acting_player: Player, action_intent: str) -> None:
         # Don't respond if the game is over
         if(self.game_over):
             return
@@ -49,10 +48,9 @@ class BaseEnvironment:
 
         # Handle action of step
         # TODO: How to handle exceptions/enforcement for nonsensical action inputs
-        logger.info("Handling intent {} for action {} from {}".format(action_info, applicable_action.name, acting_player.name))
-        if ((applicable_action.name == "Combat") and
-            (action_info[1] in applicable_action.possible_actions)):
-            self.handle_combat_action(acting_player, action_info[1])
+        env_log.info("Handling intent {} for action {} from {}".format(action_intent, applicable_action.name, acting_player.name))
+        if ((applicable_action.name == const.COMBAT)):
+            self.handle_combat_action(acting_player, action_intent)
 
         # Update environment with step completion
         self.check_state_based_action()
@@ -63,7 +61,7 @@ class BaseEnvironment:
     
     def handle_combat_action(self, acting_player: Player, action: str) -> None:
         if(action==const.COMBAT_ATTACK):
-            logger.warning("{} is attacking!".format(acting_player.name))
+            env_log.warning("{} is attacking!".format(acting_player.name))
             # Just use the only other player as target
             defending_player: Player = self.players[(self.active_player_index + 1) % len(self.players)]
             # Just decrease health by flat amount for poc
@@ -76,9 +74,9 @@ class BaseEnvironment:
         surviving_players: list[Player] = list(filter(lambda player: player not in losing_players, self.players))
         if len(surviving_players) <= 1:
             self.game_over = True
-            logger.info("Game ended by death of player(s)")
+            env_log.info("Game ended by death of player(s)")
         if len(surviving_players) == 1:
-            logger.info("{} won by survival".format(surviving_players[0].name))
+            env_log.info("{} won by survival".format(surviving_players[0].name))
         return
     
     def get_active_player(self) -> Player:

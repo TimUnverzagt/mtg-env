@@ -1,12 +1,10 @@
 from environment.card import Card
-
-import logging
-logger = logging.getLogger(__name__)
+from logging_config import env_log
 
 class Player:
 
     def __init__(self, name: str) -> None:
-        logger.info("Setting up the new player {}".format(name))
+        env_log.info("Setting up the new player {}".format(name))
         self.name: str = name
         self.current_life: int = 5
         self.cards_in_hand: list[Card] = [Card(1), Card(2), Card(1)]

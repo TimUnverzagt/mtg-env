@@ -8,8 +8,8 @@ import time
 from functools import reduce
 from typing import Optional
 import operator
-import logging
-logger = logging.getLogger(__name__)
+from logging import Logger
+from logging_config import main_log, player1_log, player2_log
 
 
 class MultiClientSession:
@@ -22,7 +22,7 @@ class MultiClientSession:
         self.vis: SimpleVisualization = SimpleVisualization()    
 
     def connect(self) -> Optional[PlayerController]:
-        logger.info("Trying to connect to connect to session")
+        main_log.info("Trying to seat a new player at session")
         if self.seats[0] is None:
             return self.connect_to_seat(0)
         if self.seats[1] is None:
@@ -31,33 +31,42 @@ class MultiClientSession:
     
     def connect_to_seat(self, seat_position: int) -> Optional[PlayerController]:
         if seat_position >= len(self.seats):
+            main_log.warning("Trying to connect to a seat index out of bounds!")
             return
         if self.seats[seat_position] is not None:
+            main_log.warning("Trying to connect to an occupied seat")
             return
         player: Player = self.env.players[seat_position]
-        cont = PlayerController(player)
+        player_log: Logger | None = None
+        if seat_position == 0:
+            player_log = player1_log
+        if seat_position == 1:
+            player_log = player2_log
+        if player_log is None:
+            return
+        cont = PlayerController(player, player_log)
         self.seats[seat_position] = SessionSeat(self.env, cont)
         return cont
     
     def run_game(self) -> None:
         while not self.env.game_over:
-            logger.info("tick game")
+            main_log.debug("tick game")
             seats_filled: bool = reduce(operator.and_ ,map(lambda seat: seat is not None, self.seats), True)
             if not seats_filled: 
-                logger.info("Waiting for more players...")
+                main_log.debug("Waiting for more players...")
                 time.sleep(0.3)
                 continue
             # Blockes until active player chooses an action 
             intended_action: Optional[str] = self.demand_action_event_from_active_player()
             if intended_action is None:
-                logger.error("Got no action intent from active player!")            
+                main_log.error("Got no action intent from active player!")            
             assert intended_action is not None
             # Apply action to environment
             self.env.step(self.env.get_active_player(), intended_action)
             self.vis.step(self.env)
             self.prepare_next_player_action()
 
-        logger.info("Game concluded. Shutting down session!")
+        main_log.info("Game concluded. Shutting down session!")
         return
     
     def demand_action_event_from_active_player(self) -> Optional[str]:
@@ -82,12 +91,12 @@ class MultiClientSession:
     
     def get_active_seat(self) -> Optional[SessionSeat]:
         if self.seats[0] is None or self.seats[1] is None:
-            logger.error("Can't get active seat because a player disconnected!")
+            main_log.error("Can't get active seat because a player disconnected!")
             return
         for seat in self.seats:
             assert seat is not None
             if self.env.get_active_player() == seat.controller.player: 
                 return seat
-        logger.error("Active Player {} does not belong to any connected seat!".format(self.env.get_active_player()))
+        main_log.error("Active Player {} does not belong to any connected seat!".format(self.env.get_active_player()))
         return
 

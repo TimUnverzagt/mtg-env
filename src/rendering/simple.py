@@ -3,8 +3,7 @@ from pygame import Surface
 from pygame import Rect
 from pygame.font import Font
 from typing import Callable
-import logging
-logger = logging.getLogger(__name__)
+from logging_config import main_log
 
 import rendering.constants as const
 from environment.base import BaseEnvironment as MtgEnv
@@ -21,6 +20,7 @@ class SimpleVisualization:
         self.seperator_thickness: int = 10
         self._draw_background()
         pygame.display.flip()
+        main_log.debug("Vizualisation is ready.")
 
     def step(self, env: MtgEnv) -> None:
         self.render_environment(env)                

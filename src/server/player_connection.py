@@ -6,14 +6,13 @@ from environment.action_event import ActionEvent
 from threading import Thread
 
 import time
-
-import logging
-logger = logging.getLogger(__name__)
+from logging import Logger
 
 
 class PlayerController:
-    def __init__(self, player: Player):
+    def __init__(self, player: Player, logger: Logger):
         self.player: Player = player
+        self.logger: Logger = logger
         self.terminate: bool = False
         self.upcoming_action: ActionEvent | None = None
         self.intended_next_action: str | None = None
@@ -21,7 +20,7 @@ class PlayerController:
 class SessionSeat:
     def __init__(self, env: BaseEnvironment, controller: PlayerController) -> None:
         self.controller: PlayerController = controller
-        logger.info("Connecting player {} to the session".format(self.controller.player.name))
+        controller.logger.info("Connecting player {} to the session".format(self.controller.player.name))
         self.env: BaseEnvironment = env
         self.player_thread: Thread = Thread(target=self.run_player_thread, daemon=True, args=[self.controller])
         self.player_thread.start()
@@ -31,7 +30,7 @@ class SessionSeat:
         while True:
             time.sleep(1)
             seconds_connected += 1
-            logger.debug("Player {} has been connected for {} seconds.".format(
+            controller.logger.debug("Player {} has been connected for {} seconds.".format(
                 self.controller.player.name, seconds_connected))
     
     def reset_controller(self) -> None:

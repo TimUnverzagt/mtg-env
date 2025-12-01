@@ -1,0 +1,30 @@
+import logging
+import os
+
+LOG_DIR = "./../logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+
+
+def create_logger(name: str, logging_level: int) -> logging.Logger:
+    logger = logging.getLogger(name)
+    logger.setLevel(logging_level)
+
+    log_path = os.path.join(LOG_DIR, f"{name}.log")
+    handler = logging.FileHandler(log_path, mode="w")
+    
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    handler.setFormatter(formatter)
+
+    logger.addHandler(handler)
+    logger.propagate = False   # Prevent double logging
+
+    return logger
+
+
+# Create the three loggers ONCE
+main_log   = create_logger("main", logging.INFO)
+env_log   = create_logger("env", logging.INFO)
+player1_log = create_logger("player1", logging.INFO)
+player2_log = create_logger("player2", logging.INFO)
