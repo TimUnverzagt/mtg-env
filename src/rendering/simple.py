@@ -2,8 +2,9 @@ import pygame
 from pygame import Surface
 from pygame import Rect
 from pygame.font import Font
-import keyboard
 from typing import Callable
+import logging
+logger = logging.getLogger(__name__)
 
 import rendering.constants as const
 from environment.base import BaseEnvironment as MtgEnv
@@ -13,8 +14,8 @@ class SimpleVisualization:
 
     def __init__(self) -> None:
         pygame.init()
-        self.width: int = 640
-        self.height: int = 480
+        self.width: int = 1280
+        self.height: int = 960
         self.size: tuple[int, int] = self.width, self.height
         self.screen: Surface = pygame.display.set_mode(self.size)
         self.seperator_thickness: int = 10
@@ -22,8 +23,7 @@ class SimpleVisualization:
         pygame.display.flip()
 
     def step(self, env: MtgEnv) -> None:
-        self.render_environment(env)
-        keyboard.wait('enter')
+        self.render_environment(env)                
 
     def render_environment(self, env: MtgEnv) -> None:
         self._draw_background()

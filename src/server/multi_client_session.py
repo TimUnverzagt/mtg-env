@@ -50,12 +50,13 @@ class MultiClientSession:
             # Blockes until active player chooses an action 
             intended_action: Optional[str] = self.demand_action_event_from_active_player()
             if intended_action is None:
-                logger.error("Got no action intent from active player!")
+                logger.error("Got no action intent from active player!")            
             assert intended_action is not None
             # Apply action to environment
-            self.evaluate_player_action_intent(intended_action)
-            # TODO: visualization seems to block session thread
-            # self.vis.step(self.env)
+            self.env.step(self.env.get_active_player(), intended_action)
+            self.vis.step(self.env)
+            self.prepare_next_player_action()
+
         logger.info("Game concluded. Shutting down session!")
         return
     
@@ -73,8 +74,7 @@ class MultiClientSession:
         active_seat.reset_controller()
         return player_intent
     
-    def evaluate_player_action_intent(self, intended_action: str) -> None:
-        self.env.step(self.env.get_active_player(), intended_action)
+    def prepare_next_player_action(self) -> None:
         active_seat: Optional[SessionSeat] = self.get_active_seat()
         assert active_seat is not None
         active_seat.controller.upcoming_action=self.env.get_upcoming_action()
