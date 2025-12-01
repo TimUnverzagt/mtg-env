@@ -10,6 +10,7 @@ from typing import Optional
 import operator
 from logging import Logger
 from logging_config import main_log, player1_log, player2_log
+import app_config as conf
 
 
 class MultiClientSession:
@@ -49,12 +50,18 @@ class MultiClientSession:
         return cont
     
     def run_game(self) -> None:
+        last_timestamp: float = time.time()
+        delta_t: float = 0.0
         while not self.env.game_over:
+            delta_t = time.time() - last_timestamp
+            last_timestamp = time.time()
+            if (delta_t < conf.SESSION_TICKSPEED):
+                time.sleep(conf.SESSION_TICKSPEED - delta_t)
             main_log.debug("tick game")
+
             seats_filled: bool = reduce(operator.and_ ,map(lambda seat: seat is not None, self.seats), True)
             if not seats_filled: 
                 main_log.debug("Waiting for more players...")
-                time.sleep(0.3)
                 continue
             # Blockes until active player chooses an action 
             intended_action: Optional[str] = self.demand_action_event_from_active_player()

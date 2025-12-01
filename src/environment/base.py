@@ -8,8 +8,8 @@ from logging_config import env_log
 
 class BaseEnvironment:
     action_event_catalog: list[ActionEvent] = [
-        ActionEvent(const.MAINPHASE, [const.MAINPHASE_PASS, const.MAINPHASE_PLAY_CREATURE]),
-        ActionEvent(const.COMBAT, [const.COMBAT_PASS, const.COMBAT_ATTACK])        
+        ActionEvent(const.MAINPHASE, 0, [const.MAINPHASE_PASS, const.MAINPHASE_PLAY_CREATURE]),
+        ActionEvent(const.COMBAT, 0,[const.COMBAT_PASS, const.COMBAT_ATTACK])        
     ]
 
 

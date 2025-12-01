@@ -5,6 +5,7 @@ from server.player_connection import PlayerController
 
 import time
 from logging_config import main_log
+import app_config as conf
 
 class AgentBase(ABC):
 
@@ -17,10 +18,16 @@ class AgentBase(ABC):
         if cont is None:
             main_log.error("Agent has no Connection to an active GameSession!")
             return
+        last_timestamp: float = time.time()
+        delta_t: float = 0.0
         while not self.session.env.game_over:
-            time.sleep(1)
+            delta_t = time.time() - last_timestamp
+            last_timestamp = time.time()
+            if (delta_t < conf.AGENT_TICKSPEED):
+                time.sleep(conf.AGENT_TICKSPEED - delta_t)
+
             if cont.upcoming_action is not None:
-                cont.logger.info("{}: Thinking on next action.".format(cont.player.name))
+                cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player.name, cont.upcoming_action.name))
                 cont.intended_next_action = self.decide_on_action(cont.upcoming_action)
                 cont.logger.info("{}: Decided on action '{}'.".format(cont.player.name, cont.intended_next_action))
             else:

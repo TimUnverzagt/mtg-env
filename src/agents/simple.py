@@ -1,6 +1,6 @@
 from server.multi_client_session import MultiClientSession as GameSession
 from environment.action_event import ActionEvent
-import environment.constants as EnvConsts
+#import environment.constants as EnvConsts
 from agents.abstractions.base import AgentBase
 
 from logging_config import main_log
@@ -12,11 +12,8 @@ class Goldfish(AgentBase):
         super().__init__(session)
 
     def decide_on_action(self, upcoming_action: ActionEvent) -> str:
-        if upcoming_action.name == EnvConsts.COMBAT:
-            return EnvConsts.COMBAT_PASS
-        if upcoming_action.name == EnvConsts.MAINPHASE:
-            return EnvConsts.MAINPHASE_PASS
-        return "Confused noises"
+        neutral_index: int = upcoming_action.neutral_action_index
+        return upcoming_action.possible_actions[neutral_index]
     
 class Monkey(AgentBase):
     def __init__(self, session: GameSession) -> None:

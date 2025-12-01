@@ -1,0 +1,2 @@
+SESSION_TICKSPEED: float = 0.1
+AGENT_TICKSPEED: float = 0.23
