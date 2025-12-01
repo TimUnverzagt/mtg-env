@@ -1,6 +1,6 @@
 from server.multi_client_session import MultiClientSession as GameSession
-from agents.simple import Goldfish
-from agents.console import ConsoleAgent
+from agents.simple import Goldfish, Monkey
+# from agents.console import ConsoleAgent
 from threading import Thread
 
 import time
@@ -23,7 +23,7 @@ def main():
     agent1_thread: Thread = Thread(target=agent1.play_game, daemon=True)
     agent1_thread.start()
     time.sleep(3)
-    agent2: ConsoleAgent = ConsoleAgent(session)
+    agent2: Monkey = Monkey(session)
     agent2_thread: Thread = Thread(target=agent2.play_game, daemon=True)
     agent2_thread.start()
     time.sleep(2)

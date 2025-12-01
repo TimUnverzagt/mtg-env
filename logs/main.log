@@ -1,4 +1,7 @@
-2025-12-01 10:48:54,381 - main - INFO - Setup GameSession
-2025-12-01 10:48:55,725 - main - INFO - Started Game
-2025-12-01 10:48:55,726 - main - INFO - Trying to seat a new player at session
-2025-12-01 10:48:58,727 - main - INFO - Trying to seat a new player at session
+2025-12-01 11:05:54,669 - main - INFO - Setup GameSession
+2025-12-01 11:05:56,115 - main - INFO - Started Game
+2025-12-01 11:05:56,116 - main - INFO - Trying to seat a new player at session
+2025-12-01 11:05:59,117 - main - INFO - Trying to seat a new player at session
+2025-12-01 11:05:59,117 - main - INFO - Random seed for monkey: 300564497267333211
+2025-12-01 11:06:31,200 - main - INFO - Game concluded. Shutting down session!
+2025-12-01 11:06:31,201 - main - INFO - Finished Game

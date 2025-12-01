@@ -1,6 +1,33 @@
-2025-12-01 10:48:58,727 - player2 - INFO - Connecting player Bob to the session
-2025-12-01 10:49:01,729 - player2 - INFO - Bob: Thinking on next action.
-2025-12-01 10:49:07,026 - player2 - INFO - Bob: Decided on action 'Pass'.
-2025-12-01 10:49:08,026 - player2 - INFO - Bob: Thinking on next action.
-2025-12-01 10:49:13,392 - player2 - INFO - Bob: Decided on action 'Attack with All'.
-2025-12-01 10:49:15,393 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:05:59,117 - player2 - INFO - Connecting player Bob to the session
+2025-12-01 11:06:02,118 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:02,118 - player2 - INFO - Bob: Decided on action 'Play Creature'.
+2025-12-01 11:06:03,119 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:03,119 - player2 - INFO - Bob: Decided on action 'Attack with All'.
+2025-12-01 11:06:06,120 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:06,121 - player2 - INFO - Bob: Decided on action 'Play Creature'.
+2025-12-01 11:06:07,121 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:07,121 - player2 - INFO - Bob: Decided on action 'Attack with All'.
+2025-12-01 11:06:10,123 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:10,123 - player2 - INFO - Bob: Decided on action 'Play Creature'.
+2025-12-01 11:06:11,123 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:11,123 - player2 - INFO - Bob: Decided on action 'Pass'.
+2025-12-01 11:06:14,124 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:14,124 - player2 - INFO - Bob: Decided on action 'Pass'.
+2025-12-01 11:06:15,124 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:15,125 - player2 - INFO - Bob: Decided on action 'Attack with All'.
+2025-12-01 11:06:18,126 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:18,126 - player2 - INFO - Bob: Decided on action 'Play Creature'.
+2025-12-01 11:06:19,127 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:19,127 - player2 - INFO - Bob: Decided on action 'Attack with All'.
+2025-12-01 11:06:22,128 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:22,128 - player2 - INFO - Bob: Decided on action 'Play Creature'.
+2025-12-01 11:06:23,129 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:23,129 - player2 - INFO - Bob: Decided on action 'Pass'.
+2025-12-01 11:06:26,129 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:26,130 - player2 - INFO - Bob: Decided on action 'Play Creature'.
+2025-12-01 11:06:27,130 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:27,130 - player2 - INFO - Bob: Decided on action 'Pass'.
+2025-12-01 11:06:30,131 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:30,131 - player2 - INFO - Bob: Decided on action 'Play Creature'.
+2025-12-01 11:06:31,132 - player2 - INFO - Bob: Thinking on next action.
+2025-12-01 11:06:31,133 - player2 - INFO - Bob: Decided on action 'Attack with All'.

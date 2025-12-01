@@ -48,7 +48,9 @@ class BaseEnvironment:
 
         # Handle action of step
         # TODO: How to handle exceptions/enforcement for nonsensical action inputs
-        env_log.info("Handling intent {} for action {} from {}".format(action_intent, applicable_action.name, acting_player.name))
+        env_log.info("Handling intent '{}' for action '{}' from {}".format(
+            action_intent, applicable_action.name, acting_player.name
+            ))
         if ((applicable_action.name == const.COMBAT)):
             self.handle_combat_action(acting_player, action_intent)
 
