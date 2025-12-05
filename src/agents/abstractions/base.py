@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from server.multi_client_session import MultiClientSession as GameSession
-from environment.action_event import ActionEvent
+from environment.decision_event import DecisionEvent
 from server.player_connection import PlayerController
 
 import time
@@ -26,13 +26,13 @@ class AgentBase(ABC):
             if (delta_t < conf.AGENT_TICKSPEED):
                 time.sleep(conf.AGENT_TICKSPEED - delta_t)
 
-            if cont.upcoming_action is not None:
-                cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player.name, cont.upcoming_action.name))
-                cont.intended_next_action = self.decide_on_action(cont.upcoming_action)
-                cont.logger.info("{}: Decided on action '{}'.".format(cont.player.name, cont.intended_next_action))
+            if cont.upcoming_decision is not None:
+                cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player.name, cont.upcoming_decision.name))
+                cont.intended_next_decision = self.decide_on_action(cont.upcoming_decision)
+                cont.logger.info("{}: Decided on action '{}'.".format(cont.player.name, cont.intended_next_decision))
             else:
                 cont.logger.debug("{}: Waiting on game session.".format(cont.player.name))
 
     @abstractmethod
-    def decide_on_action(self, upcoming_action: ActionEvent) -> str:
+    def decide_on_action(self, upcoming_action: DecisionEvent) -> str:
         pass

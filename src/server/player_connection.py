@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from environment.player import Player
 from environment.base import BaseEnvironment
-from environment.action_event import ActionEvent
+from environment.decision_event import DecisionEvent
 from threading import Thread
 
 import time
@@ -14,8 +14,8 @@ class PlayerController:
         self.player: Player = player
         self.logger: Logger = logger
         self.terminate: bool = False
-        self.upcoming_action: ActionEvent | None = None
-        self.intended_next_action: str | None = None
+        self.upcoming_decision: DecisionEvent | None = None
+        self.intended_next_decision: str | None = None
 
 class SessionSeat:
     def __init__(self, env: BaseEnvironment, controller: PlayerController) -> None:
@@ -28,11 +28,15 @@ class SessionSeat:
     def run_player_thread(self, controller: PlayerController) -> None:
         seconds_connected:int = 0
         while True:
+            if not self.controller.player.is_alive():
+                self.controller.logger.info("Player died by {}!".format(self.controller.player.death_description))
+                self.controller.logger.info("Closing PlayerThread")
+                return
             time.sleep(1)
             seconds_connected += 1
             controller.logger.debug("Player {} has been connected for {} seconds.".format(
                 self.controller.player.name, seconds_connected))
     
     def reset_controller(self) -> None:
-        self.controller.upcoming_action = None
-        self.controller.intended_next_action = None
+        self.controller.upcoming_decision = None
+        self.controller.intended_next_decision = None

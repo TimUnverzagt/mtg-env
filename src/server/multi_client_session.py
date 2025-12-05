@@ -63,37 +63,37 @@ class MultiClientSession:
             if not seats_filled: 
                 main_log.debug("Waiting for more players...")
                 continue
-            # Blockes until active player chooses an action 
-            intended_action: Optional[str] = self.demand_action_event_from_active_player()
-            if intended_action is None:
-                main_log.error("Got no action intent from active player!")            
-            assert intended_action is not None
-            # Apply action to environment
-            self.env.step(self.env.get_active_player(), intended_action)
+            # Blockes until active player makes a decision 
+            intended_decision: Optional[str] = self.demand_decision_from_active_player()
+            if intended_decision is None:
+                main_log.error("Got no decision intent from active player!")            
+            assert intended_decision is not None
+            # Apply decision to environment
+            self.env.step(self.env.get_active_player(), intended_decision)
             self.vis.step(self.env)
-            self.prepare_next_player_action()
+            self.prepare_next_player_decision()
 
         main_log.info("Game concluded. Shutting down session!")
         return
     
-    def demand_action_event_from_active_player(self) -> Optional[str]:
+    def demand_decision_from_active_player(self) -> Optional[str]:
         active_seat: Optional[SessionSeat] = self.get_active_seat()
         if active_seat is None:
             return 
         assert active_seat is not None
-        active_seat.controller.upcoming_action = self.env.get_upcoming_action()
-        active_seat.controller.intended_next_action = None
+        active_seat.controller.upcoming_decision = self.env.get_upcoming_decision()
+        active_seat.controller.intended_next_decision = None
         # Wait for player input
-        while active_seat.controller.intended_next_action is None:
+        while active_seat.controller.intended_next_decision is None:
             time.sleep(0.1)
-        player_intent: str = active_seat.controller.intended_next_action
+        player_intent: str = active_seat.controller.intended_next_decision
         active_seat.reset_controller()
         return player_intent
     
-    def prepare_next_player_action(self) -> None:
+    def prepare_next_player_decision(self) -> None:
         active_seat: Optional[SessionSeat] = self.get_active_seat()
         assert active_seat is not None
-        active_seat.controller.upcoming_action=self.env.get_upcoming_action()
+        active_seat.controller.upcoming_decision=self.env.get_upcoming_decision()
         return
     
     def get_active_seat(self) -> Optional[SessionSeat]:

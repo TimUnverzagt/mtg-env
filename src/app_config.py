@@ -1,2 +1,4 @@
 SESSION_TICKSPEED: float = 0.1
 AGENT_TICKSPEED: float = 0.23
+STARTING_LIFE: int = 5
+DECK_SIZE: int = 10

@@ -1,4 +1,4 @@
-class ActionEvent:
+class DecisionEvent:
 
     def __init__(self, name: str, neutral_action_index: int, possible_actions: list [str]) -> None:
         self.name: str = name

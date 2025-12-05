@@ -19,14 +19,13 @@ def main():
     session_thread.start()
 
     agent1: Goldfish = Goldfish(session)
-    #TODO: Migrate Thread to PlayerController
     agent1_thread: Thread = Thread(target=agent1.play_game, daemon=True)
     agent1_thread.start()
-    time.sleep(3)
+    time.sleep(0)
     agent2: Monkey = Monkey(session)
     agent2_thread: Thread = Thread(target=agent2.play_game, daemon=True)
     agent2_thread.start()
-    time.sleep(2)
+    time.sleep(0.2)
     
     session_thread.join()
     main_log.info("Finished Game")
