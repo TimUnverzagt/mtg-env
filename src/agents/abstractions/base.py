@@ -23,13 +23,14 @@ class AgentBase(ABC):
         while not self.session.env.game_over:
             delta_t = time.time() - last_timestamp
             last_timestamp = time.time()
-            if (delta_t < conf.AGENT_TICKSPEED):
-                time.sleep(conf.AGENT_TICKSPEED - delta_t)
+            if (delta_t < conf.AGENT_TICK_LENGTH):
+                time.sleep(max(conf.AGENT_TICK_LENGTH - delta_t, 0))
 
             if cont.upcoming_decision is not None:
-                cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player.name, cont.upcoming_decision.name))
-                cont.intended_next_decision = self.decide_on_action(cont.upcoming_decision)
-                cont.logger.info("{}: Decided on action '{}'.".format(cont.player.name, cont.intended_next_decision))
+                with cont.lock:
+                    cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player.name, cont.upcoming_decision.name))
+                    cont.intended_next_decision = self.decide_on_action(cont.upcoming_decision)
+                    cont.logger.info("{}: Decided on action '{}'.".format(cont.player.name, cont.intended_next_decision))
             else:
                 cont.logger.debug("{}: Waiting on game session.".format(cont.player.name))
 

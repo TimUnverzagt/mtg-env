@@ -23,7 +23,7 @@ class MultiClientSession:
         self.vis: SimpleVisualization = SimpleVisualization()    
 
     def connect(self) -> Optional[PlayerController]:
-        main_log.info("Trying to seat a new player at session")
+        main_log.info("Trying to seat a new agent at session")
         if self.seats[0] is None:
             return self.connect_to_seat(0)
         if self.seats[1] is None:
@@ -45,8 +45,10 @@ class MultiClientSession:
             player_log = player2_log
         if player_log is None:
             return
+        player_log.info("Seating new agent.")
         cont = PlayerController(player, player_log)
         self.seats[seat_position] = SessionSeat(self.env, cont)
+        main_log.info("Seated agent at {} with new player {}". format(cont.player.name, seat_position))
         return cont
     
     def run_game(self) -> None:
@@ -55,48 +57,52 @@ class MultiClientSession:
         while not self.env.game_over:
             delta_t = time.time() - last_timestamp
             last_timestamp = time.time()
-            if (delta_t < conf.SESSION_TICKSPEED):
-                time.sleep(conf.SESSION_TICKSPEED - delta_t)
-            main_log.debug("tick game")
+            if (delta_t < conf.SESSION_TICK_LENGTH):
+                time.sleep(max(conf.SESSION_TICK_LENGTH - delta_t, 0))
+            main_log.debug("GameTick: Running GameLoop")
 
             seats_filled: bool = reduce(operator.and_ ,map(lambda seat: seat is not None, self.seats), True)
             if not seats_filled: 
                 main_log.debug("Waiting for more players...")
                 continue
-            # Blockes until active player makes a decision 
-            intended_decision: Optional[str] = self.demand_decision_from_active_player()
-            if intended_decision is None:
-                main_log.error("Got no decision intent from active player!")            
-            assert intended_decision is not None
-            # Apply decision to environment
-            self.env.step(self.env.get_active_player(), intended_decision)
+
+            # Retrieve Player Intent
+            cont: Optional[PlayerController] = self.get_active_player_controller()
+            if cont is None: 
+                continue
+            assert cont is not None
+            
+            # Prompt Player Input
+            with cont.lock:
+                cont.reset_decision_info()
+                cont.upcoming_decision = self.env.get_upcoming_decision()
+
+            # Await Player Input
+            while cont.intended_next_decision is None:
+                delta_t = time.time() - last_timestamp
+                time.sleep(max(conf.SESSION_TICK_LENGTH - delta_t, 0))
+                last_timestamp = time.time()
+                main_log.debug("GameTick: Waiting for Player Input from {}".format(cont.player.name))
+            
+            # Read Player Input
+            with cont.lock:
+                player_intent: str = cont.intended_next_decision
+
+            # Update Screen without lock as it only depends on the environment
+            self.env.step(self.env.get_active_player(), player_intent)
             self.vis.step(self.env)
-            self.prepare_next_player_decision()
 
         main_log.info("Game concluded. Shutting down session!")
         return
     
-    def demand_decision_from_active_player(self) -> Optional[str]:
-        active_seat: Optional[SessionSeat] = self.get_active_seat()
+    def get_active_player_controller(self) -> Optional[PlayerController]:
+        active_seat: Optional[SessionSeat] = self._get_active_seat()
         if active_seat is None:
-            return 
-        assert active_seat is not None
-        active_seat.controller.upcoming_decision = self.env.get_upcoming_decision()
-        active_seat.controller.intended_next_decision = None
-        # Wait for player input
-        while active_seat.controller.intended_next_decision is None:
-            time.sleep(0.1)
-        player_intent: str = active_seat.controller.intended_next_decision
-        active_seat.reset_controller()
-        return player_intent
-    
-    def prepare_next_player_decision(self) -> None:
-        active_seat: Optional[SessionSeat] = self.get_active_seat()
-        assert active_seat is not None
-        active_seat.controller.upcoming_decision=self.env.get_upcoming_decision()
-        return
-    
-    def get_active_seat(self) -> Optional[SessionSeat]:
+            return None
+        return active_seat.controller
+
+
+    def _get_active_seat(self) -> Optional[SessionSeat]:
         if self.seats[0] is None or self.seats[1] is None:
             main_log.error("Can't get active seat because a player disconnected!")
             return
