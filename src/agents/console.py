@@ -1,5 +1,5 @@
 from server.multi_client_session import MultiClientSession as GameSession
-from environment.decision_event import DecisionEvent
+from game_engine.decision_event import DecisionEvent
 from agents.abstractions.base import AgentBase
 
 class ConsoleAgent(AgentBase):

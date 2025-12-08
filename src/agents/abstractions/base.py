@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from server.multi_client_session import MultiClientSession as GameSession
-from environment.decision_event import DecisionEvent
+from game_engine.decision_event import DecisionEvent
 from server.player_connection import PlayerController
 
 import time
