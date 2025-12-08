@@ -100,7 +100,7 @@ class BaseEnvironment:
     
     def handle_player_death(self, victim: Player, cause: str):
         victim.death_description = cause
-        env_log.info("{} died by {}.".format(victim.name, cause))
+        env_log.warning("{} died by {}.".format(victim.name, cause))
         return
 
     def get_active_player(self) -> Player:

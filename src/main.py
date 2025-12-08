@@ -10,7 +10,15 @@ from logging_config import main_log
 
 def main():
     """ Main program """
+    for i in range(10):
+        main_log.info(50 * "-")
+        main_log.info(21 * "-" + " Epoch {}".format(i) +  21 * "-")
+        main_log.info(50 * "-")
+        play_game()
+        
+    return 0
 
+def play_game() -> None:
     main_log.info("Setup GameSession")
     session: GameSession = GameSession()
     main_log.info("Started Game")
@@ -29,7 +37,6 @@ def main():
     
     session_thread.join()
     main_log.info("Finished Game")
-    return 0
 
 
 if __name__ == "__main__":

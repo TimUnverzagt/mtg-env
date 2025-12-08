@@ -48,7 +48,7 @@ class MultiClientSession:
         player_log.info("Seating new agent.")
         cont = PlayerController(player, player_log)
         self.seats[seat_position] = SessionSeat(self.env, cont)
-        main_log.info("Seated agent at {} with new player {}". format(cont.player.name, seat_position))
+        main_log.info("Seated agent at seat {} with new player {}". format(seat_position, cont.player.name))
         return cont
     
     def run_game(self) -> None:
