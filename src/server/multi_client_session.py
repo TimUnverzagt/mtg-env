@@ -1,7 +1,7 @@
 from server.player_connection import SessionSeat
 from server.player_connection import PlayerController
-from environment.base import BaseEnvironment
-from environment.player import Player
+from game_engine.base import BaseEngine
+from game_engine.player import Player
 from rendering.simple import SimpleVisualization
 
 import time
@@ -18,7 +18,7 @@ class MultiClientSession:
     def __init__(self) -> None:
         alice: Player = Player("Alice")
         bob: Player = Player("Bob")
-        self.env: BaseEnvironment = BaseEnvironment([alice, bob])
+        self.env: BaseEngine = BaseEngine([alice, bob])
         self.seats: list[Optional[SessionSeat]] = [None, None]
         self.vis: SimpleVisualization = SimpleVisualization()    
 

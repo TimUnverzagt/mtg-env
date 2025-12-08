@@ -6,8 +6,8 @@ from typing import Callable
 from logging_config import main_log
 
 import rendering.constants as const
-from environment.base import BaseEnvironment as MtgEnv
-from environment.player import Player
+from game_engine.base import BaseEngine as MtgEngine
+from game_engine.player import Player
                 
 get_surface_width: Callable[[Surface], int] = lambda surf: surf.get_width()
 get_surface_height: Callable[[Surface], int] = lambda surf: surf.get_height()
@@ -25,10 +25,10 @@ class SimpleVisualization:
         pygame.display.flip()
         main_log.debug("Vizualisation is ready.")
 
-    def step(self, env: MtgEnv) -> None:
+    def step(self, env: MtgEngine) -> None:
         self.render_environment(env)                
 
-    def render_environment(self, env: MtgEnv) -> None:
+    def render_environment(self, env: MtgEngine) -> None:
         self._draw_background()
         
         # Render player screens
@@ -49,11 +49,11 @@ class SimpleVisualization:
         pygame.display.flip()
         return
     
-    def render_ui(self, env: MtgEnv) -> Surface:
+    def render_ui(self, env: MtgEngine) -> Surface:
         ui_elements: list[Surface] = []
         ui_elements.append(self._render_text("Turn: {}".format(env.player_turns_completed//len(env.players) + 1)))
         ui_elements.append(self._render_text("Active Player: {}".format(env.players[env.active_player_index].name)))
-        current_env_step: str  = MtgEnv.decision_event_catalog[env.steps_in_turn_completed].name
+        current_env_step: str  = MtgEngine.decision_event_catalog[env.steps_in_turn_completed].name
         ui_elements.append(self._render_text("Current Step: {}".format(current_env_step)))
 
         ui_width: int = max(map(get_surface_width, ui_elements))

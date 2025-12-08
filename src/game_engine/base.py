@@ -1,14 +1,14 @@
-import environment.constants as const
-from environment.player import Player
-from environment.decision_event import DecisionEvent
-from environment.action_replacement import ActionProxy
-from environment.card import Card
+import game_engine.constants as const
+from game_engine.player import Player
+from game_engine.decision_event import DecisionEvent
+from game_engine.action_replacement import ActionProxy
+from game_engine.card import Card
 
 from logging_config import env_log
 
 
 
-class BaseEnvironment:
+class BaseEngine:
     decision_event_catalog: list[DecisionEvent] = [
         DecisionEvent(const.MAINPHASE, 0, [const.MAINPHASE_PASS, const.MAINPHASE_PLAY_CREATURE]),
         DecisionEvent(const.COMBAT, 0,[const.COMBAT_PASS, const.COMBAT_ATTACK])        
@@ -61,7 +61,7 @@ class BaseEnvironment:
             return
         
         self.steps_in_turn_completed += 1
-        if(self.steps_in_turn_completed >= len(BaseEnvironment.decision_event_catalog)):
+        if(self.steps_in_turn_completed >= len(BaseEngine.decision_event_catalog)):
             self.pass_turn()
         return 
     

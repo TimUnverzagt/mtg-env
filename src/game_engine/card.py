@@ -1,4 +1,4 @@
-from environment.card_info import CardInfo
+from game_engine.card_info import CardInfo
 
 class Card:
     card_catalog: dict[int, CardInfo] = {

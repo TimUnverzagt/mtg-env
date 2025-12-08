@@ -1,10 +1,10 @@
 from __future__ import annotations
 from typing import Callable, Generic, ParamSpec, TypeVar, Any, Concatenate, TYPE_CHECKING
-from environment import constants as const
+from game_engine import constants as const
 
 if TYPE_CHECKING:
-    from environment.base import BaseEnvironment as MtgEnv
-    from environment.player import Player
+    from game_engine.base import BaseEngine as MtgEngine
+    from game_engine.player import Player
 
 
 P = ParamSpec("P")
@@ -22,7 +22,7 @@ class ActionReplacement(Generic[P, T]):
 
 
 class ActionProxy:
-    def __init__(self, env: MtgEnv):
+    def __init__(self, env: MtgEngine):
         self.env = env
         self.replacement_catalog: dict[str, ActionReplacement[Any, Any]] = {
             const.DECKING: ActionReplacement(env.draw_card, env.kill_player_by_decking)

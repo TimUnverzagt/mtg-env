@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from environment.player import Player
-from environment.base import BaseEnvironment
-from environment.decision_event import DecisionEvent
+from game_engine.player import Player
+from game_engine.base import BaseEngine
+from game_engine.decision_event import DecisionEvent
 from threading import Lock
 from logging import Logger
 
@@ -22,7 +22,7 @@ class PlayerController:
         self.intended_next_decision = None
 
 class SessionSeat:
-    def __init__(self, env: BaseEnvironment, controller: PlayerController) -> None:
+    def __init__(self, env: BaseEngine, controller: PlayerController) -> None:
         self.controller: PlayerController = controller
         controller.logger.info("Connecting agent to the session player {}".format(self.controller.player.name))
-        self.env: BaseEnvironment = env
+        self.env: BaseEngine = env
