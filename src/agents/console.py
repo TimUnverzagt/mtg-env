@@ -3,8 +3,8 @@ from game_engine.decision_event import DecisionEvent
 from agents.abstractions.base import AgentBase
 
 class ConsoleAgent(AgentBase):
-    def __init__(self, session: GameSession) -> None:
-        super().__init__(session)
+    def __init__(self, session: GameSession, target_seat: int | None =  None) -> None:
+        super().__init__(session, target_seat)
 
     def decide_on_action(self, upcoming_action: DecisionEvent) -> str:
         return self._get_input_for_event(upcoming_action)

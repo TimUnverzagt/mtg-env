@@ -25,6 +25,7 @@ def create_logger(name: str, logging_level: int) -> logging.Logger:
 
 # Create the three loggers ONCE
 main_log   = create_logger("main", logging.INFO)
+ai_wrapper_log   = create_logger("aiWrapper", logging.INFO)
 env_log   = create_logger("env", logging.INFO)
 player1_log = create_logger("player1", logging.INFO)
 player2_log = create_logger("player2", logging.INFO)

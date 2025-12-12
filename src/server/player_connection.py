@@ -8,13 +8,14 @@ from logging import Logger
 
 
 class PlayerController:
-    def __init__(self, player: Player, logger: Logger):
+    def __init__(self, player: Player, logger: Logger, position: int):
         self.player: Player = player
         self.logger: Logger = logger
         self.terminate: bool = False
         self.lock: Lock = Lock()
         self.upcoming_decision: DecisionEvent | None = None
         self.intended_next_decision: str | None = None
+        self.position: int = position
 
     
     def reset_decision_info(self) -> None:

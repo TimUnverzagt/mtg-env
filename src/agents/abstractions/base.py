@@ -9,9 +9,13 @@ import app_config as conf
 
 class AgentBase(ABC):
 
-    def __init__(self, session: GameSession) -> None:
+    def __init__(self, session: GameSession, target_seat: int | None =  None) -> None:
         self.session: GameSession = session
-        self.controller: PlayerController | None = session.connect()
+        self.controller: PlayerController | None
+        if target_seat is None:
+            self.controller = session.connect()
+        else:
+            self.controller = session.connect_to_seat(target_seat)
 
     def play_game(self) -> None:
         cont: PlayerController | None = self.controller

@@ -1,4 +1,4 @@
-#MISC
+#Misc
 GAMEOVER : str = "Game over!"
 
 #Phases
