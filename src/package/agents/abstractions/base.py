@@ -32,11 +32,11 @@ class AgentBase(ABC):
 
             if cont.upcoming_decision is not None:
                 with cont.lock:
-                    cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player.name, cont.upcoming_decision.name))
+                    cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_decision.name))
                     cont.intended_next_decision = self.decide_on_action(cont.upcoming_decision)
-                    cont.logger.info("{}: Decided on action '{}'.".format(cont.player.name, cont.intended_next_decision))
+                    cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intended_next_decision))
             else:
-                cont.logger.debug("{}: Waiting on game session.".format(cont.player.name))
+                cont.logger.debug("{}: Waiting on game session.".format(cont.player_info.name))
 
     @abstractmethod
     def decide_on_action(self, upcoming_action: DecisionEvent) -> str:

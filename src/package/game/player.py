@@ -1,17 +1,39 @@
+from __future__ import annotations
 from game.card import Card
 from package.logging_config import env_log
-
 import package.app_config as conf
 
-class Player:
+from dataclasses import dataclass
+from typing import Optional
 
+
+    
+def is_player_alive(info: PlayerInfo) -> bool:
+        return info.death_description is None
+
+class Player:
     def __init__(self, name: str) -> None:
         env_log.info("Setting up the new player {}".format(name))
-        self.name: str = name
-        self.current_life: int = conf.STARTING_LIFE
-        self.cards_in_hand: list[Card] = [Card(1), Card(2), Card(1)]
-        self.cards_in_library: int = conf.DECK_SIZE
-        self.death_description: str | None = None
+        self.info: PlayerInfo = PlayerInfo(
+            name = name,
+            current_life = conf.STARTING_LIFE,
+            cards_in_hand = [Card(1), Card(2), Card(1)],
+            cards_in_library = conf.DECK_SIZE,
+            death_description = None
+        )
+
+    def __str__(self) -> str:
+        return "\n".join([
+            str(self.info)
+        ])
+    
+@dataclass
+class PlayerInfo:
+    name: str
+    current_life: int 
+    cards_in_hand: list[Card]
+    cards_in_library: int
+    death_description: Optional[str]
 
     def __str__(self) -> str:
         return "\n".join([
@@ -21,6 +43,3 @@ class Player:
             " | ".join(map(Card.__str__, self.cards_in_hand)),
             "Cards in Library: {}".format(self.cards_in_library)
         ])
-    
-    def is_alive(self) -> bool:
-        return self.death_description is None

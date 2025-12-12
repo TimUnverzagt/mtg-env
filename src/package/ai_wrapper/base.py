@@ -94,20 +94,20 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         assert op_cont is not None 
         result: dict[str, int | dict[str, int]] = {
             "upcoming_decision": {
-                "current_step": engine.steps_in_turn_completed,
+                "current_step": engine.game_state.steps_in_turn_completed,
                 "upcoming_decision_event": self._get_index_of_decision(engine.get_upcoming_decision())
             },
-            "agent_is_active_player": int(engine.get_active_player == agent_cont.player),
+            "agent_is_active_player": int(engine.game_state.active_player_index == engine.game_state.player_infos.index(agent_cont.player_info)),
             "agent_seat_position": agent_cont.position,
             "agent_status": {
-                "hp": agent_cont.player.current_life,
-                "card_in_hand": len(agent_cont.player.cards_in_hand),
-                "card_in_library": agent_cont.player.cards_in_library
+                "hp": agent_cont.player_info.current_life,
+                "card_in_hand": len(agent_cont.player_info.cards_in_hand),
+                "card_in_library": agent_cont.player_info.cards_in_library
             },
             "opponents_status": {
-                "hp": op_cont.player.current_life,
-                "card_in_hand": len(op_cont.player.cards_in_hand),
-                "card_in_library": op_cont.player.cards_in_library
+                "hp": op_cont.player_info.current_life,
+                "card_in_hand": len(op_cont.player_info.cards_in_hand),
+                "card_in_library": op_cont.player_info.cards_in_library
             }
         }
         return result

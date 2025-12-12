@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from game.player import Player
+from game.player import PlayerInfo
 from package.game.engine import GameEngine
 from game.decision_event import DecisionEvent
 from threading import Lock
@@ -8,8 +8,8 @@ from logging import Logger
 
 
 class PlayerController:
-    def __init__(self, player: Player, logger: Logger, position: int):
-        self.player: Player = player
+    def __init__(self, player_info: PlayerInfo, logger: Logger, position: int):
+        self.player_info: PlayerInfo = player_info
         self.logger: Logger = logger
         self.terminate: bool = False
         self.lock: Lock = Lock()
@@ -25,5 +25,5 @@ class PlayerController:
 class SessionSeat:
     def __init__(self, env: GameEngine, controller: PlayerController) -> None:
         self.controller: PlayerController = controller
-        controller.logger.info("Connecting agent to the session player {}".format(self.controller.player.name))
+        controller.logger.info("Connecting agent to the session player {}".format(self.controller.player_info.name))
         self.env: GameEngine = env

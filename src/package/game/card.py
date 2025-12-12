@@ -1,4 +1,5 @@
-from game.card_info import CardInfo
+from __future__ import annotations
+
 import game.constants as const
 
 class Card:
@@ -11,6 +12,19 @@ class Card:
             return "[{}] {}".format(self.id, str(self.card_info))
         else:
             return "[{}] {}".format(self.id, self.card_info.name)
+        
+class CardInfo:
+    def __init__(self, name: str) -> None:
+        self.name: str = name
+        self.mana_value: int = 1
+        self.power: int = 1
+    
+    def __str__(self) -> str:
+        return " -- ".join([
+            self.name,
+            "({})".format(self.mana_value),
+            "{}/X".format(self.power)
+        ])
 
 
     

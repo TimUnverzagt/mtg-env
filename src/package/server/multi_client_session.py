@@ -1,7 +1,7 @@
 from server.player_connection import SessionSeat
 from server.player_connection import PlayerController
 from package.game.engine import GameEngine
-from game.player import Player
+from game.player import Player, PlayerInfo
 from rendering.simple import SimpleVisualization
 
 import time
@@ -18,7 +18,7 @@ class MultiClientSession:
     def __init__(self) -> None:
         alice: Player = Player("Alice")
         bob: Player = Player("Bob")
-        self.env: GameEngine = GameEngine([alice, bob])
+        self.env: GameEngine = GameEngine([alice.info, bob.info])
         self.seats: list[Optional[SessionSeat]] = [None, None]
         self.vis: SimpleVisualization = SimpleVisualization()    
 
@@ -37,7 +37,7 @@ class MultiClientSession:
         if self.seats[seat_position] is not None:
             main_log.warning("Trying to connect to an occupied seat")
             return
-        player: Player = self.env.players[seat_position]
+        player_info: PlayerInfo = self.env.game_state.player_infos[seat_position]
         player_log: Logger | None = None
         if seat_position == 0:
             player_log = player1_log
@@ -46,9 +46,9 @@ class MultiClientSession:
         if player_log is None:
             return
         player_log.info("Seating new agent.")
-        cont = PlayerController(player, player_log, seat_position)
+        cont = PlayerController(player_info, player_log, seat_position)
         self.seats[seat_position] = SessionSeat(self.env, cont)
-        main_log.info("Seated agent at seat {} with new player {}". format(seat_position, cont.player.name))
+        main_log.info("Seated agent at seat {} with new player {}". format(seat_position, cont.player_info.name))
         return cont
     
     def run_game(self) -> None:
@@ -82,14 +82,14 @@ class MultiClientSession:
                 delta_t = time.time() - last_timestamp
                 time.sleep(max(conf.SESSION_TICK_LENGTH - delta_t, 0))
                 last_timestamp = time.time()
-                main_log.debug("GameTick: Waiting for Player Input from {}".format(cont.player.name))
+                main_log.debug("GameTick: Waiting for Player Input from {}".format(cont.player_info.name))
             
             # Read Player Input
             with cont.lock:
                 player_intent: str = cont.intended_next_decision
 
             # Update Screen without lock as it only depends on the environment
-            self.env.step(self.env.get_active_player(), player_intent)
+            self.env.step(self.env.game_state.active_player_index, player_intent)
             self.vis.step(self.env)
 
         main_log.info("Game concluded. Shutting down session!")
@@ -106,10 +106,12 @@ class MultiClientSession:
         if self.seats[0] is None or self.seats[1] is None:
             main_log.error("Can't get active seat because a player disconnected!")
             return
+        
+        active_player_info: PlayerInfo = self.env.game_state.player_infos[self.env.game_state.active_player_index] 
         for seat in self.seats:
             assert seat is not None
-            if self.env.get_active_player() == seat.controller.player: 
+            if active_player_info == seat.controller.player_info: 
                 return seat
-        main_log.error("Active Player {} does not belong to any connected seat!".format(self.env.get_active_player()))
+        main_log.error("Active Player {} does not belong to any connected seat!".format(active_player_info.name))
         return
 
