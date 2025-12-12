@@ -1,10 +1,10 @@
 from __future__ import annotations
 from typing import Callable, Generic, ParamSpec, TypeVar, Any, Concatenate, TYPE_CHECKING
-from game_engine import constants as const
+from game import constants as const
 
 if TYPE_CHECKING:
-    from game_engine.base import BaseEngine as MtgEngine
-    from game_engine.player import Player
+    from package.game.engine import GameEngine as MtgEngine
+    from game.player import Player
 
 
 P = ParamSpec("P")

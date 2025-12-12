@@ -7,8 +7,9 @@ from typing import Optional, TypeVar, Any
 
 import agents.constants as ag_const
 import package.app_config as app_const
-from game_engine.base import BaseEngine as MtgEngine
-from game_engine.decision_event import DecisionEvent
+import game.constants as game_const
+from package.game.engine import GameEngine as MtgEngine
+from game.decision_event import DecisionEvent
 from server.multi_client_session import MultiClientSession as MtgSession
 from server.player_connection import PlayerController
 from agents.simple import Goldfish #, Monkey
@@ -116,6 +117,6 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         return {}
     
     def _get_index_of_decision(self, decision: DecisionEvent) -> int:
-        return MtgEngine.decision_event_catalog.index(decision)
+        return game_const.DECISION_EVENT_CATALOG.index(decision)
     
 

@@ -1,18 +1,14 @@
-import game_engine.constants as const
-from game_engine.player import Player
-from game_engine.decision_event import DecisionEvent
-from game_engine.action_replacement import ActionProxy
-from game_engine.card import Card
+import game.constants as const
+from game.player import Player
+from game.decision_event import DecisionEvent
+from game.action_replacement import ActionProxy
+from game.card import Card
 
 from package.logging_config import env_log
 
 
 
-class BaseEngine:
-    decision_event_catalog: list[DecisionEvent] = [
-        DecisionEvent(const.MAINPHASE, 0, [const.MAINPHASE_PASS, const.MAINPHASE_PLAY_CREATURE]),
-        DecisionEvent(const.COMBAT, 0,[const.COMBAT_PASS, const.COMBAT_ATTACK])        
-    ]
+class GameEngine:
 
 
     def __init__(self, players: list[Player]) -> None:
@@ -61,7 +57,7 @@ class BaseEngine:
             return
         
         self.steps_in_turn_completed += 1
-        if(self.steps_in_turn_completed >= len(BaseEngine.decision_event_catalog)):
+        if(self.steps_in_turn_completed >= len(const.DECISION_EVENT_CATALOG)):
             self.pass_turn()
         return 
     
@@ -107,7 +103,7 @@ class BaseEngine:
         return self.players[self.active_player_index]
     
     def get_upcoming_decision(self) -> DecisionEvent:
-        return self.decision_event_catalog[self.steps_in_turn_completed]
+        return const.DECISION_EVENT_CATALOG[self.steps_in_turn_completed]
 
 
     def pass_turn(self) -> None:

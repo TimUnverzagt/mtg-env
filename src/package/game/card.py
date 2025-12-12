@@ -1,15 +1,10 @@
-from game_engine.card_info import CardInfo
+from game.card_info import CardInfo
+import game.constants as const
 
 class Card:
-    card_catalog: dict[int, CardInfo] = {
-        1: CardInfo("Guy"),
-        2: CardInfo("Land"),
-        3: CardInfo("StrongGuy")
-    }
-
     def __init__(self, id: int) -> None:
         self.id: int = id
-        self.card_info = Card.card_catalog[id]
+        self.card_info: CardInfo = const.CARD_CATALOG[id]
 
     def __str__(self, verbose: bool=False) -> str:
         if(verbose):

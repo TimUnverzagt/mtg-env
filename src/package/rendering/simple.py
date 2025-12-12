@@ -6,8 +6,8 @@ from typing import Callable
 from package.logging_config import main_log
 
 import rendering.constants as const
-from game_engine.base import BaseEngine as MtgEngine
-from game_engine.player import Player
+from package.game.engine import GameEngine as MtgEngine
+from game.player import Player
                 
 get_surface_width: Callable[[Surface], int] = lambda surf: surf.get_width()
 get_surface_height: Callable[[Surface], int] = lambda surf: surf.get_height()

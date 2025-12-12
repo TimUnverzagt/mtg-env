@@ -1,4 +1,4 @@
-from game_engine.card import Card
+from game.card import Card
 from package.logging_config import env_log
 
 import package.app_config as conf
