@@ -9,8 +9,8 @@ from functools import reduce
 from typing import Optional
 import operator
 from logging import Logger
-from logging_config import main_log, player1_log, player2_log
-import app_config as conf
+from package.logging_config import main_log, player1_log, player2_log
+import package.app_config as conf
 
 
 class MultiClientSession:

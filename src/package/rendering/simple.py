@@ -3,7 +3,7 @@ from pygame import Surface
 from pygame import Rect
 from pygame.font import Font
 from typing import Callable
-from logging_config import main_log
+from package.logging_config import main_log
 
 import rendering.constants as const
 from game_engine.base import BaseEngine as MtgEngine

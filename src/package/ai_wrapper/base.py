@@ -6,7 +6,7 @@ from gymnasium.spaces import Dict, Discrete, Box
 from typing import Optional, TypeVar, Any
 
 import agents.constants as ag_const
-import app_config as app_const
+import package.app_config as app_const
 from game_engine.base import BaseEngine as MtgEngine
 from game_engine.decision_event import DecisionEvent
 from server.multi_client_session import MultiClientSession as MtgSession
@@ -15,7 +15,7 @@ from agents.simple import Goldfish #, Monkey
 from agents.abstractions.base import AgentBase as Agent
 from threading import Thread
 
-from logging_config import ai_wrapper_log as logger
+from package.logging_config import ai_wrapper_log as logger
 
 
 ObsType = TypeVar("ObsType")

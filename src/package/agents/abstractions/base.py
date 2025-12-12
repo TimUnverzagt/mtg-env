@@ -4,8 +4,8 @@ from game_engine.decision_event import DecisionEvent
 from server.player_connection import PlayerController
 
 import time
-from logging_config import main_log
-import app_config as conf
+from package.logging_config import main_log
+import package.app_config as conf
 
 class AgentBase(ABC):
 

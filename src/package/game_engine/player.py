@@ -1,7 +1,7 @@
 from game_engine.card import Card
-from logging_config import env_log
+from package.logging_config import env_log
 
-import app_config as conf
+import package.app_config as conf
 
 class Player:
 

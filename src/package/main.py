@@ -6,7 +6,7 @@ from threading import Thread
 import time
 #import sys
 
-from logging_config import main_log
+from package.logging_config import main_log
 
 def main():
     """ Main program """

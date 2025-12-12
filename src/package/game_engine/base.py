@@ -4,7 +4,7 @@ from game_engine.decision_event import DecisionEvent
 from game_engine.action_replacement import ActionProxy
 from game_engine.card import Card
 
-from logging_config import env_log
+from package.logging_config import env_log
 
 
 
