@@ -1,6 +1,7 @@
 from server.player_connection import SessionSeat
 from server.player_connection import PlayerController
-from package.game.engine import GameEngine
+import package.game.engine as GameEngine
+from game.state import GameState
 from game.player import Player, PlayerInfo
 from rendering.simple import SimpleVisualization
 
@@ -18,7 +19,13 @@ class MultiClientSession:
     def __init__(self) -> None:
         alice: Player = Player("Alice")
         bob: Player = Player("Bob")
-        self.env: GameEngine = GameEngine([alice.info, bob.info])
+        self.game_state: GameState = GameState(
+            player_turns_completed = 0,
+            steps_in_turn_completed = 0,
+            active_player_index = 0,
+            game_over = False,
+            player_infos = [alice.info, bob.info]
+        )
         self.seats: list[Optional[SessionSeat]] = [None, None]
         self.vis: SimpleVisualization = SimpleVisualization()    
 
@@ -37,7 +44,7 @@ class MultiClientSession:
         if self.seats[seat_position] is not None:
             main_log.warning("Trying to connect to an occupied seat")
             return
-        player_info: PlayerInfo = self.env.game_state.player_infos[seat_position]
+        player_info: PlayerInfo = self.game_state.player_infos[seat_position]
         player_log: Logger | None = None
         if seat_position == 0:
             player_log = player1_log
@@ -47,14 +54,14 @@ class MultiClientSession:
             return
         player_log.info("Seating new agent.")
         cont = PlayerController(player_info, player_log, seat_position)
-        self.seats[seat_position] = SessionSeat(self.env, cont)
+        self.seats[seat_position] = SessionSeat(cont)
         main_log.info("Seated agent at seat {} with new player {}". format(seat_position, cont.player_info.name))
         return cont
     
     def run_game(self) -> None:
         last_timestamp: float = time.time()
         delta_t: float = 0.0
-        while not self.env.game_over:
+        while not self.game_state.game_over:
             delta_t = time.time() - last_timestamp
             last_timestamp = time.time()
             if (delta_t < conf.SESSION_TICK_LENGTH):
@@ -75,7 +82,7 @@ class MultiClientSession:
             # Prompt Player Input
             with cont.lock:
                 cont.reset_decision_info()
-                cont.upcoming_decision = self.env.get_upcoming_decision()
+                cont.upcoming_decision = GameEngine.get_upcoming_decision(self.game_state)
 
             # Await Player Input
             while cont.intended_next_decision is None:
@@ -89,8 +96,8 @@ class MultiClientSession:
                 player_intent: str = cont.intended_next_decision
 
             # Update Screen without lock as it only depends on the environment
-            self.env.step(self.env.game_state.active_player_index, player_intent)
-            self.vis.step(self.env)
+            GameEngine.step(self.game_state.active_player_index, player_intent, self.game_state)
+            self.vis.step(self.game_state)
 
         main_log.info("Game concluded. Shutting down session!")
         return
@@ -107,7 +114,7 @@ class MultiClientSession:
             main_log.error("Can't get active seat because a player disconnected!")
             return
         
-        active_player_info: PlayerInfo = self.env.game_state.player_infos[self.env.game_state.active_player_index] 
+        active_player_info: PlayerInfo = self.game_state.player_infos[self.game_state.active_player_index] 
         for seat in self.seats:
             assert seat is not None
             if active_player_info == seat.controller.player_info: 

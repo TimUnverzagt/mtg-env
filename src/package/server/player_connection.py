@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from game.player import PlayerInfo
-from package.game.engine import GameEngine
 from game.decision_event import DecisionEvent
 from threading import Lock
 from logging import Logger
@@ -23,7 +22,6 @@ class PlayerController:
         self.intended_next_decision = None
 
 class SessionSeat:
-    def __init__(self, env: GameEngine, controller: PlayerController) -> None:
+    def __init__(self, controller: PlayerController) -> None:
         self.controller: PlayerController = controller
         controller.logger.info("Connecting agent to the session player {}".format(self.controller.player_info.name))
-        self.env: GameEngine = env

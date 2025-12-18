@@ -8,8 +8,9 @@ from typing import Optional, TypeVar, Any
 import agents.constants as ag_const
 import package.app_config as app_const
 import game.constants as game_const
-from package.game.engine import GameEngine as MtgEngine
+import package.game.engine as MtgEngine
 from game.decision_event import DecisionEvent
+from game.state import GameState
 from server.multi_client_session import MultiClientSession as MtgSession
 from server.player_connection import PlayerController
 from agents.simple import Goldfish #, Monkey
@@ -87,7 +88,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         return self._get_obs(), self._get_inf()
 
     def _get_obs(self) -> MtgObservation:
-        engine: MtgEngine = self.game_session.env
+        state: GameState = self.game_session.game_state
         agent_cont: PlayerController | None = self.agent.controller
         assert agent_cont is not None
         op_cont: PlayerController | None = self.opponent.controller

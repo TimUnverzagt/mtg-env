@@ -2,9 +2,10 @@ from __future__ import annotations
 from typing import Callable, Generic, ParamSpec, TypeVar, Any, Concatenate, TYPE_CHECKING
 from game import constants as const
 from game.state import GameState
+import game.engine as env
 
 if TYPE_CHECKING:
-    from package.game.engine import GameEngine as MtgEngine
+    import package.game.engine as env
 
 
 AdditionalParam = ParamSpec("AdditionalParam")
@@ -22,8 +23,7 @@ class ActionReplacement(Generic[AdditionalParam, ActionResult]):
 
 
 class ActionProxy:
-    def __init__(self, env: MtgEngine):
-        self.env = env
+    def __init__(self):
         self.replacement_catalog: dict[str, ActionReplacement[Any, Any]] = {
             const.DECKING: ActionReplacement(env.draw_card, env.kill_player_by_decking)
         }
@@ -40,7 +40,7 @@ class ActionProxy:
     def execute_action(self, acting_seat: int, game_state: GameState, attempted_action: Callable[Concatenate[int, GameState, AdditionalParam], ActionResult], 
                        *args: AdditionalParam.args, **kwargs: AdditionalParam.kwargs) -> ActionResult:
         action_result: ActionResult = self._execute_action_with_replacment(acting_seat, game_state, attempted_action, *args, **kwargs)
-        self.env.update_game_state()
+        env.update_game_state(game_state)
         return action_result
 
     

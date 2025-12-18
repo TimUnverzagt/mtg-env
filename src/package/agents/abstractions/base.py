@@ -24,7 +24,7 @@ class AgentBase(ABC):
             return
         last_timestamp: float = time.time()
         delta_t: float = 0.0
-        while not self.session.env.game_over:
+        while not self.session.game_state.game_over:
             delta_t = time.time() - last_timestamp
             last_timestamp = time.time()
             if (delta_t < conf.AGENT_TICK_LENGTH):
