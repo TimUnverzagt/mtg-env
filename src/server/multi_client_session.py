@@ -2,7 +2,7 @@ from server.player_connection import SessionSeat
 from server.player_connection import PlayerController
 import game.engine as GameEngine
 from game.state import GameState
-from game.player import Player, PlayerInfo
+from game.player import PlayerInfo
 from rendering.simple import SimpleVisualization
 
 import time
@@ -16,16 +16,8 @@ import app_config as conf
 
 class MultiClientSession:
 
-    def __init__(self) -> None:
-        alice: Player = Player("Alice")
-        bob: Player = Player("Bob")
-        self.game_state: GameState = GameState(
-            player_turns_completed = 0,
-            steps_in_turn_completed = 0,
-            active_player_index = 0,
-            game_over = False,
-            player_infos = [alice.info, bob.info]
-        )
+    def __init__(self, initial_state: GameState) -> None:
+        self.game_state = initial_state
         self.seats: list[Optional[SessionSeat]] = [None, None]
         self.vis: SimpleVisualization = SimpleVisualization()    
 

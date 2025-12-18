@@ -1,9 +1,11 @@
 from server.multi_client_session import MultiClientSession as GameSession
+from game.player import Player
+from game.state import GameState
 from agents.simple import Goldfish, Monkey
 # from agents.console import ConsoleAgent
 from threading import Thread
 
-import time
+#import time
 #import sys
 
 from logging_config import main_log
@@ -20,20 +22,28 @@ def main():
 
 def play_game() -> None:
     main_log.info("Setup GameSession")
-    session: GameSession = GameSession()
+    alice: Player = Player("Alice")
+    bob: Player = Player("Bob")
+    game_state: GameState = GameState(
+        player_turns_completed = 0,
+        steps_in_turn_completed = 0,
+        active_player_index = 0,
+        game_over = False,
+        player_infos = [alice.info, bob.info]
+    )
+    session: GameSession = GameSession(game_state)
     main_log.info("Started Game")
 
     session_thread: Thread = Thread(target=session.run_game)
     session_thread.start()
 
-    agent1: Goldfish = Goldfish(session)
+    agent1: Goldfish = Goldfish(session, 0)
     agent1_thread: Thread = Thread(target=agent1.play_game, daemon=True)
     agent1_thread.start()
-    time.sleep(0)
-    agent2: Monkey = Monkey(session)
+
+    agent2: Monkey = Monkey(session, 1)
     agent2_thread: Thread = Thread(target=agent2.play_game, daemon=True)
     agent2_thread.start()
-    time.sleep(0.2)
     
     session_thread.join()
     main_log.info("Finished Game")

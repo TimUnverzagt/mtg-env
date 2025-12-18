@@ -6,28 +6,31 @@ from gymnasium.spaces import Dict, Discrete, Box
 from typing import Optional, TypeVar, Any
 
 import agents.constants as ag_const
-import package.app_config as app_const
+import app_config as app_const
 from game.decision_event import DECISION_EVENT_CATALOG
-import package.game.engine as MtgEngine
+import game.engine as MtgEngine
 from game.decision_event import DecisionEvent
 from game.state import GameState
+from game.player import Player
 from server.multi_client_session import MultiClientSession as MtgSession
 from server.player_connection import PlayerController
 from agents.simple import Goldfish #, Monkey
 from agents.abstractions.base import AgentBase as Agent
 from threading import Thread
 
-from package.logging_config import ai_wrapper_log as logger
+from logging_config import ai_wrapper_log as logger
 
 
 ObsType = TypeVar("ObsType")
 ActType = TypeVar("ActType")
 
-type MtgObservation = dict[str, int | dict[str, int]]
+type MtgObservation = dict[str, int | dict[str, int|str]]
 type MtgAction = dict[str, int]
 type MtgInfo = dict[str, Any]
 
-class MtgEnv(gym.Env[MtgObservation, MtgAction]):
+
+
+class MtgWrapper(gym.Env[MtgObservation, MtgAction]):
 
     def __init__(self) -> None:        
         # Set execution parameters
@@ -67,7 +70,16 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
 
         play_solo: bool = True
         self.opponent_type: str = ag_const.NEUTRAL
-        self.game_session= MtgSession() # TODO: Employ singleton pattern to enable Multiplayer
+        alice: Player = Player("Alice")
+        bob: Player = Player("Bob")
+        game_state: GameState = GameState(
+            player_turns_completed = 0,
+            steps_in_turn_completed = 0,
+            active_player_index = 0,
+            game_over = False,
+            player_infos = [alice.info, bob.info]
+        )
+        self.game_session= MtgSession(game_state) # TODO: Employ singleton pattern to enable Multiplayer
 
         assert play_solo is True # TODO: Multiplayer
         if(play_solo):
@@ -85,30 +97,30 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
             # 2. Place agent empty seat
             # 3. Set seat information based on placement
             logger.error("Multiplayer is not yet suppoorted. Programm is expected to crash soon!")
-        return self._get_obs(), self._get_inf()
+        return self.get_obs(), self._get_inf()
 
-    def _get_obs(self) -> MtgObservation:
+    def get_obs(self) -> MtgObservation:
         state: GameState = self.game_session.game_state
         agent_cont: PlayerController | None = self.agent.controller
         assert agent_cont is not None
         op_cont: PlayerController | None = self.opponent.controller
         assert op_cont is not None 
-        result: dict[str, int | dict[str, int]] = {
+        result: MtgObservation = {
             "upcoming_decision": {
                 "current_step": state.steps_in_turn_completed,
-                "upcoming_decision_event": self._get_index_of_decision(MtgEngine.get_upcoming_decision(state))
+                "upcoming_decision_event": self.get_index_of_decision(MtgEngine.get_upcoming_decision(state))
             },
             "agent_is_active_player": int(state.active_player_index == state.player_infos.index(agent_cont.player_info)),
             "agent_seat_position": agent_cont.position,
             "agent_status": {
                 "hp": agent_cont.player_info.current_life,
-                "card_in_hand": len(agent_cont.player_info.cards_in_hand),
-                "card_in_library": agent_cont.player_info.cards_in_library
+                "cards_in_hand": len(agent_cont.player_info.cards_in_hand),
+                "cards_in_library": agent_cont.player_info.cards_in_library
             },
             "opponents_status": {
                 "hp": op_cont.player_info.current_life,
-                "card_in_hand": len(op_cont.player_info.cards_in_hand),
-                "card_in_library": op_cont.player_info.cards_in_library
+                "cards_in_hand": len(op_cont.player_info.cards_in_hand),
+                "cards_in_library": op_cont.player_info.cards_in_library
             }
         }
         return result
@@ -117,7 +129,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         # TODO: Implement
         return {}
     
-    def _get_index_of_decision(self, decision: DecisionEvent) -> int:
+    def get_index_of_decision(self, decision: DecisionEvent) -> int:
         return DECISION_EVENT_CATALOG.index(decision)
     
 
