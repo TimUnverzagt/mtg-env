@@ -1,6 +1,6 @@
 from server.player_connection import SessionSeat
 from server.player_connection import PlayerController
-import package.game.engine as GameEngine
+import game.engine as GameEngine
 from game.state import GameState
 from game.player import Player, PlayerInfo
 from rendering.simple import SimpleVisualization
@@ -10,8 +10,8 @@ from functools import reduce
 from typing import Optional
 import operator
 from logging import Logger
-from package.logging_config import main_log, player1_log, player2_log
-import package.app_config as conf
+from logging_config import main_log, player1_log, player2_log
+import app_config as conf
 
 
 class MultiClientSession:

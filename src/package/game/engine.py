@@ -1,13 +1,12 @@
+from __future__ import annotations
 import game.constants as const
 from game.player import PlayerInfo, is_player_alive
-from game.decision_event import DecisionEvent
-from game.action_replacement import ActionProxy
+from game.decision_event import DecisionEvent, DECISION_EVENT_CATALOG
 from game.card import Card
 from game.state import GameState
+from typing import Callable, Generic, ParamSpec, TypeVar, Any, Concatenate
 
-from package.logging_config import env_log
-
-action_proxy: ActionProxy = ActionProxy()
+from logging_config import env_log
 
 def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
     # Don't respond if the game is over
@@ -29,7 +28,7 @@ def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
         return
         
     game_state.steps_in_turn_completed += 1
-    if(game_state.steps_in_turn_completed >= len(const.DECISION_EVENT_CATALOG)):
+    if(game_state.steps_in_turn_completed >= len(DECISION_EVENT_CATALOG)):
         pass_turn(game_state)
     return 
 
@@ -40,7 +39,7 @@ def handle_combat_decision(acting_seat: int, decision: str, game_state: GameStat
         # Just use the only other player as target
         defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_infos)
         # Just decrease health by flat amount for poc
-        action_proxy.execute_action(acting_seat, game_state, deal_damage, defending_position, 1)
+        execute_action(acting_seat, game_state, deal_damage, defending_position, 1)
     return
 
 def update_game_state(game_state: GameState) -> None:
@@ -73,7 +72,7 @@ def handle_player_death(victim_seat: int, game_state: GameState, cause: str):
     return
     
 def get_upcoming_decision(game_state: GameState) -> DecisionEvent:
-    return const.DECISION_EVENT_CATALOG[game_state.steps_in_turn_completed]
+    return DECISION_EVENT_CATALOG[game_state.steps_in_turn_completed]
 
 def pass_turn(game_state: GameState) -> None:
     # complete old turn
@@ -84,7 +83,7 @@ def pass_turn(game_state: GameState) -> None:
 
     # Handle setup of new turn
     env_log.info("{} will draw a card for turn".format(game_state.player_infos[next_active_seat].name))
-    action_proxy.execute_action(next_active_seat, game_state, draw_card)
+    execute_action(next_active_seat, game_state, draw_card)
 
 def get_player_position(info: PlayerInfo, game_state:GameState) -> int:
     return game_state.player_infos.index(info)
@@ -102,3 +101,39 @@ def draw_card(acting_seat: int, game_state: GameState) -> None:
 def deal_damage(acting_seat: int, game_state: GameState, target_seat:int, damage_amount:int) -> None:
     game_state.player_infos[target_seat].current_life -= damage_amount
     return    
+
+##################################
+# Action proxy
+##################################
+
+AdditionalParam = ParamSpec("AdditionalParam")
+ActionResult = TypeVar("ActionResult")
+
+class ActionReplacement(Generic[AdditionalParam, ActionResult]):
+
+    def __init__(self,
+                 input_action: Callable[Concatenate[int, GameState, AdditionalParam], ActionResult],
+                 replacing_action: Callable[Concatenate[int, GameState, AdditionalParam], ActionResult]):
+        self.input_action = input_action
+        self.replacing_action = replacing_action
+        return
+
+replacement_catalog: dict[str, ActionReplacement[Any, Any]] = {
+    const.DECKING: ActionReplacement(draw_card, kill_player_by_decking)
+}
+
+def _execute_action_with_replacment(acting_seat: int, game_state: GameState, attempted_action: Callable[Concatenate[int, GameState, AdditionalParam], ActionResult], 
+                    *args: AdditionalParam.args, **kwargs: AdditionalParam.kwargs) -> ActionResult:
+        
+    if attempted_action == replacement_catalog[const.DECKING].input_action \
+    and game_state.player_infos[acting_seat].cards_in_library <= 0:
+        return replacement_catalog[const.DECKING].replacing_action(acting_seat, game_state, *args, **kwargs)
+        
+    return attempted_action(acting_seat, game_state, *args, **kwargs)
+    
+def execute_action(acting_seat: int, game_state: GameState, attempted_action: Callable[Concatenate[int, GameState, AdditionalParam], ActionResult], 
+                    *args: AdditionalParam.args, **kwargs: AdditionalParam.kwargs) -> ActionResult:
+    action_result: ActionResult = _execute_action_with_replacment(acting_seat, game_state, attempted_action, *args, **kwargs)
+    update_game_state(game_state)
+    return action_result
+

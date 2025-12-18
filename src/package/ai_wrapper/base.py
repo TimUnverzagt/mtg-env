@@ -7,7 +7,7 @@ from typing import Optional, TypeVar, Any
 
 import agents.constants as ag_const
 import package.app_config as app_const
-import game.constants as game_const
+from game.decision_event import DECISION_EVENT_CATALOG
 import package.game.engine as MtgEngine
 from game.decision_event import DecisionEvent
 from game.state import GameState
@@ -95,10 +95,10 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         assert op_cont is not None 
         result: dict[str, int | dict[str, int]] = {
             "upcoming_decision": {
-                "current_step": engine.game_state.steps_in_turn_completed,
-                "upcoming_decision_event": self._get_index_of_decision(engine.get_upcoming_decision())
+                "current_step": state.steps_in_turn_completed,
+                "upcoming_decision_event": self._get_index_of_decision(MtgEngine.get_upcoming_decision(state))
             },
-            "agent_is_active_player": int(engine.game_state.active_player_index == engine.game_state.player_infos.index(agent_cont.player_info)),
+            "agent_is_active_player": int(state.active_player_index == state.player_infos.index(agent_cont.player_info)),
             "agent_seat_position": agent_cont.position,
             "agent_status": {
                 "hp": agent_cont.player_info.current_life,
@@ -118,6 +118,6 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         return {}
     
     def _get_index_of_decision(self, decision: DecisionEvent) -> int:
-        return game_const.DECISION_EVENT_CATALOG.index(decision)
+        return DECISION_EVENT_CATALOG.index(decision)
     
 

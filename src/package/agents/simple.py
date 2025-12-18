@@ -3,7 +3,7 @@ from game.decision_event import DecisionEvent
 #import environment.constants as EnvConsts
 from agents.abstractions.base import AgentBase
 
-from package.logging_config import main_log
+from logging_config import main_log
 import random
 import sys
 

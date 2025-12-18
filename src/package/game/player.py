@@ -1,11 +1,10 @@
 from __future__ import annotations
+from logging_config import env_log
+import app_config as conf
 from game.card import Card
-from package.logging_config import env_log
-import package.app_config as conf
 
 from dataclasses import dataclass
 from typing import Optional
-
 
     
 def is_player_alive(info: PlayerInfo) -> bool:

@@ -3,10 +3,10 @@ from pygame import Surface
 from pygame import Rect
 from pygame.font import Font
 from typing import Callable
-from package.logging_config import main_log
+from logging_config import main_log
 
 import rendering.constants as const
-import game.constants as GameConst
+from game.decision_event import DECISION_EVENT_CATALOG
 from game.player import PlayerInfo
 from game.state import GameState
                 
@@ -54,7 +54,7 @@ class SimpleVisualization:
         ui_elements: list[Surface] = []
         ui_elements.append(self._render_text("Turn: {}".format(game_state.player_turns_completed//len(game_state.player_infos) + 1)))
         ui_elements.append(self._render_text("Active Player: {}".format(game_state.player_infos[game_state.active_player_index].name)))
-        current_env_step: str  = GameConst.DECISION_EVENT_CATALOG[game_state.steps_in_turn_completed].name
+        current_env_step: str  = DECISION_EVENT_CATALOG[game_state.steps_in_turn_completed].name
         ui_elements.append(self._render_text("Current Step: {}".format(current_env_step)))
 
         ui_width: int = max(map(get_surface_width, ui_elements))
