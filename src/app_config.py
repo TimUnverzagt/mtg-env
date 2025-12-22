@@ -1,4 +1,5 @@
 SESSION_TICK_LENGTH: float = 0
 AGENT_TICK_LENGTH: float = 0
+API_TICK_LENGTH: float = 0.1
 STARTING_LIFE: int = 5
 DECK_SIZE: int = 10

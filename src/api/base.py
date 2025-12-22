@@ -125,6 +125,9 @@ class MtgWrapper(gym.Env[MtgObservation, MtgAction]):
         }
         return result
     
+    def step(self, action: MtgAction) -> tuple[MtgObservation, int, bool, bool, MtgInfo]:
+        return {}, 0, False, False, {}
+    
     def _get_inf(self) -> dict[str, Any]:
         # TODO: Implement
         return {}

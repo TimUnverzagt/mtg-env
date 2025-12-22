@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from game.player import PlayerInfo
 from game.decision_event import DecisionEvent
+from game.state import GameState
 from threading import Lock
 from logging import Logger
 
@@ -13,13 +14,15 @@ class PlayerController:
         self.terminate: bool = False
         self.lock: Lock = Lock()
         self.upcoming_decision: DecisionEvent | None = None
+        self.last_known_game_state: GameState | None = None
         self.intended_next_decision: str | None = None
         self.position: int = position
 
     
-    def reset_decision_info(self) -> None:
+    def set_action_result(self, new_state: GameState) -> None:
         self.upcoming_decision = None
         self.intended_next_decision = None
+        self.last_known_game_state = new_state
 
 class SessionSeat:
     def __init__(self, controller: PlayerController) -> None:

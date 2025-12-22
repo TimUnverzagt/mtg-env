@@ -12,7 +12,7 @@ from logging_config import main_log
 
 def main():
     """ Main program """
-    for i in range(10):
+    for i in range(1):
         main_log.info(50 * "-")
         main_log.info(21 * "-" + " Epoch {}".format(i) +  21 * "-")
         main_log.info(50 * "-")

@@ -73,7 +73,6 @@ class MultiClientSession:
             
             # Prompt Player Input
             with cont.lock:
-                cont.reset_decision_info()
                 cont.upcoming_decision = GameEngine.get_upcoming_decision(self.game_state)
 
             # Await Player Input
@@ -83,12 +82,12 @@ class MultiClientSession:
                 last_timestamp = time.time()
                 main_log.debug("GameTick: Waiting for Player Input from {}".format(cont.player_info.name))
             
-            # Read Player Input
+            # Process Player Input
             with cont.lock:
                 player_intent: str = cont.intended_next_decision
+                GameEngine.step(self.game_state.active_player_index, player_intent, self.game_state)
+                cont.set_action_result(self.game_state)
 
-            # Update Screen without lock as it only depends on the environment
-            GameEngine.step(self.game_state.active_player_index, player_intent, self.game_state)
             self.vis.step(self.game_state)
 
         main_log.info("Game concluded. Shutting down session!")

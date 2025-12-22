@@ -1,17 +1,16 @@
 import unittest
 from operator import attrgetter
 
-
 from game.state import GameState
 from game.player import PlayerInfo
 from game.card import Card
 from game.decision_event import DECISION_EVENT_CATALOG
 import game.constants as GameConsts
+
 from agents.simple import Goldfish, Monkey
 from server.multi_client_session import MultiClientSession as GameSession
-import helpers.type_guards as tg
 
-from ai_wrapper.base import MtgWrapper, MtgObservation
+from api.base import MtgWrapper, MtgObservation
 
 class TestAiWrapper(unittest.TestCase):
 
@@ -41,26 +40,27 @@ class TestAiWrapper(unittest.TestCase):
 
         #Assert
         print(obs)
-        assert tg.union_narrows_to_nested_map(obs["upcoming_decision"])
-        self.assertEqual(obs["upcoming_decision"]["current_step"], 1)
-        decision_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(GameConsts.COMBAT)
-        self.assertEqual(obs["upcoming_decision"]["upcoming_decision_event"], decision_index)
-        
-        self.assertEqual(obs["agent_is_active_player"], 1)
-        self.assertEqual(obs["agent_seat_position"], 0)
+        combat_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(GameConsts.COMBAT)
+        expected_obs: MtgObservation = {
+            "upcoming_decision": {
+                "current_step": 1,
+                "upcoming_decision_event": combat_index
+            },
+            "agent_is_active_player": int(True),
+            "agent_seat_position": 0,
+            "agent_status": {
+                "hp": 3,
+                "cards_in_hand": 1,
+                "cards_in_library": 5
+            },
+            "opponents_status": {
+                "hp": 3,
+                "cards_in_hand": 2,
+                "cards_in_library": 10
+            }
+        }
 
-        assert tg.union_narrows_to_nested_map(obs["agent_status"])
-        self.assertEqual(obs["agent_status"]["hp"], 3)
-        self.assertEqual(obs["agent_status"]["cards_in_hand"], 1)
-        self.assertEqual(obs["agent_status"]["cards_in_library"], 5)
-
-        assert tg.union_narrows_to_nested_map(obs["opponents_status"])
-        self.assertEqual(obs["opponents_status"]["hp"], 3)
-        self.assertEqual(obs["opponents_status"]["cards_in_hand"], 2)
-        self.assertEqual(obs["opponents_status"]["cards_in_library"], 10)
-        
-
-
+        self.assertDictEqual(obs, expected_obs)
 
 if __name__ == '__main__':
     unittest.main()

@@ -30,13 +30,19 @@ class AgentBase(ABC):
             if (delta_t < conf.AGENT_TICK_LENGTH):
                 time.sleep(max(conf.AGENT_TICK_LENGTH - delta_t, 0))
 
-            if cont.upcoming_decision is not None:
-                with cont.lock:
-                    cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_decision.name))
-                    cont.intended_next_decision = self.decide_on_action(cont.upcoming_decision)
-                    cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intended_next_decision))
-            else:
-                cont.logger.debug("{}: Waiting on game session.".format(cont.player_info.name))
+            if cont.last_known_game_state is None:
+                cont.logger.debug("{}: Waiting for response from game session.".format(cont.player_info.name))
+                continue
+
+            if cont.upcoming_decision is None:
+                cont.logger.debug("{}: Waiting for my turn to act. (Signaled by session setting upcoming_decision)".format(cont.player_info.name))
+                continue
+            
+            with cont.lock:
+                cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_decision.name))
+                cont.intended_next_decision = self.decide_on_action(cont.upcoming_decision)
+                cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intended_next_decision))
+
 
     @abstractmethod
     def decide_on_action(self, upcoming_action: DecisionEvent) -> str:
