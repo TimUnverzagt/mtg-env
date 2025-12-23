@@ -1,12 +1,24 @@
 from __future__ import annotations
 import game.constants as const
-from game.player import PlayerInfo, is_player_alive
+from game.player import Player, PlayerInfo, is_player_alive
 from game.decision_event import DecisionEvent, DECISION_EVENT_CATALOG
 from game.card import Card
 from game.state import GameState
 from typing import Callable, Generic, ParamSpec, TypeVar, Any, Concatenate
 
 from logging_config import env_log
+
+def init_game_state() -> GameState:
+    player1: Player = Player("Player1")
+    player2: Player = Player("Player2")
+    game_state: GameState = GameState(
+        player_turns_completed = 0,
+        steps_in_turn_completed = 0,
+        active_player_index = 0,
+        game_over = False,
+        player_infos = [player1.info, player2.info]
+    )
+    return game_state
 
 def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
     # Don't respond if the game is over
@@ -42,17 +54,19 @@ def handle_combat_decision(acting_seat: int, decision: str, game_state: GameStat
         execute_action(acting_seat, game_state, deal_damage, defending_position, 1)
     return
 
-def update_game_state(game_state: GameState) -> None:
-    env_log.debug("Updating Game State")
-    # Check for dying players
+def check_state_based_actions(game_state: GameState) -> None:
+    env_log.debug("Checking state-based effects")
+    check_player_death(game_state)
+    check_for_game_end(game_state)
+    return
+
+def check_player_death(game_state: GameState) -> None:
     alive_player_infos: list[PlayerInfo] = list(filter(lambda player_info: is_player_alive(player_info), game_state.player_infos))
     players_dying_from_hp: list[PlayerInfo] = list(filter(lambda player_info: player_info.current_life <= 0, alive_player_infos))
     if len(players_dying_from_hp) > 0:
         for player_info in players_dying_from_hp:
             handle_player_death(get_player_position(player_info, game_state), game_state, "having 0 or less life");
-        
-    check_for_game_end(game_state)
-    return
+   
 
 def check_for_game_end(game_state: GameState):
     surviving_players: list[PlayerInfo] = list(filter(lambda player_info: is_player_alive(player_info), game_state.player_infos))
@@ -134,6 +148,6 @@ def _execute_action_with_replacment(acting_seat: int, game_state: GameState, att
 def execute_action(acting_seat: int, game_state: GameState, attempted_action: Callable[Concatenate[int, GameState, AdditionalParam], ActionResult], 
                     *args: AdditionalParam.args, **kwargs: AdditionalParam.kwargs) -> ActionResult:
     action_result: ActionResult = _execute_action_with_replacment(acting_seat, game_state, attempted_action, *args, **kwargs)
-    update_game_state(game_state)
+    check_state_based_actions(game_state)
     return action_result
 

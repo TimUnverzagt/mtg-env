@@ -8,7 +8,7 @@ class GameState:
     steps_in_turn_completed: int
     active_player_index: int
     game_over: bool
-    player_infos: list[PlayerInfo]
+    player_infos: list[PlayerInfo]  
 
     def __str__(self) -> str:
         return "\n".join([

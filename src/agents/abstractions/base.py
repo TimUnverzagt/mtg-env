@@ -9,13 +9,14 @@ import app_config as conf
 
 class AgentBase(ABC):
 
-    def __init__(self, session: GameSession, target_seat: int | None =  None) -> None:
+    def __init__(self, session: GameSession, name: str, target_seat: int | None =  None) -> None:
         self.session: GameSession = session
         self.controller: PlayerController | None
         if target_seat is None:
-            self.controller = session.connect()
+            self.controller = session.connect(name)
         else:
-            self.controller = session.connect_to_seat(target_seat)
+            self.controller = session.connect_to_seat(target_seat, name)
+        assert self.controller is not None
 
     def play_game(self) -> None:
         cont: PlayerController | None = self.controller
@@ -36,6 +37,10 @@ class AgentBase(ABC):
 
             if cont.upcoming_decision is None:
                 cont.logger.debug("{}: Waiting for my turn to act. (Signaled by session setting upcoming_decision)".format(cont.player_info.name))
+                continue
+
+            if cont.intended_next_decision is not None:
+                cont.logger.debug("{}: Waiting for the session to accept my intent".format(cont.player_info.name))
                 continue
             
             with cont.lock:

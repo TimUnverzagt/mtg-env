@@ -8,16 +8,16 @@ import random
 import sys
 
 class Goldfish(AgentBase):
-    def __init__(self, session: GameSession, target_seat: int | None =  None) -> None:
-        super().__init__(session, target_seat)
+    def __init__(self, session: GameSession, name: str, target_seat: int | None =  None) -> None:
+        super().__init__(session, name, target_seat)
 
     def decide_on_action(self, upcoming_action: DecisionEvent) -> str:
         neutral_index: int = upcoming_action.neutral_action_index
         return upcoming_action.possible_actions[neutral_index]
     
 class Monkey(AgentBase):
-    def __init__(self, session: GameSession, target_seat: int | None =  None) -> None:
-        super().__init__(session, target_seat)
+    def __init__(self, session: GameSession, name: str, target_seat: int | None =  None) -> None:
+        super().__init__(session, name, target_seat)
         seed: int = random.randrange(sys.maxsize)  
         self.random_generator = random.Random(seed)
         main_log.info("Random seed for monkey: {}".format(seed))
