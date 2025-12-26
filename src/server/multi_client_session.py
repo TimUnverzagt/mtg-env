@@ -1,6 +1,6 @@
 from server.player_connection import PlayerController
 import game.engine as GameEngine
-from game.state import GameState
+#from game.state import GameState
 from game.player import PlayerInfo
 from rendering.simple import SimpleVisualization
 
@@ -13,10 +13,10 @@ import app_config as conf
 from copy import deepcopy
 
 
-class MultiClientSession:
+class MultiClientSession():
 
-    def __init__(self, initial_state: GameState) -> None:
-        self.game_state = initial_state
+    def __init__(self) -> None:
+        self.game_state = GameEngine.get_initial_game_state()
         self.seats: list[Optional[PlayerController]] = [None, None]
         self.vis: SimpleVisualization = SimpleVisualization()    
 

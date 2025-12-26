@@ -8,7 +8,7 @@ from typing import Callable, Generic, ParamSpec, TypeVar, Any, Concatenate
 
 from logging_config import env_log
 
-def init_game_state() -> GameState:
+def get_initial_game_state() -> GameState:
     player1: Player = Player("Player1")
     player2: Player = Player("Player2")
     game_state: GameState = GameState(

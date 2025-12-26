@@ -1,5 +1,4 @@
 from server.multi_client_session import MultiClientSession as GameSession
-import game.engine as MtgEngine
 from agents.simple import Goldfish, Monkey
 # from agents.console import ConsoleAgent
 from threading import Thread
@@ -21,7 +20,7 @@ def main():
 
 def play_game() -> None:
     main_log.info("Setup GameSession")
-    session: GameSession = GameSession(MtgEngine.init_game_state())
+    session: GameSession = GameSession()
     main_log.info("Started Game")
 
     session_thread: Thread = Thread(target=session.run_game)

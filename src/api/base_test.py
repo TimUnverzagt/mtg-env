@@ -7,7 +7,7 @@ from game.card import Card
 from game.decision_event import DECISION_EVENT_CATALOG
 import game.constants as GameConsts
 
-from agents.simple import Goldfish, Monkey
+from agents.simple import Goldfish
 from server.multi_client_session import MultiClientSession as GameSession
 
 from api.base import MtgWrapper, MtgObservation
@@ -27,13 +27,12 @@ class TestAiWrapper(unittest.TestCase):
             game_over=False,
             player_infos=[alice_info, bob_info]
         )
-        game_session: GameSession =  GameSession(game_state)
-        agent1: Goldfish = Goldfish(game_session, 0)
-        agent2: Monkey = Monkey(game_session, 1)
+        game_session: GameSession =  GameSession()
+        game_session.game_state = game_state
+        agent1: Goldfish = Goldfish(game_session, "Goldfish", 0)
 
         wrapper_under_test.game_session = game_session
         wrapper_under_test.agent = agent1
-        wrapper_under_test.opponent = agent2
 
         #Execute
         obs: MtgObservation = wrapper_under_test.get_obs()
