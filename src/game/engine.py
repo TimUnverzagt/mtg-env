@@ -20,6 +20,10 @@ def get_initial_game_state() -> GameState:
     )
     return game_state
 
+def is_legal_action(decision_intent: str, game_state: GameState) -> bool:
+    is_legal: bool = decision_intent in get_upcoming_decision(game_state).possible_actions
+    return is_legal
+
 def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
     # Don't respond if the game is over
     if(game_state.game_over):

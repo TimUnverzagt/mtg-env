@@ -9,7 +9,7 @@ from typing import Optional, TypeVar, Any
 
 import app_config as app_const
 import game.engine as MtgEngine
-from game.decision_event import DecisionEvent, DECISION_EVENT_CATALOG
+from game.decision_event import DECISION_EVENT_CATALOG
 from game.state import GameState
 from game.player import PlayerInfo
 from server.multi_client_session import MultiClientSession as MtgSession
@@ -123,14 +123,29 @@ class MtgWrapper(gym.Env[MtgObservation, MtgAction]):
         return game_state_to_obs(state, agent_cont.position)
     
     def step(self, action: MtgAction) -> tuple[MtgObservation, int, bool, bool, MtgInfo]:
+        decision_intent = DECISION_EVENT_CATALOG[action["decision_event"]].possible_actions[action["decision_index"]]
+        reward: int = 0
+        terminated: bool = False
+        truncated: bool = False
+        info: MtgInfo = {}
+
+        # Check for illegal actions
+        # TODO: Test
+        if not MtgEngine.is_legal_action(decision_intent, self.game_session.game_state):
+            reward = -1
+            return self.get_obs(), reward, terminated, truncated, info
+
         with self.agent.api_lock:
-            self.agent.api_action_input = DECISION_EVENT_CATALOG[action["decision_event"]].possible_actions[action["decision_index"]]
+            self.agent.api_action_input = decision_intent
         assert self.agent.controller is not None
         while self.agent.controller.upcoming_decision is None:
             time.sleep(app_const.API_TICK_LENGTH)
+
+        if self.game_session.game_state.game_over:
+            reward = 10
         
         # Obs, Reward, terminated, truncated, info
-        return self.get_obs(), 0, False, False, {}
+        return self.get_obs(), reward, terminated, truncated, info
 
     def _get_inf(self) -> dict[str, Any]:
         # TODO: Implement
