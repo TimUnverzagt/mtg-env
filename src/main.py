@@ -1,7 +1,7 @@
-from server.multi_client_session import MultiClientSession as GameSession
-from agents.simple import Goldfish, Monkey
+from api.wrapper import MtgWrapper as Env
+from api.wrapper import MtgObservation
+from helpers.type_guards import union_narrows_to_nested_map
 # from agents.console import ConsoleAgent
-from threading import Thread
 
 #import time
 #import sys
@@ -10,7 +10,7 @@ from logging_config import main_log
 
 def main():
     """ Main program """
-    for i in range(1):
+    for i in range(5):
         main_log.info(50 * "-")
         main_log.info(21 * "-" + " Epoch {}".format(i) +  21 * "-")
         main_log.info(50 * "-")
@@ -19,22 +19,21 @@ def main():
     return 0
 
 def play_game() -> None:
-    main_log.info("Setup GameSession")
-    session: GameSession = GameSession()
+    main_log.info("Setup Env-Wrapper")
+    environment: Env = Env()
+    last_obs: MtgObservation = environment.reset()[0]
     main_log.info("Started Game")
+    while not environment.game_session.game_state.game_over:
+        intended_action: int = 0
+        assert union_narrows_to_nested_map(last_obs["upcoming_decision"])
+        event_index: int = last_obs["upcoming_decision"]["upcoming_decision_event"]  
+        if event_index == 0:
+            intended_action = 0
+        if event_index == 1:
+            intended_action = 1
+        
+        last_obs = environment.step({"decision_event": event_index, "decision_index": intended_action})[0]
 
-    session_thread: Thread = Thread(target=session.run_game)
-    session_thread.start()
-
-    agent1: Goldfish = Goldfish(session, "Goldfish", 0)
-    agent1_thread: Thread = Thread(target=agent1.play_game, daemon=True)
-    agent1_thread.start()
-
-    agent2: Monkey = Monkey(session, "Monkey", 1)
-    agent2_thread: Thread = Thread(target=agent2.play_game, daemon=True)
-    agent2_thread.start()
-    
-    session_thread.join()
     main_log.info("Finished Game")
 
 

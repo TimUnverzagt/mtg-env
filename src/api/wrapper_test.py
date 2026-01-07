@@ -7,10 +7,10 @@ from game.card import Card
 from game.decision_event import DECISION_EVENT_CATALOG
 import game.constants as GameConsts
 
-from agents.simple import Goldfish
+from agents.api import ApiAgent
 from server.multi_client_session import MultiClientSession as GameSession
 
-from api.base import MtgWrapper, MtgObservation
+from api.wrapper import MtgWrapper, MtgObservation
 
 class TestAiWrapper(unittest.TestCase):
 
@@ -29,10 +29,6 @@ class TestAiWrapper(unittest.TestCase):
         )
         game_session: GameSession =  GameSession()
         game_session.game_state = game_state
-        agent1: Goldfish = Goldfish(game_session, "Goldfish", 0)
-
-        wrapper_under_test.game_session = game_session
-        wrapper_under_test.agent = agent1
 
         #Execute
         obs: MtgObservation = wrapper_under_test.get_obs()

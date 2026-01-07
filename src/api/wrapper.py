@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import numpy as np
 import gymnasium as gym
+import time
+from threading import Thread
 from gymnasium.spaces import Dict, Discrete, Box
 from typing import Optional, TypeVar, Any
 
-import agents.constants as ag_const
 import app_config as app_const
 import game.engine as MtgEngine
 from game.decision_event import DecisionEvent, DECISION_EVENT_CATALOG
@@ -14,8 +15,8 @@ from game.player import PlayerInfo
 from server.multi_client_session import MultiClientSession as MtgSession
 from server.player_connection import PlayerController
 from agents.simple import Goldfish #, Monkey
+from agents.api import ApiAgent
 from agents.abstractions.base import AgentBase as Agent
-from threading import Thread
 
 from logging_config import ai_wrapper_log as logger
 
@@ -32,10 +33,12 @@ type OpponentInfo = dict[str, int]
 
 class MtgWrapper(gym.Env[MtgObservation, MtgAction]):
 
-    def __init__(self) -> None:        
+    def __init__(self) -> None:      
         # Set execution parameters
-        self.agent: Agent
+        self.agent: ApiAgent
         self.game_session: MtgSession
+        self.session_thread: Thread
+        self.internal_agents: list[Agent]
 
         # Define observation space
         self.observation_space = Dict({
@@ -60,32 +63,34 @@ class MtgWrapper(gym.Env[MtgObservation, MtgAction]):
         # Define action space
         self.action_space = Dict({
            "decision_event": Discrete(2),
-           "possible_actions": Discrete(2) 
+           "decision_index": Discrete(2) 
         })
     
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None) -> \
         tuple[MtgObservation, MtgInfo]:
 
-        play_solo: bool = True
-        self.opponent_type: str = ag_const.NEUTRAL
-        self.game_session= MtgSession() # TODO: Employ singleton pattern to enable Multiplayer
+        logger.info("Reseting environment ==> Setting up new session")
+        # TODO: Enable Multiplayer
+        # Employ singleton pattern on session
+        # Implement seat negotiation
+        # Implement external training management
+        self.game_session = MtgSession() 
 
-        assert play_solo is True # TODO: Multiplayer
-        if(play_solo):
-            # Set up agent
-            agent = Goldfish(self.game_session,"GoldfishA", target_seat=0)
-            agent_thread: Thread = Thread(target=agent.play_game, daemon=True)
-            agent_thread.start()
+        # Set up extrenal agent
+        self.agent = ApiAgent(self.game_session,"External", target_seat=0)
+        agent_thread: Thread = Thread(target=self.agent.play_game, daemon=True)
+        agent_thread.start()
 
-            # Set up opponent for solo player
-            opponent = Goldfish(self.game_session, "GoldfishB", target_seat=1) # Remember that this is the second seat due to 0 indexing
-            opponent_thread: Thread = Thread(target=opponent.play_game, daemon=True)
-            opponent_thread.start()
-        else:
-            # 1. Fail if Session is already full
-            # 2. Place agent empty seat
-            # 3. Set seat information based on placement
-            logger.error("Multiplayer is not yet suppoorted. Programm is expected to crash soon!")
+        # Set up internal agent for the opponent
+        self.internal_agents = []
+        opponent = Goldfish(self.game_session, "Opp-Goldfish", target_seat=1) # Remember that this is the second seat due to 0 indexing
+        self.internal_agents.append(opponent)
+        opponent_thread: Thread = Thread(target=opponent.play_game, daemon=True)
+        opponent_thread.start()
+
+        self.session_thread = Thread(target=self.game_session.run_game, daemon=True)
+        self.session_thread.start()
+        
         return self.get_obs(), self._get_inf()
 
     def get_obs(self) -> MtgObservation:
@@ -106,7 +111,14 @@ class MtgWrapper(gym.Env[MtgObservation, MtgAction]):
         return result
     
     def step(self, action: MtgAction) -> tuple[MtgObservation, int, bool, bool, MtgInfo]:
-        return {}, 0, False, False, {}
+        with self.agent.api_lock:
+            self.agent.api_action_input = DECISION_EVENT_CATALOG[action["decision_event"]].possible_actions[action["decision_index"]]
+        assert self.agent.controller is not None
+        while self.agent.controller.upcoming_decision is None:
+            time.sleep(app_const.API_TICK_LENGTH)
+        
+        # Obs, Reward, terminated, truncated, info
+        return self.get_obs(), 0, False, False, {}
 
     def _get_inf(self) -> dict[str, Any]:
         # TODO: Implement

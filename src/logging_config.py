@@ -24,6 +24,6 @@ def create_logger(name: str, logging_level: int) -> logging.Logger:
 
 
 # Create the three loggers ONCE
-main_log   = create_logger("main", logging.INFO)
+main_log   = create_logger("main", logging.DEBUG)
 ai_wrapper_log   = create_logger("aiWrapper", logging.DEBUG)
-env_log   = create_logger("env", logging.INFO)
+env_log   = create_logger("env", logging.DEBUG)
