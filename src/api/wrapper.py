@@ -27,9 +27,32 @@ ActType = TypeVar("ActType")
 type MtgObservation = dict[str, int | dict[str, int]]
 type MtgAction = dict[str, int]
 type MtgInfo = dict[str, Any]
-type OpponentInfo = dict[str, int]
+type PlayerObs = dict[str, int]
 
+    
+def game_state_to_obs(state: GameState, agent_position: int) -> MtgObservation:
+    player_info: PlayerInfo = state.player_infos[agent_position]
+    #Assume two players for the momement
+    opponent_info: PlayerInfo = state.player_infos[(agent_position + 1) % 2]
+    result: MtgObservation = {
+        "upcoming_decision": {
+            "current_step": state.steps_in_turn_completed,
+            "upcoming_decision_event": DECISION_EVENT_CATALOG.index(MtgEngine.get_upcoming_decision(state))
+        },
+        "agent_is_active_player": int(state.active_player_index == agent_position),
+        "agent_seat_position": agent_position,
+        "agent_status": player_obs_from_info(player_info),
+        "opponents_status": player_obs_from_info(opponent_info)
+    }
+    return result
 
+def player_obs_from_info(player_info: PlayerInfo) -> PlayerObs:
+    #
+    return {
+        "hp": player_info.current_life,
+        "cards_in_hand": len(player_info.cards_in_hand),
+        "cards_in_library": player_info.cards_in_library
+    }
 
 class MtgWrapper(gym.Env[MtgObservation, MtgAction]):
 
@@ -97,18 +120,7 @@ class MtgWrapper(gym.Env[MtgObservation, MtgAction]):
         state: GameState = self.game_session.game_state
         agent_cont: PlayerController | None = self.agent.controller
         assert agent_cont is not None
-        result: MtgObservation = {
-            "upcoming_decision": {
-                "current_step": state.steps_in_turn_completed,
-                "upcoming_decision_event": self.get_index_of_decision(MtgEngine.get_upcoming_decision(state))
-            },
-            "agent_is_active_player": int(state.active_player_index == state.player_infos.index(agent_cont.player_info)),
-            "agent_seat_position": agent_cont.position,
-            "agent_status": self.get_player_info(agent_cont.position),
-            #Assume two players for the momement
-            "opponents_status": self.get_player_info((agent_cont.position + 1) % 2 )
-        }
-        return result
+        return game_state_to_obs(state, agent_cont.position)
     
     def step(self, action: MtgAction) -> tuple[MtgObservation, int, bool, bool, MtgInfo]:
         with self.agent.api_lock:
@@ -123,16 +135,5 @@ class MtgWrapper(gym.Env[MtgObservation, MtgAction]):
     def _get_inf(self) -> dict[str, Any]:
         # TODO: Implement
         return {}
-    
-    def get_player_info(self, seat_position: int) -> OpponentInfo:
-        player_info: PlayerInfo = self.game_session.game_state.player_infos[seat_position]
-        return {
-            "hp": player_info.current_life,
-            "cards_in_hand": len(player_info.cards_in_hand),
-            "cards_in_library": player_info.cards_in_library
-        }
-    
-    def get_index_of_decision(self, decision: DecisionEvent) -> int:
-        return DECISION_EVENT_CATALOG.index(decision)
     
 

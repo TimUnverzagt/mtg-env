@@ -7,10 +7,7 @@ from game.card import Card
 from game.decision_event import DECISION_EVENT_CATALOG
 import game.constants as GameConsts
 
-from agents.api import ApiAgent
-from server.multi_client_session import MultiClientSession as GameSession
-
-from api.wrapper import MtgWrapper, MtgObservation
+from api.wrapper import MtgWrapper, MtgObservation, game_state_to_obs
 
 class TestAiWrapper(unittest.TestCase):
 
@@ -27,14 +24,14 @@ class TestAiWrapper(unittest.TestCase):
             game_over=False,
             player_infos=[alice_info, bob_info]
         )
-        game_session: GameSession =  GameSession()
-        game_session.game_state = game_state
+
+        wrapper_under_test.reset()
 
         #Execute
-        obs: MtgObservation = wrapper_under_test.get_obs()
+        obs: MtgObservation = game_state_to_obs(game_state, 0)
 
         #Assert
-        print(obs)
+        #print(obs)
         combat_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(GameConsts.COMBAT)
         expected_obs: MtgObservation = {
             "upcoming_decision": {
