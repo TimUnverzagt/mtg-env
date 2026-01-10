@@ -8,7 +8,7 @@ from typing import Optional, TypeVar, Any
 
 import app_config as app_const
 #import game.engine as MtgEngine
-from game.decision_event import DECISION_EVENT_CATALOG
+from game.decision_event import DECISION_EVENT_CATALOG, DecisionEvent
 from game.state import GameState
 from game.player import PlayerInfo
 from server.multi_client_session import MultiClientSession as MtgSession
@@ -42,8 +42,11 @@ def game_state_to_obs(state: GameState, agent_position: int) -> MtgObservation:
     )
     return result
 
-def action_to_decision_intent(state: GameState, action: MtgAction) -> str:
-    return state.upcoming_decision.possible_actions[action[0]]
+def action_to_decision_intent(upcoming_decision: DecisionEvent, action: MtgAction) -> str:
+    logger.debug("Translating for decision [{}]".format(upcoming_decision))
+    intent: str = upcoming_decision.possible_actions[action[0]]
+    logger.debug("Translated external action {} into internal intent [{}]".format(action[0], intent))
+    return intent
 
 def player_obs_from_info(player_info: PlayerInfo) -> PlayerObs:
     #
@@ -95,13 +98,13 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         self.game_session = MtgSession() 
 
         # Set up extrenal agent
-        self.agent = ApiAgent(self.game_session,"External", target_seat=0)
+        self.agent = ApiAgent(self.game_session,"External", target_seat=1)
         agent_thread: Thread = Thread(target=self.agent.play_game, daemon=True)
         agent_thread.start()
 
         # Set up internal agent for the opponent
         self.internal_agents = []
-        opponent = Goldfish(self.game_session, "Opp-Goldfish", target_seat=1) # Remember that this is the second seat due to 0 indexing
+        opponent = Goldfish(self.game_session, "Opp-Goldfish", target_seat=0) 
         self.internal_agents.append(opponent)
         opponent_thread: Thread = Thread(target=opponent.play_game, daemon=True)
         opponent_thread.start()
@@ -122,16 +125,39 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         agent_cont: PlayerController | None = self.agent.controller
         assert agent_cont is not None
         reward: int = 10
-        if not agent_cont.position in state.winner_positions:
-            reward *= -1
-        return reward
+        if agent_cont.position in state.winner_positions:
+            return reward
+        else:
+            return reward * -1
 
     
     def step(self, action: MtgAction) -> tuple[MtgObservation, int, bool, bool, MtgInfo]:
         logger.debug("Performing a step of the enironment")
-        assert self.agent.controller is not None
-        # Do we need to check for race conditions on the game state here?
-        decision_intent: str = action_to_decision_intent(self.game_session.game_state, action)
+        reward: int = 0
+        terminated: bool = False
+        truncated: bool = False
+        info: MtgInfo = {}
+
+
+
+        assert self.agent.controller is not None        
+        while self.agent.controller.upcoming_decision is None:
+            # Catch game ending from other players game transitions
+            if self.game_session.shutting_down:
+                logger.info("Game ended between steps!")
+                reward = self.get_end_of_game_reward()
+                terminated = True
+                return self.get_obs(), reward, terminated, truncated, info
+            logger.debug("Waiting for upcoming decision to be set")
+            
+            time.sleep(app_const.API_TICK_LENGTH)
+
+        upcoming_decision: DecisionEvent | None = None
+        while upcoming_decision is None:
+            upcoming_decision = self.agent.controller.upcoming_decision
+        logger.debug("Current Upcoming Decision: {}".format(upcoming_decision.name))
+        decision_intent: str = action_to_decision_intent(upcoming_decision, action)
+            
         reward: int = 0
         terminated: bool = False
         truncated: bool = False
@@ -146,23 +172,15 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
             logger.debug("Declaring decision intent from external action")
             self.agent.api_action_input = decision_intent
 
-        while self.agent.api_action_input is not None and not self.game_session.shutting_down: # type: ignore (we wait for another thread to process the input)
+        while not self.game_session.shutting_down and self.agent.api_action_input is not None: # type: ignore (we wait for another thread to process the input)
             logger.debug("Waiting for intent to be processed")
             time.sleep(app_const.API_TICK_LENGTH)
 
-        while self.agent.controller.upcoming_decision is None and not self.game_session.shutting_down:
-            logger.debug("Waiting for next upcoming decision to complete step")
-            time.sleep(app_const.API_TICK_LENGTH)
-        
-        if self.agent.controller.upcoming_decision is not None:
-            logger.debug("Upcoming Decision: {}".format(self.agent.controller.upcoming_decision.name))
-
         if self.game_session.shutting_down:
-            logger.info("Game is over ==> Sendind terminated")
+            logger.info("Game is over ==> Sending terminated")
             reward = self.get_end_of_game_reward()
             terminated = True
         
-        # Obs, Reward, terminated, truncated, info
         return self.get_obs(), reward, terminated, truncated, info
 
 

@@ -1,34 +1,31 @@
 from collections import defaultdict
-import gymnasium as gym
 import numpy as np
 from numpy.typing import NDArray
 from server.api import MtgObservation, MtgAction, MtgEnv
-from math import prod
 from typing import cast, DefaultDict, TypeAlias
 from tqdm import tqdm 
 from logging_config import main_log
 
-FlatMtgAction: TypeAlias = np.int8
 QValue: TypeAlias = np.float32
-FlatMtgActionSpace: TypeAlias = NDArray[np.int8]
+MtgActionSpace: TypeAlias = NDArray[np.int8]
 
-def flatten_action(action_coordinates: MtgAction, dimension_sizes: list[int]) -> FlatMtgAction:
-    flat_index: FlatMtgAction = np.int8(0)
-    shift_size_from_prev_dimensions = 1
-    for coord, dim_size in zip(reversed(action_coordinates), reversed(dimension_sizes)):
-        flat_index += coord * shift_size_from_prev_dimensions
-        shift_size_from_prev_dimensions *= dim_size
-    return flat_index
+#def flatten_action(action_coordinates: MtgAction, dimension_sizes: list[int]) -> FlatMtgAction:
+#    flat_index: FlatMtgAction = np.int8(0)
+#    shift_size_from_prev_dimensions = 1
+#    for coord, dim_size in zip(reversed(action_coordinates), reversed(dimension_sizes)):
+#        flat_index += coord * shift_size_from_prev_dimensions
+#        shift_size_from_prev_dimensions *= dim_size
+#    return flat_index
 
-def unflatten_action(flat_index: FlatMtgAction, dimension_sizes: list[int]) -> MtgAction:
-    assert all(d > 0 for d in dimension_sizes)
-    assert 0 <= flat_index < prod(dimension_sizes)
-
-    action: list[int] = []
-    for dim_size in reversed(dimension_sizes):
-        action.append(cast(int, flat_index) % dim_size)
-        flat_index //= dim_size
-    return cast(MtgAction, tuple(reversed(action)))
+#def unflatten_action(flat_index: FlatMtgAction, dimension_sizes: list[int]) -> MtgAction:
+#    assert all(d > 0 for d in dimension_sizes)
+#    assert 0 <= flat_index < prod(dimension_sizes)
+#
+#    action: list[int] = []
+#    for dim_size in reversed(dimension_sizes):
+#        action.append(cast(int, flat_index) % dim_size)
+#        flat_index //= dim_size
+#    return cast(MtgAction, tuple(reversed(action)))
 
 class QLearner:
     def __init__(
@@ -52,12 +49,7 @@ class QLearner:
         """
         self.env = env
 
-        assert isinstance(self.env.action_space, gym.spaces.Tuple)
-        assert all(isinstance(subspace, gym.spaces.Discrete) for subspace in self.env.action_space)
-        self.action_dim_sizes: list[int] = [subspace.n for subspace in self.env.action_space]
-        size_of_action_space: int = prod(self.action_dim_sizes)
-        self.q_values: DefaultDict[MtgObservation, FlatMtgActionSpace] = \
-            defaultdict(lambda: np.zeros(size_of_action_space, dtype=FlatMtgAction))
+        self.q_values: DefaultDict[MtgObservation, MtgActionSpace] = defaultdict(lambda: np.zeros(2, int))
 
         self.lr = learning_rate
         self.discount_factor = discount_factor  # How much we care about future rewards
@@ -83,13 +75,13 @@ class QLearner:
             # Play one complete game
             while not done:
                 # Agent chooses action (initially random, gradually more intelligent)
-                action: MtgAction = unflatten_action(self.get_action(obs), self.action_dim_sizes)
+                action: MtgAction = self.get_action(obs)
 
                 # Take action and observe result
                 next_obs, reward, terminated, truncated, _ = self.env.step(action)
 
                 # Learn from this experience
-                self.update(obs, flatten_action(action, self.action_dim_sizes), reward, terminated, next_obs)
+                self.update(obs, action, reward, terminated, next_obs)
 
                 # Move to next state
                 done = terminated or truncated
@@ -99,25 +91,26 @@ class QLearner:
             main_log.info("Finished Game")
             # Reduce exploration rate (agent becomes less random over time)
             self.decay_epsilon()
+        print(self.q_values)
 
-    def get_action(self, obs: MtgObservation) -> FlatMtgAction:
+    def get_action(self, obs: MtgObservation) -> MtgAction:
         """Choose an action using epsilon-greedy strategy.
 
         Returns:
-            action: 0 (stand) or 1 (hit)
+            action: 0 (pass) or 1 (take some action)
         """
         # With probability epsilon: explore (random action)
         if np.random.random() < self.epsilon:
-            return flatten_action(self.env.action_space.sample(), self.action_dim_sizes)
+            return self.env.action_space.sample()
 
         # With probability (1-epsilon): exploit (best known action)
         else:
-            return FlatMtgAction(np.argmax(self.q_values[obs]))
+            return (cast(int, np.argmax(self.q_values[obs])),)
 
     def update(
         self,
         obs: MtgObservation,
-        action: FlatMtgAction,
+        action: MtgAction,
         reward: int,
         terminated: bool,
         next_obs: MtgObservation,

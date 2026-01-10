@@ -24,7 +24,7 @@ def create_logger(name: str, logging_level: int) -> logging.Logger:
 
 
 # Create the loggers ONCE
-main_log   = create_logger("main", logging.DEBUG)
-session_log   = create_logger("session", logging.DEBUG)
-api_log   = create_logger("api", logging.DEBUG)
-engine_log   = create_logger("engine", logging.DEBUG)
+main_log   = create_logger("main", logging.INFO)
+session_log   = create_logger("session", logging.WARN)
+api_log   = create_logger("api", logging.WARN)
+engine_log   = create_logger("engine", logging.WARN)

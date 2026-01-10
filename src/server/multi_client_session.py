@@ -19,7 +19,9 @@ class MultiClientSession():
     def __init__(self) -> None:
         self.game_state = GameEngine.get_initial_game_state()
         self.seats: list[Optional[PlayerController]] = [None, None]
-        self.vis: SimpleVisualization = SimpleVisualization()
+        self.vis: SimpleVisualization | None = None
+        if conf.HUMAN_RENDERING:
+            self.vis = SimpleVisualization()
         self.shutting_down: bool = False
 
     def connect(self, name: str) -> PlayerController | None:
@@ -81,7 +83,9 @@ class MultiClientSession():
                 GameEngine.step(self.game_state.active_player_index, player_intent, self.game_state)
                 cont.set_action_result(self.game_state)
 
-            self.vis.step(self.game_state)
+            if(conf.HUMAN_RENDERING):
+                assert self.vis is not None
+                self.vis.step(self.game_state)
 
         logger.info("Game concluded. Shutting down session!")
         self.shutting_down = True

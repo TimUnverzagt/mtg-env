@@ -15,9 +15,9 @@ def main():
     environment: MtgEnv = MtgEnv()
     learner: QLearner = QLearner(
         env=environment,
-        learning_rate=0.01,
+        learning_rate=0.1,
         initial_epsilon=start_epsilon,
-        epsilon_decay = start_epsilon / (no_of_episodes / 2),
+        epsilon_decay = start_epsilon / (no_of_episodes * 3/4),
         final_epsilon=0.1
     )
 
