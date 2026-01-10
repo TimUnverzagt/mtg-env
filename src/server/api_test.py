@@ -7,13 +7,13 @@ from game.card import Card
 from game.decision_event import DECISION_EVENT_CATALOG
 import game.constants as GameConsts
 
-from api.wrapper import MtgEnv, MtgObservation, game_state_to_obs
+from server.api import MtgEnv, MtgObservation, game_state_to_obs
 
 class TestAiWrapper(unittest.TestCase):
 
     def test_observations(self):
         #Setup
-        wrapper_under_test: MtgEnv = MtgEnv()
+        api_under_test: MtgEnv = MtgEnv()
 
         alice_info: PlayerInfo = PlayerInfo("Alice", 3, [Card(1)], 5, None)
         bob_info: PlayerInfo = PlayerInfo("Bob", 3, [Card(1), Card(1)], 10, None)
@@ -25,7 +25,7 @@ class TestAiWrapper(unittest.TestCase):
             player_infos=[alice_info, bob_info]
         )
 
-        wrapper_under_test.reset()
+        api_under_test.reset()
 
         #Execute
         obs: MtgObservation = game_state_to_obs(game_state, 0)

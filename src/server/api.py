@@ -15,7 +15,7 @@ from game.player import PlayerInfo
 from server.multi_client_session import MultiClientSession as MtgSession
 from server.player_connection import PlayerController
 from agents.simple import Goldfish #, Monkey
-from agents.api import ApiAgent
+from server.agents.external import ApiAgent
 from agents.abstractions.base import AgentBase as Agent
 
 from logging_config import ai_wrapper_log as logger
@@ -54,7 +54,7 @@ def player_obs_from_info(player_info: PlayerInfo) -> PlayerObs:
         "cards_in_library": player_info.cards_in_library
     }
 
-class MtgWrapper(gym.Env[MtgObservation, MtgAction]):
+class MtgEnv(gym.Env[MtgObservation, MtgAction]):
 
     def __init__(self) -> None:      
         # Set execution parameters

@@ -1,4 +1,4 @@
-from api.wrapper import MtgEnv
+from server.api import MtgEnv
 #from api.wrapper import MtgObservation
 from learning.q_learning import QLearner
 
