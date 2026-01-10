@@ -1,5 +1,5 @@
 from game.player import PlayerInfo
-
+from game.decision_event import DecisionEvent
 from dataclasses import dataclass
 
 @dataclass
@@ -8,7 +8,9 @@ class GameState:
     steps_in_turn_completed: int
     active_player_index: int
     game_over: bool
-    player_infos: list[PlayerInfo]  
+    upcoming_decision: DecisionEvent
+    player_infos: list[PlayerInfo]
+    winner_positions: list[int]
 
     def __str__(self) -> str:
         return "\n".join([

@@ -2,7 +2,7 @@ from collections import defaultdict
 import gymnasium as gym
 import numpy as np
 from numpy.typing import NDArray
-from api.wrapper import MtgObservation, MtgAction, MtgEnv
+from server.api import MtgObservation, MtgAction, MtgEnv
 from math import prod
 from typing import cast, DefaultDict, TypeAlias
 from tqdm import tqdm 
@@ -84,7 +84,6 @@ class QLearner:
             while not done:
                 # Agent chooses action (initially random, gradually more intelligent)
                 action: MtgAction = unflatten_action(self.get_action(obs), self.action_dim_sizes)
-
 
                 # Take action and observe result
                 next_obs, reward, terminated, truncated, _ = self.env.step(action)

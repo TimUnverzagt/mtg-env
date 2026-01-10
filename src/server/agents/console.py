@@ -1,6 +1,6 @@
 from server.multi_client_session import MultiClientSession as GameSession
 from game.decision_event import DecisionEvent
-from agents.abstractions.base import AgentBase
+from server.agents.abstractions.base import AgentBase
 
 class ConsoleAgent(AgentBase):
     def __init__(self, session: GameSession, name: str, target_seat: int | None =  None) -> None:

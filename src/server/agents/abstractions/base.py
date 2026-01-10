@@ -25,7 +25,7 @@ class AgentBase(ABC):
             return
         last_timestamp: float = time.time()
         delta_t: float = 0.0
-        while not self.session.game_state.game_over:
+        while not self.session.shutting_down:
             delta_t = time.time() - last_timestamp
             last_timestamp = time.time()
             if (delta_t < conf.AGENT_TICK_LENGTH):
@@ -47,6 +47,7 @@ class AgentBase(ABC):
                 cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_decision.name))
                 cont.intended_next_decision = self.decide_on_action(cont.upcoming_decision)
                 cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intended_next_decision))
+        cont.logger.info("Stopping because session is shutting down")
 
 
     @abstractmethod

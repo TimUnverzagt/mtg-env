@@ -1,7 +1,7 @@
 from server.multi_client_session import MultiClientSession as GameSession
 from game.decision_event import DecisionEvent
 #import environment.constants as EnvConsts
-from agents.abstractions.base import AgentBase
+from server.agents.abstractions.base import AgentBase
 
 from logging_config import main_log
 import random

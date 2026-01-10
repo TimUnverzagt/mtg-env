@@ -23,7 +23,8 @@ def create_logger(name: str, logging_level: int) -> logging.Logger:
     return logger
 
 
-# Create the three loggers ONCE
+# Create the loggers ONCE
 main_log   = create_logger("main", logging.DEBUG)
-ai_wrapper_log   = create_logger("aiWrapper", logging.DEBUG)
-env_log   = create_logger("env", logging.DEBUG)
+session_log   = create_logger("session", logging.DEBUG)
+api_log   = create_logger("api", logging.DEBUG)
+engine_log   = create_logger("engine", logging.DEBUG)

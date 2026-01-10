@@ -6,7 +6,7 @@ from game.card import Card
 from game.state import GameState
 from typing import Callable, Generic, ParamSpec, TypeVar, Any, Concatenate
 
-from logging_config import env_log
+from logging_config import engine_log as logger
 
 def get_initial_game_state() -> GameState:
     player1: Player = Player("Player1")
@@ -16,13 +16,14 @@ def get_initial_game_state() -> GameState:
         steps_in_turn_completed = 0,
         active_player_index = 0,
         game_over = False,
-        player_infos = [player1.info, player2.info]
+        upcoming_decision=DECISION_EVENT_CATALOG[0],
+        player_infos = [player1.info, player2.info],
+        winner_positions=[]
     )
     return game_state
 
-def is_legal_action(decision_intent: str, game_state: GameState) -> bool:
-    is_legal: bool = decision_intent in get_upcoming_decision(game_state).possible_actions
-    return is_legal
+#def is_legal_action(decision_intent: str, game_state: GameState) -> bool:
+#    return True
 
 def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
     # Don't respond if the game is over
@@ -34,7 +35,7 @@ def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
 
     # Handle decision of step
     # TODO: How to handle exceptions/enforcement for nonsensical decision inputs
-    env_log.info("Handling intent '{}' for decision event '{}' from {}".format(
+    logger.info("Handling intent '{}' for decision event '{}' from {}".format(
         decision_intent, applicable_decision.name, acting_player_info.name
         ))
     if ((applicable_decision.name == const.COMBAT)):
@@ -51,7 +52,7 @@ def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
 
 def handle_combat_decision(acting_seat: int, decision: str, game_state: GameState) -> None:
     if(decision==const.COMBAT_ATTACK):
-        env_log.warning("{} is attacking!".format(game_state.player_infos[acting_seat].name))
+        logger.warning("{} is attacking!".format(game_state.player_infos[acting_seat].name))
         # Just use the only other player as target
         defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_infos)
         # Just decrease health by flat amount for poc
@@ -59,7 +60,7 @@ def handle_combat_decision(acting_seat: int, decision: str, game_state: GameStat
     return
 
 def check_state_based_actions(game_state: GameState) -> None:
-    env_log.debug("Checking state-based effects")
+    logger.debug("Checking state-based effects")
     check_player_death(game_state)
     check_for_game_end(game_state)
     return
@@ -76,9 +77,10 @@ def check_for_game_end(game_state: GameState):
     surviving_players: list[PlayerInfo] = list(filter(lambda player_info: is_player_alive(player_info), game_state.player_infos))
     if len(surviving_players) <= 1:
         game_state.game_over = True
-        env_log.info("Game ended by death of player(s)")
+        logger.info("Game ended by death of player(s)")
     if len(surviving_players) == 1:
-        env_log.info("{} won by survival".format(surviving_players[0].name))
+        game_state.winner_positions = [game_state.player_infos.index(surviving_players[0])]
+        logger.info("{} won by survival".format(surviving_players[0].name))
 
 def kill_player_by_decking(victim_seat: int, game_state: GameState) -> None:
     handle_player_death(victim_seat, game_state, "drawing from an empty library")
@@ -86,7 +88,7 @@ def kill_player_by_decking(victim_seat: int, game_state: GameState) -> None:
     
 def handle_player_death(victim_seat: int, game_state: GameState, cause: str):
     game_state.player_infos[victim_seat].death_description = cause
-    env_log.warning("{} died by {}.".format(game_state.player_infos[victim_seat].name, cause))
+    logger.warning("{} died by {}.".format(game_state.player_infos[victim_seat].name, cause))
     return
     
 def get_upcoming_decision(game_state: GameState) -> DecisionEvent:
@@ -100,7 +102,7 @@ def pass_turn(game_state: GameState) -> None:
     game_state.active_player_index = next_active_seat
 
     # Handle setup of new turn
-    env_log.info("{} will draw a card for turn".format(game_state.player_infos[next_active_seat].name))
+    logger.info("{} will draw a card for turn".format(game_state.player_infos[next_active_seat].name))
     execute_action(next_active_seat, game_state, draw_card)
 
 def get_player_position(info: PlayerInfo, game_state:GameState) -> int:

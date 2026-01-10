@@ -1,10 +1,12 @@
 from __future__ import annotations
-from logging_config import env_log
 import app_config as conf
 from game.card import Card
 
 from dataclasses import dataclass
 from typing import Optional
+
+
+from logging_config import engine_log as logger
 
     
 def is_player_alive(info: PlayerInfo) -> bool:
@@ -12,7 +14,7 @@ def is_player_alive(info: PlayerInfo) -> bool:
 
 class Player:
     def __init__(self, name: str) -> None:
-        env_log.info("Setting up the new player {}".format(name))
+        logger.info("Setting up the new player {}".format(name))
         self.info: PlayerInfo = PlayerInfo(
             name = name,
             current_life = conf.STARTING_LIFE,

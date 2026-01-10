@@ -1,58 +1,57 @@
 from __future__ import annotations
 
-import numpy as np
 import gymnasium as gym
 import time
 from threading import Thread
-from gymnasium.spaces import Dict, Discrete, Box
+from gymnasium.spaces import Discrete, Tuple, MultiDiscrete
 from typing import Optional, TypeVar, Any
 
 import app_config as app_const
-import game.engine as MtgEngine
+#import game.engine as MtgEngine
 from game.decision_event import DECISION_EVENT_CATALOG
 from game.state import GameState
 from game.player import PlayerInfo
 from server.multi_client_session import MultiClientSession as MtgSession
 from server.player_connection import PlayerController
-from agents.simple import Goldfish #, Monkey
+from server.agents.simple import Goldfish #, Monkey
 from server.agents.external import ApiAgent
-from agents.abstractions.base import AgentBase as Agent
+from server.agents.abstractions.base import AgentBase as Agent
 
-from logging_config import ai_wrapper_log as logger
+from logging_config import api_log as logger
 
 
 ObsType = TypeVar("ObsType")
 ActType = TypeVar("ActType")
 
-type MtgObservation = dict[str, int | dict[str, int]]
-type MtgAction = dict[str, int]
+type MtgObservation = tuple[int, int, int, PlayerObs, PlayerObs]
+type MtgAction = tuple[int]
 type MtgInfo = dict[str, Any]
-type PlayerObs = dict[str, int]
+type PlayerObs = tuple[int, int, int]
 
     
 def game_state_to_obs(state: GameState, agent_position: int) -> MtgObservation:
     player_info: PlayerInfo = state.player_infos[agent_position]
     #Assume two players for the momement
     opponent_info: PlayerInfo = state.player_infos[(agent_position + 1) % 2]
-    result: MtgObservation = {
-        "upcoming_decision": {
-            "current_step": state.steps_in_turn_completed,
-            "upcoming_decision_event": DECISION_EVENT_CATALOG.index(MtgEngine.get_upcoming_decision(state))
-        },
-        "agent_is_active_player": int(state.active_player_index == agent_position),
-        "agent_seat_position": agent_position,
-        "agent_status": player_obs_from_info(player_info),
-        "opponents_status": player_obs_from_info(opponent_info)
-    }
+    result: MtgObservation = (
+        DECISION_EVENT_CATALOG.index(state.upcoming_decision), #upcoming_decision
+        int(state.active_player_index == agent_position), #agent_is_active_player
+        agent_position, #agent_seat_position
+        player_obs_from_info(player_info), #agent_status 
+        player_obs_from_info(opponent_info), #opponents_status
+    )
     return result
+
+def action_to_decision_intent(state: GameState, action: MtgAction) -> str:
+    return state.upcoming_decision.possible_actions[action[0]]
 
 def player_obs_from_info(player_info: PlayerInfo) -> PlayerObs:
     #
-    return {
-        "hp": player_info.current_life,
-        "cards_in_hand": len(player_info.cards_in_hand),
-        "cards_in_library": player_info.cards_in_library
-    }
+    return (
+        player_info.current_life, #hp
+        len(player_info.cards_in_hand), #cards_in_hand
+        player_info.cards_in_library #cards_in_library
+    )
 
 class MtgEnv(gym.Env[MtgObservation, MtgAction]):
 
@@ -64,30 +63,26 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         self.internal_agents: list[Agent]
 
         # Define observation space
-        self.observation_space = Dict({
-            "upcoming_decision": Dict({
-                "current_step": Discrete(2),
-                "upcoming_decision_event": Discrete(1)
-            }),
-            "agent_is_active_player": Discrete(n=2),
-            "agent_seat_position": Discrete(n=2),
-            "agent_status": Dict({
-                "hp": Box(low=0, high=app_const.STARTING_LIFE, dtype=np.int8),
-                "card_in_hand": Box(low=0, high=app_const.DECK_SIZE, dtype=np.int8),
-                "card_in_library": Box(low=0, high=app_const.DECK_SIZE, dtype=np.int8)
-            }),
-            "opponents_status": Dict({
-                "hp": Box(low=0, high=app_const.STARTING_LIFE, dtype=np.int8),
-                "card_in_hand": Box(low=0, high=app_const.DECK_SIZE, dtype=np.int8),
-                "card_in_library": Box(low=0, high=app_const.DECK_SIZE, dtype=np.int8)
-            })
-        })
+        self.observation_space = Tuple([
+            Discrete(n=2), #upcoming_decision
+            Discrete(n=2), #agent_is_active_player
+            Discrete(n=2), #agent_seat_position
+            MultiDiscrete( #agent_status
+                nvec= [app_const.STARTING_LIFE+1 , #hp 
+                app_const.DECK_SIZE+1, #cards_in_hand 
+                app_const.DECK_SIZE+1] #cards_in_library
+            ),
+            MultiDiscrete( #opponent_status
+                nvec= [app_const.STARTING_LIFE+1 , #hp 
+                app_const.DECK_SIZE+1, #cards_in_hand 
+                app_const.DECK_SIZE+1] #cards_in_library
+            ),
+        ])
 
         # Define action space
-        self.action_space = Dict({
-           "decision_event": Discrete(2),
-           "decision_index": Discrete(2) 
-        })
+        self.action_space =  Tuple([
+            Discrete(n=2)  #decision_intent
+        ])
     
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None) -> \
         tuple[MtgObservation, MtgInfo]:
@@ -111,7 +106,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         opponent_thread: Thread = Thread(target=opponent.play_game, daemon=True)
         opponent_thread.start()
 
-        self.session_thread = Thread(target=self.game_session.run_game, daemon=True)
+        self.session_thread = Thread(target=self.game_session.tick_session, daemon=True)
         self.session_thread.start()
         
         return self.get_obs(), self._get_inf()
@@ -122,30 +117,54 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         assert agent_cont is not None
         return game_state_to_obs(state, agent_cont.position)
     
+    def get_end_of_game_reward(self) -> int:
+        state: GameState = self.game_session.game_state
+        agent_cont: PlayerController | None = self.agent.controller
+        assert agent_cont is not None
+        reward: int = 10
+        if not agent_cont.position in state.winner_positions:
+            reward *= -1
+        return reward
+
+    
     def step(self, action: MtgAction) -> tuple[MtgObservation, int, bool, bool, MtgInfo]:
-        decision_intent = DECISION_EVENT_CATALOG[action["decision_event"]].possible_actions[action["decision_index"]]
+        logger.debug("Performing a step of the enironment")
+        assert self.agent.controller is not None
+        # Do we need to check for race conditions on the game state here?
+        decision_intent: str = action_to_decision_intent(self.game_session.game_state, action)
         reward: int = 0
         terminated: bool = False
         truncated: bool = False
         info: MtgInfo = {}
 
         # Check for illegal actions
-        # TODO: Test
-        if not MtgEngine.is_legal_action(decision_intent, self.game_session.game_state):
-            reward = -1
-            return self.get_obs(), reward, terminated, truncated, info
+        #if not MtgEngine.is_legal_action(decision_intent, self.game_session.game_state):
+        #    reward = -1
+        #    return self.get_obs(), reward, terminated, truncated, info
 
         with self.agent.api_lock:
+            logger.debug("Declaring decision intent from external action")
             self.agent.api_action_input = decision_intent
-        assert self.agent.controller is not None
-        while self.agent.controller.upcoming_decision is None:
+
+        while self.agent.api_action_input is not None and not self.game_session.shutting_down: # type: ignore (we wait for another thread to process the input)
+            logger.debug("Waiting for intent to be processed")
             time.sleep(app_const.API_TICK_LENGTH)
 
-        if self.game_session.game_state.game_over:
-            reward = 10
+        while self.agent.controller.upcoming_decision is None and not self.game_session.shutting_down:
+            logger.debug("Waiting for next upcoming decision to complete step")
+            time.sleep(app_const.API_TICK_LENGTH)
+        
+        if self.agent.controller.upcoming_decision is not None:
+            logger.debug("Upcoming Decision: {}".format(self.agent.controller.upcoming_decision.name))
+
+        if self.game_session.shutting_down:
+            logger.info("Game is over ==> Sendind terminated")
+            reward = self.get_end_of_game_reward()
+            terminated = True
         
         # Obs, Reward, terminated, truncated, info
         return self.get_obs(), reward, terminated, truncated, info
+
 
     def _get_inf(self) -> dict[str, Any]:
         # TODO: Implement
