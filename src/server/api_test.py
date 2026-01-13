@@ -22,7 +22,9 @@ class TestAiWrapper(unittest.TestCase):
             steps_in_turn_completed=1,
             active_player_index=0,
             game_over=False,
-            player_infos=[alice_info, bob_info]
+            player_infos=[alice_info, bob_info],
+            upcoming_decision=DECISION_EVENT_CATALOG[0],
+            winner_positions=[]
         )
 
         api_under_test.reset()
@@ -32,27 +34,16 @@ class TestAiWrapper(unittest.TestCase):
 
         #Assert
         #print(obs)
-        combat_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(GameConsts.COMBAT)
-        expected_obs: MtgObservation = {
-            "upcoming_decision": {
-                "current_step": 1,
-                "upcoming_decision_event": combat_index
-            },
-            "agent_is_active_player": int(True),
-            "agent_seat_position": 0,
-            "agent_status": {
-                "hp": 3,
-                "cards_in_hand": 1,
-                "cards_in_library": 5
-            },
-            "opponents_status": {
-                "hp": 3,
-                "cards_in_hand": 2,
-                "cards_in_library": 10
-            }
-        }
+        mainphase_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(GameConsts.MAINPHASE)
+        expected_obs: MtgObservation = (
+            mainphase_index, #upcoming_decision
+            int(True), #agent_is_active_player
+            0, #agent_seat_position
+            (3, 1, 5),
+            (3, 2, 10)
+        )
 
-        self.assertDictEqual(obs, expected_obs)
+        self.assertEqual(obs, expected_obs)
 
 if __name__ == '__main__':
     unittest.main()

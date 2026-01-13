@@ -3,6 +3,7 @@ import unittest
 from game.state import GameState
 from game.player import PlayerInfo
 from game.card import Card
+from game.decision_event import DECISION_EVENT_CATALOG
 import game.constants as GameConsts
 import game.engine as Engine
 
@@ -18,7 +19,9 @@ class TestGameEngine(unittest.TestCase):
             steps_in_turn_completed=1,
             active_player_index=0,
             game_over=False,
-            player_infos=[alice_info, bob_info]
+            player_infos=[alice_info, bob_info],
+            upcoming_decision=DECISION_EVENT_CATALOG[0],
+            winner_positions=[]
         )
 
         #Execute
