@@ -9,7 +9,7 @@ import game.constants as GameConsts
 
 from server.api import MtgEnv, MtgObservation, game_state_to_obs
 
-class TestAiWrapper(unittest.TestCase):
+class TestApi(unittest.TestCase):
 
     def test_observations(self):
         #Setup

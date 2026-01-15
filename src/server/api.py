@@ -8,53 +8,21 @@ from typing import Optional, TypeVar, Any
 
 import app_config as app_const
 #import game.engine as MtgEngine
-from game.decision_event import DECISION_EVENT_CATALOG, DecisionEvent
+from game.decision_event import DecisionEvent
 from game.state import GameState
-from game.player import PlayerInfo
 from server.multi_client_session import MultiClientSession as MtgSession
 from server.player_connection import PlayerController
 from server.agents.simple import Goldfish #, Monkey
 from server.agents.external import ApiAgent
 from server.agents.abstractions.base import AgentBase as Agent
+from server.constants import MtgObservation, MtgInfo, MtgAction
+from server.translation import action_to_decision_intent, game_state_to_obs
 
 from logging_config import api_log as logger
 
 
 ObsType = TypeVar("ObsType")
 ActType = TypeVar("ActType")
-
-type MtgObservation = tuple[int, int, int, PlayerObs, PlayerObs]
-type MtgAction = tuple[int]
-type MtgInfo = dict[str, Any]
-type PlayerObs = tuple[int, int, int]
-
-    
-def game_state_to_obs(state: GameState, agent_position: int) -> MtgObservation:
-    player_info: PlayerInfo = state.player_infos[agent_position]
-    #Assume two players for the momement
-    opponent_info: PlayerInfo = state.player_infos[(agent_position + 1) % 2]
-    result: MtgObservation = (
-        DECISION_EVENT_CATALOG.index(state.upcoming_decision), #upcoming_decision
-        int(state.active_player_index == agent_position), #agent_is_active_player
-        agent_position, #agent_seat_position
-        player_obs_from_info(player_info), #agent_status 
-        player_obs_from_info(opponent_info), #opponents_status
-    )
-    return result
-
-def action_to_decision_intent(upcoming_decision: DecisionEvent, action: MtgAction) -> str:
-    logger.debug("Translating for decision [{}]".format(upcoming_decision))
-    intent: str = upcoming_decision.possible_actions[action[0]]
-    logger.debug("Translated external action {} into internal intent [{}]".format(action[0], intent))
-    return intent
-
-def player_obs_from_info(player_info: PlayerInfo) -> PlayerObs:
-    #
-    return (
-        player_info.current_life, #hp
-        len(player_info.cards_in_hand), #cards_in_hand
-        player_info.cards_in_library #cards_in_library
-    )
 
 class MtgEnv(gym.Env[MtgObservation, MtgAction]):
 
@@ -64,6 +32,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         self.game_session: MtgSession
         self.session_thread: Thread
         self.internal_agents: list[Agent]
+        self.observation_limits: MtgObservation | None = None
 
         # Define observation space
         self.observation_space = Tuple([
@@ -89,6 +58,10 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
     
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None) -> \
         tuple[MtgObservation, MtgInfo]:
+
+        if options is not None and "observation_limits" in options:
+            assert options["observation_limits"] is MtgObservation
+            self.observation_limits = options["observation_limits"]
 
         logger.info("Reseting environment ==> Setting up new session")
         # TODO: Enable Multiplayer
@@ -137,8 +110,6 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         terminated: bool = False
         truncated: bool = False
         info: MtgInfo = {}
-
-
 
         assert self.agent.controller is not None        
         while self.agent.controller.upcoming_decision is None:
