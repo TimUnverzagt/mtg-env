@@ -4,7 +4,7 @@ import gymnasium as gym
 import time
 from threading import Thread
 from gymnasium.spaces import Discrete, Tuple, MultiDiscrete
-from typing import Optional, TypeVar, Any
+from typing import Optional, TypeVar, Any, cast
 
 import app_config as app_const
 #import game.engine as MtgEngine
@@ -17,6 +17,7 @@ from server.agents.external import ApiAgent
 from server.agents.abstractions.base import AgentBase as Agent
 from server.constants import MtgObservation, MtgInfo, MtgAction
 from server.translation import action_to_decision_intent, game_state_to_obs
+from helpers.tree_map import tree_map
 
 from logging_config import api_log as logger
 
@@ -60,8 +61,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         tuple[MtgObservation, MtgInfo]:
 
         if options is not None and "observation_limits" in options:
-            assert options["observation_limits"] is MtgObservation
-            self.observation_limits = options["observation_limits"]
+            self.observation_limits = cast(MtgObservation, options["observation_limits"])
 
         logger.info("Reseting environment ==> Setting up new session")
         # TODO: Enable Multiplayer
@@ -91,7 +91,10 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         state: GameState = self.game_session.game_state
         agent_cont: PlayerController | None = self.agent.controller
         assert agent_cont is not None
-        return game_state_to_obs(state, agent_cont.position)
+        obs: MtgObservation = game_state_to_obs(state, agent_cont.position)
+        if self.observation_limits is not None:
+            obs = cast(MtgObservation, tree_map(min, obs, self.observation_limits))
+        return obs
     
     def get_end_of_game_reward(self) -> int:
         state: GameState = self.game_session.game_state

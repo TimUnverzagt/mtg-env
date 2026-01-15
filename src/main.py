@@ -1,6 +1,6 @@
 from server.api import MtgEnv
 #from api.wrapper import MtgObservation
-from learning.q_learning import QLearner
+from dojo.q_learning import QLearner
 
 # from agents.console import ConsoleAgent
 

@@ -49,7 +49,7 @@ class QLearner:
         """
         self.env = env
 
-        self.q_values: DefaultDict[MtgObservation, MtgActionSpace] = defaultdict(lambda: np.zeros(2, int))
+        self.q_values: DefaultDict[MtgObservation, MtgActionSpace] = defaultdict(lambda: np.zeros(2, float))
 
         self.lr = learning_rate
         self.discount_factor = discount_factor  # How much we care about future rewards
@@ -68,7 +68,8 @@ class QLearner:
             main_log.info(21 * "-" + " Episode {}".format(episode) +  21 * "-")
             main_log.info(50 * "-")
             # Start a new hand
-            obs, _ = self.env.reset()
+            observation_limits: MtgObservation = (1, 1, 1, (2, 0, 2), (2, 0, 2))
+            obs, _ = self.env.reset(options={"observation_limits":observation_limits})
             main_log.info("Started Game")
             done = False
 
