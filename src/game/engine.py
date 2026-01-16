@@ -52,7 +52,11 @@ def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
 
 def handle_combat_decision(acting_seat: int, decision: str, game_state: GameState) -> None:
     if(decision==const.COMBAT_ATTACK):
-        logger.warning("{} is attacking!".format(game_state.player_infos[acting_seat].name))
+        logger.warning("Turn {}/{}: {} is attacking!".format(
+            game_state.player_turns_completed,
+            len(game_state.player_infos),
+            game_state.player_infos[acting_seat].name)
+        )
         # Just use the only other player as target
         defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_infos)
         # Just decrease health by flat amount for poc

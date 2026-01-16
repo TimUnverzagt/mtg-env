@@ -68,20 +68,29 @@ class MultiClientSession():
             
             # Prompt Player Input
             with cont.lock:
+                logger.debug("SessionTick: {}: Prompting Player with state {}".format(
+                    cont.player_info.name,
+                    self.game_state
+                    ))
                 cont.upcoming_decision = GameEngine.get_upcoming_decision(self.game_state)
+                cont.game_state_before_action = self.game_state
 
             # Await Player Input
             while cont.intended_next_decision is None:
                 delta_t = time.time() - last_timestamp
                 time.sleep(max(conf.SESSION_TICK_LENGTH - delta_t, 0))
                 last_timestamp = time.time()
-                logger.debug("SessionTick: Waiting for Player Input from {}".format(cont.player_info.name))
+                logger.debug("SessionTick: {}: Waiting for Player Input".format(cont.player_info.name))
             
-            # Process Player Input
+            # Process Player Input and report state update
             with cont.lock:
                 player_intent: str = cont.intended_next_decision
                 GameEngine.step(self.game_state.active_player_index, player_intent, self.game_state)
                 cont.set_action_result(self.game_state)
+                logger.debug("SessionTick: {}: Anwsering player with new state {}".format(
+                    cont.player_info.name,
+                    self.game_state
+                    ))
 
             if(conf.HUMAN_RENDERING):
                 assert self.vis is not None

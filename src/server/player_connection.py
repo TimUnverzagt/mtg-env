@@ -17,11 +17,13 @@ class PlayerController:
         self.terminate: bool = False
         self.lock: Lock = Lock()
         self.upcoming_decision: DecisionEvent | None = None
-        self.last_known_game_state: GameState | None = initial_game_state
+        self.game_state_before_action: GameState | None = initial_game_state
+        self.game_state_after_action: GameState | None = None
         self.intended_next_decision: str | None = None
         self.position: int = position
 
     def set_action_result(self, new_state: GameState) -> None:
         self.upcoming_decision = None
         self.intended_next_decision = None
-        self.last_known_game_state = new_state
+        self.game_state_before_action = None
+        self.game_state_after_action = new_state

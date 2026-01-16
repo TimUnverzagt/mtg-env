@@ -4,7 +4,7 @@ from numpy.typing import NDArray
 from server.api import MtgObservation, MtgAction, MtgEnv
 from typing import cast, DefaultDict, TypeAlias
 from tqdm import tqdm 
-from logging_config import main_log
+from logging_config import dojo_log as logger
 
 QValue: TypeAlias = np.float32
 MtgActionSpace: TypeAlias = NDArray[np.int8]
@@ -64,32 +64,35 @@ class QLearner:
 
     def learn(self, no_of_episodes: int):
         for episode in tqdm(range(no_of_episodes)):
-            main_log.info(50 * "-")
-            main_log.info(21 * "-" + " Episode {}".format(episode) +  21 * "-")
-            main_log.info(50 * "-")
+            logger.info(50 * "-")
+            logger.info(21 * "-" + " Episode {}".format(episode) +  21 * "-")
+            logger.info(50 * "-")
             # Start a new hand
             observation_limits: MtgObservation = (1, 1, 1, (2, 0, 2), (2, 0, 2))
-            obs, _ = self.env.reset(options={"observation_limits":observation_limits})
-            main_log.info("Started Game")
+            prev_obs, _ = self.env.reset(options={"observation_limits":observation_limits})
+            logger.info("Started Game")
             done = False
 
             # Play one complete game
             while not done:
                 # Agent chooses action (initially random, gradually more intelligent)
-                action: MtgAction = self.get_action(obs)
+                action: MtgAction = self.get_action(prev_obs)
 
                 # Take action and observe result
-                next_obs, reward, terminated, truncated, _ = self.env.step(action)
+                new_obs, reward, terminated, truncated, _ = self.env.step(action)
 
                 # Learn from this experience
-                self.update(obs, action, reward, terminated, next_obs)
+                logger.debug("Observed transition: {} --> {} through action [{}]".format(
+                    prev_obs, new_obs, action
+                ))
+                self.update(prev_obs, action, reward, terminated, new_obs)
 
                 # Move to next state
                 done = terminated or truncated
-                obs = next_obs
+                prev_obs = new_obs
 
 
-            main_log.info("Finished Game")
+            logger.info("Finished Game")
             # Reduce exploration rate (agent becomes less random over time)
             self.decay_epsilon()
         print(self.q_values)

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import game.constants as const
 class DecisionEvent:
 
@@ -8,6 +9,11 @@ class DecisionEvent:
 
     def __str__(self) -> str:
         return "{}: <{}>".format(self.name, ",".join(self.possible_actions))
+    
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, DecisionEvent):
+            return False
+        return self.name == other.name
     
 
 DECISION_EVENT_CATALOG: list[DecisionEvent] = [

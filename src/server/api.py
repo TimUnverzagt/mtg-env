@@ -85,13 +85,16 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         self.session_thread = Thread(target=self.game_session.tick_session, daemon=True)
         self.session_thread.start()
         
+        assert self.agent.controller is not None
+        self.agent.controller.game_state_after_action = self.agent.controller.game_state_before_action
         return self.get_obs(), self._get_inf()
 
     def get_obs(self) -> MtgObservation:
-        state: GameState = self.game_session.game_state
         agent_cont: PlayerController | None = self.agent.controller
         assert agent_cont is not None
-        obs: MtgObservation = game_state_to_obs(state, agent_cont.position)
+        assert agent_cont.game_state_after_action is not None
+        logger.debug("Constructing obs from following state {}".format(agent_cont.game_state_after_action))
+        obs: MtgObservation = game_state_to_obs(agent_cont.game_state_after_action, agent_cont.position)
         if self.observation_limits is not None:
             obs = cast(MtgObservation, tree_map(min, obs, self.observation_limits))
         return obs
@@ -146,15 +149,16 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
             logger.debug("Declaring decision intent from external action")
             self.agent.api_action_input = decision_intent
 
-        while not self.game_session.shutting_down and self.agent.api_action_input is not None: # type: ignore (we wait for another thread to process the input)
+        while not self.game_session.shutting_down and self.agent.controller.game_state_after_action is None: # type: ignore (we wait for another thread to process the input)
             logger.debug("Waiting for intent to be processed")
             time.sleep(app_const.API_TICK_LENGTH)
+        logger.debug("Received processing confirmation via update of game state in controller")
 
         if self.game_session.shutting_down:
             logger.info("Game is over ==> Sending terminated")
             reward = self.get_end_of_game_reward()
             terminated = True
-        
+
         return self.get_obs(), reward, terminated, truncated, info
 
 

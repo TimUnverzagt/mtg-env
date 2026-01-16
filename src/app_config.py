@@ -9,4 +9,4 @@ STARTING_LIFE: int = 5
 DECK_SIZE: int = 10
 
 
-PLAYER_LOG_LEVEL: int = logging.WARN
+PLAYER_LOG_LEVEL: int = logging.DEBUG
