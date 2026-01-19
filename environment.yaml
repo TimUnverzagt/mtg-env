@@ -10,3 +10,4 @@ dependencies:
   - keyboard
   - gymnasium
   - tqdm
+  - py-spy
