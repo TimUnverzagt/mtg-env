@@ -60,44 +60,50 @@ class MultiClientSession():
                 logger.debug("Waiting for more players...")
                 continue
 
-            # Retrieve Player Intent
+            # Retrieve Player
             cont: Optional[PlayerController] = self.get_active_player_controller()
             if cont is None: 
                 continue
             assert cont is not None
             
             # Prompt Player Input
-            with cont.lock:
+            with cont.session_condition:
                 logger.debug("SessionTick: {}: Prompting Player with state {}".format(
                     cont.player_info.name,
                     self.game_state
                     ))
                 cont.upcoming_decision = GameEngine.get_upcoming_decision(self.game_state)
                 cont.game_state_before_action = self.game_state
+                cont.session_condition.notify_all()
 
-            # Await Player Input
-            while cont.intended_next_decision is None:
-                delta_t = time.time() - last_timestamp
-                time.sleep(max(conf.SESSION_TICK_LENGTH - delta_t, 0))
-                last_timestamp = time.time()
+                # Await Player Input
                 logger.debug("SessionTick: {}: Waiting for Player Input".format(cont.player_info.name))
-            
-            # Process Player Input and report state update
-            with cont.lock:
+                cont.session_condition.wait_for(cont.get_intent_predicate(expected_to_be_set=True))
+
+                # Process Player Input and report state update
+                assert cont.intended_next_decision is not None
                 player_intent: str = cont.intended_next_decision
+                cont.intended_next_decision = None
                 GameEngine.step(self.game_state.active_player_index, player_intent, self.game_state)
                 cont.set_action_result(self.game_state)
                 logger.debug("SessionTick: {}: Anwsering player with new state {}".format(
                     cont.player_info.name,
                     self.game_state
                     ))
+                cont.session_condition.notify_all()
+
 
             if(conf.HUMAN_RENDERING):
                 assert self.vis is not None
                 self.vis.step(self.game_state)
 
         logger.info("Game concluded. Shutting down session!")
+
         self.shutting_down = True
+        for cont in self.seats:
+            assert cont is not None
+            with cont.session_condition:
+                cont.session_condition.notify_all()
         return
 
 

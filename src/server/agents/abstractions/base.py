@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from server.multi_client_session import MultiClientSession as GameSession
 from game.decision_event import DecisionEvent
 from server.player_connection import PlayerController
+from helpers.predicate_extensions import build_either_predicate
 
 import time
 from logging_config import main_log
@@ -31,26 +32,35 @@ class AgentBase(ABC):
             if (delta_t < conf.AGENT_TICK_LENGTH):
                 time.sleep(max(conf.AGENT_TICK_LENGTH - delta_t, 0))
 
-            if cont.upcoming_decision is None or cont.game_state_before_action is None:
+            with cont.session_condition:
                 cont.logger.debug("{}: Waiting for my turn to act. (Signaled by session setting upcoming_decision)".format(cont.player_info.name))
-                continue
+                cont.session_condition.wait_for(build_either_predicate(
+                    cont.get_session_ready_predicate(),
+                    lambda: self.session.shutting_down))
+                if self.session.shutting_down:
+                    continue
+                assert cont.upcoming_decision is not None
 
-            if cont.intended_next_decision is not None:
-                cont.logger.debug("{}: Waiting for the session to accept my intent".format(cont.player_info.name))
-                continue
-            
-            with cont.lock:
                 cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_decision.name))
                 cont.intended_next_decision = self.decide_on_action(cont.upcoming_decision)
+                cont.upcoming_decision = None
                 cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intended_next_decision))
+                cont.session_condition.notify_all()
 
-            if cont.game_state_after_action is None:
+                cont.logger.debug("{}: Waiting for the session to consume my intent".format(cont.player_info.name))
+                cont.session_condition.wait_for(cont.get_intent_predicate(expected_to_be_set=False))
+                
                 cont.logger.debug("{}: Waiting for response from game session.".format(cont.player_info.name))
-                continue
+                cont.session_condition.wait_for(cont.get_action_result_predicate(expected_to_be_set=True))
+                cont.logger.debug("{}: Got response from game session.".format(cont.player_info.name))
 
         cont.logger.info("Stopping because session is shutting down")
+        self.shutdown()
 
 
     @abstractmethod
     def decide_on_action(self, upcoming_action: DecisionEvent) -> str:
+        pass
+
+    def shutdown(self) -> None:
         pass

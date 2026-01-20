@@ -10,7 +10,7 @@ from dojo.q_learning import QLearner
 #from logging_config import main_log
 
 def main():
-    no_of_episodes: int = 5
+    no_of_episodes: int = 100
     start_epsilon: float = 1.0
     environment: MtgEnv = MtgEnv()
     learner: QLearner = QLearner(

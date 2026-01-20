@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import gymnasium as gym
-import time
 from threading import Thread
 from gymnasium.spaces import Discrete, Tuple, MultiDiscrete
 from typing import Optional, TypeVar, Any, cast
 
 import app_config as app_const
 #import game.engine as MtgEngine
-from game.decision_event import DecisionEvent
 from game.state import GameState
 from server.multi_client_session import MultiClientSession as MtgSession
 from server.player_connection import PlayerController
@@ -18,6 +16,7 @@ from server.agents.abstractions.base import AgentBase as Agent
 from server.constants import MtgObservation, MtgInfo, MtgAction
 from server.translation import action_to_decision_intent, game_state_to_obs
 from helpers.tree_map import tree_map
+from helpers.predicate_extensions import build_either_predicate
 
 from logging_config import api_log as logger
 
@@ -73,17 +72,18 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         # Set up extrenal agent
         self.agent = ApiAgent(self.game_session,"External", target_seat=1)
         agent_thread: Thread = Thread(target=self.agent.play_game, daemon=True)
-        agent_thread.start()
+
 
         # Set up internal agent for the opponent
         self.internal_agents = []
         opponent = Goldfish(self.game_session, "Opp-Goldfish", target_seat=0) 
         self.internal_agents.append(opponent)
         opponent_thread: Thread = Thread(target=opponent.play_game, daemon=True)
-        opponent_thread.start()
 
         self.session_thread = Thread(target=self.game_session.tick_session, daemon=True)
         self.session_thread.start()
+        agent_thread.start()
+        opponent_thread.start()
         
         assert self.agent.controller is not None
         self.agent.controller.game_state_after_action = self.agent.controller.game_state_before_action
@@ -116,24 +116,25 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         terminated: bool = False
         truncated: bool = False
         info: MtgInfo = {}
-
-        assert self.agent.controller is not None        
-        while self.agent.controller.upcoming_decision is None:
-            # Catch game ending from other players game transitions
+     
+        with self.agent.api_condition:
+            logger.debug("Waiting for upcoming decision to be set")
+            self.agent.api_condition.wait_for(build_either_predicate(   
+                lambda: self.agent.decision is not None,
+                lambda: self.game_session.shutting_down,   
+            ))       
             if self.game_session.shutting_down:
                 logger.info("Game ended between steps!")
                 reward = self.get_end_of_game_reward()
                 terminated = True
                 return self.get_obs(), reward, terminated, truncated, info
-            logger.debug("Waiting for upcoming decision to be set")
             
-            time.sleep(app_const.API_TICK_LENGTH)
+            assert self.agent.decision is not None
+            logger.debug("Current Upcoming Decision: {}".format(self.agent.decision.name))
+            decision_intent: str = action_to_decision_intent(self.agent.decision, action)
+            self.agent.decision = None
+            self.agent.api_condition.notify()
 
-        upcoming_decision: DecisionEvent | None = None
-        while upcoming_decision is None:
-            upcoming_decision = self.agent.controller.upcoming_decision
-        logger.debug("Current Upcoming Decision: {}".format(upcoming_decision.name))
-        decision_intent: str = action_to_decision_intent(upcoming_decision, action)
             
         reward: int = 0
         terminated: bool = False
@@ -145,25 +146,32 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         #    reward = -1
         #    return self.get_obs(), reward, terminated, truncated, info
 
-        with self.agent.api_lock:
+        assert self.agent.controller is not None  
+        # TODO: Uncouple Api from controller. Doesn't need to know about the agent-session communication  
+        with self.agent.api_condition:
+            logger.debug("Ensuring no intent is currently set")
+            self.agent.api_condition.wait_for(self.agent.get_intent_declared_predicate(expected_to_be_set=False))
             logger.debug("Declaring decision intent from external action")
             self.agent.api_action_input = decision_intent
-
-        while not self.game_session.shutting_down and self.agent.controller.game_state_after_action is None: # type: ignore (we wait for another thread to process the input)
             logger.debug("Waiting for intent to be processed")
-            time.sleep(app_const.API_TICK_LENGTH)
-        logger.debug("Received processing confirmation via update of game state in controller")
+            self.agent.api_condition.wait_for(build_either_predicate(
+                lambda: self.game_session.shutting_down,
+                self.agent.controller.get_action_result_predicate(expected_to_be_set=True)
+            ))
+            logger.debug("Received processing confirmation via update of game state in controller")
+            obs: MtgObservation = self.get_obs()
+            self.agent.controller.game_state_after_action = None
+            logger.debug("Consumed new game state information")
+
 
         if self.game_session.shutting_down:
             logger.info("Game is over ==> Sending terminated")
             reward = self.get_end_of_game_reward()
             terminated = True
 
-        return self.get_obs(), reward, terminated, truncated, info
-
+        return obs, reward, terminated, truncated, info
 
     def _get_inf(self) -> dict[str, Any]:
         # TODO: Implement
         return {}
     
-

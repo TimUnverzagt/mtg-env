@@ -18,3 +18,6 @@ class ConsoleAgent(AgentBase):
             if intent in action_event.possible_actions:
                 return intent
             print("Invalid input! Try again.")
+    
+    def shutdown(self) -> None:
+        return
