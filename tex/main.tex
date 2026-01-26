@@ -1,0 +1,99 @@
+%% This is file `DEMO-TUDaReport.tex' version 4.05 (2025-11-13),
+%% it is part of
+%% TUDa-CI -- Corporate Design for TU Darmstadt
+%% ----------------------------------------------------------------------------
+%%
+%% Copyright (C) 2018--2025 by Marei Peischl <marei@peitex.de>
+%%
+%% ============================================================================
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3c
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%% http://www.latex-project.org/lppl.txt
+%% and version 1.3c or later is part of all distributions of LaTeX
+%% version 2008/05/04 or later.
+%%
+%% This work has the LPPL maintenance status `maintained'.
+%%
+%% The current maintainer of this work is
+%%   Marei Peischl <tuda-ci@peitex.de>
+%%
+%% The development repository can be found at
+%% https://github.com/tudace/tuda_latex_templates
+%% Please use the issue tracker for feedback!
+%%
+%% If you need a compiled version of this document, have a look at
+%% http://mirror.ctan.org/macros/latex/contrib/tuda-ci/doc
+%% or at the documentation directory of this package (if installed)
+%% <path to your LaTeX distribution>/doc/latex/tuda-ci
+%% ============================================================================
+%%
+% !TeX program = lualatex
+%%
+
+\documentclass[
+	english,% Main language as global option
+	accentcolor=9c,% Choose accent color: For a list of available colors see the full tudapub documentation
+	type=intern, % Minimal setup without accent color
+	marginpar=false,% Disable marginpar
+%	accept-missing-logos=true,% No error in case logo files are not available
+%	logofile=example-image,% In case logo should be replaced
+]{tudapub}
+
+
+%%%%%%%%%%%%%%%%%%%
+% Language setup
+%%%%%%%%%%%%%%%%%%%
+\usepackage[english]{babel}
+\usepackage[autostyle]{csquotes}% \enquote, to simplify use of quotation marks
+
+\title{Thesis Proposal -- Reinforcement Learning Environment for Collectible Card Game Battling}
+\author{Tim Unverzagt}
+%\date{}% If not specified, today's date is automatically inserted
+
+
+\begin{document}
+
+\maketitle
+
+%\tableofcontents
+% Additional lists like \listoffigures or acronyms might be added here
+
+
+\section{Introduction}
+Games have long served AI research as a treasure trove of simulations providing varied challenges with relatively well-established rules, tractable scopes of required skills and abundance of human expertise.
+After deep-learning Monte-Carlo-Tree-Search approaches achieved unambigous super-human play in go (and similar symmetric perfect information games with static action and state spaces), reasearch into structurally complexer games has intensified.
+In the last decade collectible card games (CCG) have been the focus of various works due to several such structural complexities:
+\begin{enumerate}
+    \item partial information
+    \item dynamic action space
+    \item enormous state space
+    \item complex rules defined in natural language
+    \item non deterministic game setup (decks)
+    \item potentially non deterministic state transitions
+    \item structurally different but connected game sections:
+        \begin{enumerate}
+            \item Drafting
+            \item Deckbuilding
+            \item Battling
+        \end{enumerate}
+\end{enumerate}
+While several teams have shown that, in simple CCGs, self learned agents can outperform expert-crafted classical approaches during Drafting few works exist on deep-learning for Battling.
+From personal experience in several CCGs we believe that, in any sufficiently complex CCG, Battling, Drafting and Deck-Building are linked strongly enough that comprehensive reasearch on either has to ultimatevly involve the other.
+Research on Battling thus not only provides a new set of challenges but also enables more informed analysis of previous work on Drafting and consequently is essential for the development of a universal CCG-playing agent.
+
+Current implementations of CCG engines are usually high-fidelity, resource intense implementations intended for human use (or sometimes classical AI) without a proper API for AI training.
+A notable exception exists in LOCM (see. ref) for which an openaigym API, capable of running multiple games a second, is implemented. 
+While fundamental to research on CCG Ai in the last decade LOCM eshews multiple sources of structural complexity to improve accesibility for various self learning approaches and execution speed.
+It consequently also deviate from environments where human expertise is most abundant, namely preexisting CCGs.
+We believe that structural complexity and human expertise are essential to improve CCG agents in the long term, thus we propose to implement an CCG environment which offers an efficiently computable, simplified (but congruent) version of a preexisting CCG.
+The focus of the proposed implementation shall be on computationally inexpensive sources of structural complexity as well as expandability to enable a gradual approach to the reference CCG.
+Due to its high-complexity even among CCGs, and its wide spread among players and researchers alike, we choose Magic: The Gathering as our reference CCG.
+
+\section{State of Research}
+
+\section{Method}
+
+\end{document}
+%% End of file `DEMO-TUDaReport.tex'.
