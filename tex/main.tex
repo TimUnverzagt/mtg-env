@@ -50,6 +50,8 @@
 
 \usepackage[backend=biber,sorting=none]{biblatex}
 \addbibresource{bibtex/sources.bib}
+\usepackage{enumitem}
+\setlist[enumerate]{topsep=3pt,itemsep=1pt,partopsep=0pt, parsep=0pt}
 
 \title{Thesis Proposal -- Reinforcement Learning Environment for Collectible Card Game Battling}
 \author{Tim Unverzagt}
@@ -66,9 +68,9 @@
 
 \section{Introduction}
 Games have long served AI research as a treasure trove of simulations providing varied challenges with relatively well-established rules, tractable scopes of required skills and abundance of human expertise.
-After deep-learning Monte-Carlo-Tree-Search approaches achieved unambigous super-human play in go (and similar symmetric perfect information games; shogi and chess), research into structurally complexer games has intensified.\cite{hu2024games} 
+After deep learning Monte-Carlo-Tree-Search (MTCS) approaches achieved unambigous superhuman play in go (and similar symmetric perfect information games; shogi and chess), research into structurally complexer games has intensified\cite{hu2024games}.
 Over the last few years collectible card games (CCG) have been the focus of various works due to several such structural complexities:
-\begin{enumerate}
+\begin{enumerate}[topsep=3pt,itemsep=1pt,partopsep=0pt, parsep=0pt]
     \item enormous state space \cite{2020EvoDeckBuilding}
     \item complex rules defined in natural language \cite{2020DeepCardEvaluation}
     \item non trivial state transitions \cite{2016CombatComplexity}
@@ -78,47 +80,58 @@ Over the last few years collectible card games (CCG) have been the focus of vari
             \item Battling
         \end{enumerate}
 \end{enumerate}
-While several teams have shown that, in simple CCGs, self learned agents can outperform expert-crafted classical approaches during Drafting, few works exist on deep-learning for Battling.
-From personal experience in several CCGs we believe that, in any sufficiently complex CCG, Battling, Drafting and Deck-Building are linked strongly enough that comprehensive reasearch on either has to ultimatevly involve the other.
-Research on Battling thus not only provides a new set of challenges but also enables more informed analysis of previous work on Drafting and consequently is essential for the development of a universal CCG-playing agent.
+For several CCGs researchers have shown that reinforcement learning (RL) agents can outperform expert-crafted classical approaches during Deckbuilding,
+but these results are based on the usage of simple baselines for Battling.
+Research into Battling is much less developed and frequently relies on classical agents which are either extremly simple or heavily reliant on expert knowledge.
+Recently, a team has published a work on joint Deckbuilding and Battling, but to the best of our knowledge that paper\cite{2023ByteRL} is the exemption not the rule; presenting a push into new territory rather than a comprehensive solution.
+From personal experience in several CCGs we believe that, in any sufficiently complex CCG, Battling and Deckbuilding are linked strongly enough that advanced reasearch on either has to ultimatevly involve the other.
+Battling thus not only provides a set of unsolved learning challenges but also enables more informed analysis of previous work on Deckbuilding and consequently is essential for the development of a universal CCG-playing agent.
 \\ \\
-Current implementations of CCG engines are usually high-fidelity, resource intense implementations intended for human use (or sometimes classical AI) without a proper API for AI training.
-A notable exception exists in LOCM \cite{2020OpenAiLocm} for which an openaigym API, capable of running multiple games a second, is implemented. 
-While fundamental to research on CCG AI in the last decade LOCM eshews multiple sources of structural complexity to improve accesibility for various self learning approaches and execution speed.
-It consequently also deviate from environments where human expertise is most abundant, namely preexisting CCGs.
+Contemporary CCG engines are usually high-fidelity, resource-intense implementations intended for human use (or sometimes classical AI) without an explicit API for training of RL agents.
+A notable exception exists in "Legends of Code and Magic" (LoCM)\cite{2020OpenAiLocm} for which an OpenAiGym API, capable of running multiple games a second, is implemented. 
+Consequently the majority of contemporary CCG AI reasearch has been conducted in that environment.
+LoCM, however, aims low in structural complexty, when compared to other CCGs, in favor of an easier learning curve and higher execution speed.
+It also deviate from environments where human expertise is most abundant, namely preexisting CCGs, making it more difficult to find human experts for qualitative analysis of trained agents.
 \\ \\
-We believe that structural complexity and human expertise are essential to improve CCG agents in the long term, thus we propose to implement an CCG environment which offers an efficiently computable, simplified (but congruent) version of a preexisting CCG.
+We believe that other CCGs beyond LoCM provide meaningfully different challenges to self-learning agents, due to their higher structural complexity\cite{2024Taxonomy}.
+Furthermore we hold that the availability of human expertise is crucial for research of explainability in CCG playing; An research question of general interest in RL and of particular value in commercial applications of a CCG agent.
+We thus propose to implement an CCG environment which offers an efficiently computable, simplified (but congruent) version of a preexisting CCG with a more challening ruleset.
 The focus of the proposed implementation shall be on computationally inexpensive sources of structural complexity as well as expandability to enable a gradual approach to the reference CCG.
-Due to its high-complexity even among CCGs\cite{2024Taxonomy}, its wide spread among players and its lacking representation in Reinforcement learning, we choose Magic: The Gathering as our reference CCG.
+Due to its combat, resource system and redraw mechanic, its wide spread among players and its lacking representation in RL research, we choose Magic: The Gathering (MTG) as our reference CCG.
+
+
 \section{State of Research}
-CCG research encompasses static analysis (game complexity or card balance) as well as agents for playing.
+CCG research encompasses static analysis (game complexity or card balance) as well as classical and self-learning agents for Deckbuilding and Battling.
 Deep learning approaches of the last few years have primarily focused on Deckbuilding, relying on relatively simple baselines for Battling.
-In general such agents are trained for LOCM and do not compete with human but rather with each other.
-A notable exception is the work of {\'S}wiechowski et al.\cite{2018DeepSupervisedMcts} who report human level battling for Hearthstone.
-Wei Xi et al. also stand out as they consider the joint problem of Deckbuilding and Battling, which is unsual at the time of writing.
-Overall we identify the following currently unadressed problems in CCG agent research:
+In general such agents are trained for LoCM and do compete against each other instead of humans,
+but there exists a classical Monte Carlo Tree Search agent\cite{2012ClassicalMcts} which has performed against well human experts in a simplified MTG environment. 
+Another similar exception is the work of {\'S}wiechowski et al.\cite{2018DeepSupervisedMcts} who report human level Battling for Hearthstone, achieved by their RL agent.
+Finally, Wei Xi et al.\cite{2023ByteRL} stand out as they consider the joint problem of Deckbuilding and Battling, which is unsual at the time of writing.
+Overall we identify the following currently under-adressed issues in CCG agent research:
 \begin{enumerate}
     \item Low Interpretability 
     \begin{enumerate}
         \item Most teams track only winrates
-        \item Low/No human play makes it hard to determine if agents are learning degenerate/exploitable play patterns\cite{2024ExploitingByteRL}
-        \item No focus on extracting (human-readable) knowledge from trained agents
+        \item No focus on explainability of trained agents
+        \item Missing agent-human interaction makes it difficult to notice degenerate/exploitable play patterns\cite{2024ExploitingByteRL}
     \end{enumerate}
     \item LoCM centricity
     \begin{enumerate}
-        \item LoCM falls on the low end of CCG complexity
+        \item LoCM falls on the low end of CCG complexity\cite{2024Taxonomy}
         \item Engines for more complex CCGs are computationally expensive and do not provide standard APIs
     \end{enumerate}
 \end{enumerate}
 
-\section{Proposed Method}
-To adress the aformentioned shortcoming we propose to implement a M:TG-inspired CCG environment with the following properties:
+
+
+\section{Proposed Contributions}
+To adress the aformentioned shortcomings we propose to implement a MTG-inspired CCG environment with the following properties:
 \begin{enumerate}
     \item Provides new and complex challenges compared to the LoCM \cite{2024Taxonomy}
     \begin{enumerate}
         \item Complex Combat: Declared Combat 
         \item Complex Resource System: Resource Cards 
-        \item Redraw: M:TG-style Mulligan
+        \item Redraw: MTG-style Mulligan
     \end{enumerate}
     \item Is of similar computational complexity as LoCM: tens of games per second on a personal pc
     \item Provides a standard RL API: Implements the OpenAiGym API
