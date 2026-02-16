@@ -1,6 +1,6 @@
 from __future__ import annotations
 import app_config as conf
-from game.card import Card
+from game.card import CardInstance
 
 from dataclasses import dataclass
 from typing import Optional
@@ -18,7 +18,7 @@ class Player:
         self.info: PlayerInfo = PlayerInfo(
             name = name,
             current_life = conf.STARTING_LIFE,
-            cards_in_hand = [Card(1), Card(2), Card(1)],
+            cards_in_hand = [CardInstance(1), CardInstance(2), CardInstance(1)],
             cards_in_library = conf.DECK_SIZE,
             death_description = None
         )
@@ -32,7 +32,7 @@ class Player:
 class PlayerInfo:
     name: str
     current_life: int 
-    cards_in_hand: list[Card]
+    cards_in_hand: list[CardInstance]
     cards_in_library: int
     death_description: Optional[str]
 
@@ -41,6 +41,6 @@ class PlayerInfo:
             "Name: {}".format(self.name),
             "Current Life: {}".format(self.current_life),
             "Cards in Hand:",
-            " | ".join(map(Card.__str__, self.cards_in_hand)),
+            " | ".join(map(CardInstance.__str__, self.cards_in_hand)),
             "Cards in Library: {}".format(self.cards_in_library)
         ])

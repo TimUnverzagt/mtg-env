@@ -152,6 +152,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
             logger.debug("Ensuring no intent is currently set")
             self.agent.api_condition.wait_for(self.agent.get_intent_declared_predicate(expected_to_be_set=False))
             logger.debug("Declaring decision intent from external action")
+            # TODO: Translate external action to well typed decision intent
             self.agent.api_action_input = decision_intent
             logger.debug("Waiting for intent to be processed")
             self.agent.api_condition.wait_for(build_either_predicate(

@@ -2,9 +2,10 @@ from __future__ import annotations
 import game.constants as const
 from game.player import Player, PlayerInfo, is_player_alive
 from game.decision_event import DecisionEvent, DECISION_EVENT_CATALOG
-from game.card import Card
+from game.card import CardInstance
 from game.state import GameState
-from typing import Callable, Generic, ParamSpec, TypeVar, Any, Concatenate
+from typing import Callable, Generic, Optional, ParamSpec, TypeVar, Any, Concatenate, cast
+from uuid import UUID
 
 from logging_config import engine_log as logger
 
@@ -25,7 +26,7 @@ def get_initial_game_state() -> GameState:
 #def is_legal_action(decision_intent: str, game_state: GameState) -> bool:
 #    return True
 
-def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
+def step(acting_seat: int, decision_intent: str, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
     # Don't respond if the game is over
     if(game_state.game_over):
         return
@@ -38,8 +39,10 @@ def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
     logger.info("Handling intent '{}' for decision event '{}' from {}".format(
         decision_intent, applicable_decision.name, acting_player_info.name
         ))
-    if ((applicable_decision.name == const.COMBAT)):
+    if (applicable_decision.name == const.COMBAT):
         handle_combat_decision(acting_seat, decision_intent, game_state)
+    if (applicable_decision.name == const.MAINPHASE):
+        handle_main_phase_decision(acting_seat, decision_intent, game_state, decision_details)
     # Stop immediatly if game is over now
     if(game_state.game_over):
         return
@@ -49,18 +52,38 @@ def step(acting_seat: int, decision_intent: str, game_state: GameState) -> None:
         pass_turn(game_state)
     return 
 
+def handle_main_phase_decision(acting_seat: int, decision: str, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
+    if(decision==const.MAINPHASE_PASS):
+        return
+    if(decision_details is None):
+        # TODO: Raise and handle error
+        logger.warning(const.CARDS_TO_PLAY+ ": Details are missing. NoOp instead!")
+        return
+    cards_to_play = decision_details[const.CARDS_TO_PLAY]
+    assert isinstance(cards_to_play, list)
+    if (not all(isinstance(card_id, UUID) for card_id in cards_to_play)): # type: ignore
+        # TODO: Raise and handle error
+        logger.warning(const.CARDS_TO_PLAY+ ": Non UUID object in details. NoOp instead!")
+        return
+    for card_id in cards_to_play: # type: ignore
+        cast(UUID, card_id)
+        logger.info("Trying to play CardInstance with UUID: " + str(card_id)); # type: ignore
+    
+    return
 
 def handle_combat_decision(acting_seat: int, decision: str, game_state: GameState) -> None:
-    if(decision==const.COMBAT_ATTACK):
-        logger.warning("Turn {}/{}: {} is attacking!".format(
-            game_state.player_turns_completed,
-            len(game_state.player_infos),
-            game_state.player_infos[acting_seat].name)
-        )
-        # Just use the only other player as target
-        defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_infos)
-        # Just decrease health by flat amount for poc
-        execute_action(acting_seat, game_state, deal_damage, defending_position, 1)
+    if(decision==const.COMBAT_PASS):
+        return
+    
+    logger.warning("Turn {}/{}: {} is attacking!".format(
+        game_state.player_turns_completed,
+        len(game_state.player_infos),
+        game_state.player_infos[acting_seat].name)
+    )
+    # Just use the only other player as target
+    defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_infos)
+    # Just decrease health by flat amount for poc
+    execute_action(acting_seat, game_state, deal_damage, defending_position, 1)
     return
 
 def check_state_based_actions(game_state: GameState) -> None:
@@ -117,7 +140,7 @@ def get_player_position(info: PlayerInfo, game_state:GameState) -> int:
 ##################################
 
 def draw_card(acting_seat: int, game_state: GameState) -> None:
-    game_state.player_infos[acting_seat].cards_in_hand.append(Card(3))
+    game_state.player_infos[acting_seat].cards_in_hand.append(CardInstance(3))
     # Decking is handled prior
     game_state.player_infos[acting_seat].cards_in_library -= 1
     return

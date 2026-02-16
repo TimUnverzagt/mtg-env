@@ -3,7 +3,7 @@ from operator import attrgetter
 
 from game.state import GameState
 from game.player import PlayerInfo
-from game.card import Card
+from game.card import CardInstance
 from game.decision_event import DECISION_EVENT_CATALOG
 import game.constants as GameConsts
 
@@ -19,8 +19,8 @@ class TestApi(unittest.TestCase):
         #Setup
         api_under_test: MtgEnv = MtgEnv()
 
-        agent_info: PlayerInfo = PlayerInfo("External", 3, [Card(1)], 5, None)
-        opp_info: PlayerInfo = PlayerInfo("Opp-Goldfish", 3, [Card(1), Card(1)], 10, None)
+        agent_info: PlayerInfo = PlayerInfo("External", 3, [CardInstance(1)], 5, None)
+        opp_info: PlayerInfo = PlayerInfo("Opp-Goldfish", 3, [CardInstance(1), CardInstance(1)], 10, None)
         game_state: GameState = GameState(
             player_turns_completed=0,
             steps_in_turn_completed=1,
@@ -53,8 +53,8 @@ class TestApi(unittest.TestCase):
         #Setup
         api_under_test: MtgEnv = MtgEnv()
 
-        agent_info: PlayerInfo = PlayerInfo("External", 3, [Card(1)], 5, None)
-        opp_info: PlayerInfo = PlayerInfo("Opp-Goldfish", 3, [Card(1), Card(1)], 10, None)
+        agent_info: PlayerInfo = PlayerInfo("External", 3, [CardInstance(1)], 5, None)
+        opp_info: PlayerInfo = PlayerInfo("Opp-Goldfish", 3, [CardInstance(1), CardInstance(1)], 10, None)
         game_state: GameState = GameState(
             player_turns_completed=0,
             steps_in_turn_completed=1,

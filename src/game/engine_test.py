@@ -2,7 +2,7 @@ import unittest
 
 from game.state import GameState
 from game.player import PlayerInfo
-from game.card import Card
+from game.card import CardInstance
 from game.decision_event import DECISION_EVENT_CATALOG
 import game.constants as GameConsts
 import game.engine as Engine
@@ -12,8 +12,8 @@ class TestGameEngine(unittest.TestCase):
 
     def test_attack_decision(self):
         #Setup 
-        alice_info: PlayerInfo = PlayerInfo("Alice", 5, [Card(1)], 10, None)
-        bob_info: PlayerInfo = PlayerInfo("Bob", 5, [Card(1)], 10, None)
+        alice_info: PlayerInfo = PlayerInfo("Alice", 5, [CardInstance(1)], 10, None)
+        bob_info: PlayerInfo = PlayerInfo("Bob", 5, [CardInstance(1)], 10, None)
         game_state: GameState = GameState(
             player_turns_completed=0,
             steps_in_turn_completed=1,
