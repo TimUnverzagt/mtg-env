@@ -1,7 +1,7 @@
 from __future__ import annotations
-from game.capabilities import IActiveGameElement
+from gameengine.capabilities import IActiveGameElement
 from uuid import UUID, uuid4
-from game import constants as const
+from gameengine import constants as const
 
 SEPERATOR: str = " -- "
 

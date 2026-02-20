@@ -6,9 +6,9 @@ from typing import Callable
 from logging_config import main_log
 
 import rendering.constants as const
-from game.decision_event import DECISION_EVENT_CATALOG
-from game.player import PlayerInfo
-from game.state import GameState
+from gameengine.priority.base import DECISION_EVENT_CATALOG
+from gameengine.player import PlayerInfo
+from gameengine.state import GameState
                 
 get_surface_width: Callable[[Surface], int] = lambda surf: surf.get_width()
 get_surface_height: Callable[[Surface], int] = lambda surf: surf.get_height()

@@ -1,4 +1,4 @@
-from server.api import MtgEnv
+from server.api.gym_environment import MtgEnv
 #from api.wrapper import MtgObservation
 from dojo.q_learning import QLearner
 

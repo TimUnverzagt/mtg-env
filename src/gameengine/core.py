@@ -1,9 +1,9 @@
 from __future__ import annotations
-import game.constants as const
-from game.player import Player, PlayerInfo, is_player_alive
-from game.decision_event import DecisionEvent, DECISION_EVENT_CATALOG
-from game.card import CardInstance
-from game.state import GameState
+import gameengine.constants as const
+from gameengine.player import Player, PlayerInfo, is_player_alive
+from gameengine.priority.base import PriorityEvent, DECISION_EVENT_CATALOG
+from gameengine.card import CardInstance
+from gameengine.state import GameState
 from typing import Callable, Generic, Optional, ParamSpec, TypeVar, Any, Concatenate, cast
 from uuid import UUID
 
@@ -32,7 +32,7 @@ def step(acting_seat: int, decision_intent: str, game_state: GameState, decision
         return
         
     acting_player_info: PlayerInfo = game_state.player_infos[acting_seat]
-    applicable_decision: DecisionEvent = get_upcoming_decision(game_state)
+    applicable_decision: PriorityEvent = get_upcoming_decision(game_state)
 
     # Handle decision of step
     # TODO: How to handle exceptions/enforcement for nonsensical decision inputs
@@ -118,7 +118,7 @@ def handle_player_death(victim_seat: int, game_state: GameState, cause: str):
     logger.warning("{} died by {}.".format(game_state.player_infos[victim_seat].name, cause))
     return
     
-def get_upcoming_decision(game_state: GameState) -> DecisionEvent:
+def get_upcoming_decision(game_state: GameState) -> PriorityEvent:
     return DECISION_EVENT_CATALOG[game_state.steps_in_turn_completed]
 
 def pass_turn(game_state: GameState) -> None:

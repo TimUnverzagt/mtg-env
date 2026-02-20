@@ -1,11 +1,11 @@
 import unittest
 
-from game.state import GameState
-from game.player import PlayerInfo
-from game.card import CardInstance
-from game.decision_event import DECISION_EVENT_CATALOG
-import game.constants as GameConsts
-import game.engine as Engine
+from gameengine.state import GameState
+from gameengine.player import PlayerInfo
+from gameengine.card import CardInstance
+from gameengine.priority.base import DECISION_EVENT_CATALOG
+import gameengine.constants as GameConsts
+import gameengine.core as Engine
 
 
 class TestGameEngine(unittest.TestCase):

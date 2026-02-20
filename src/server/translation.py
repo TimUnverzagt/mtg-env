@@ -1,7 +1,7 @@
-from game.decision_event import DECISION_EVENT_CATALOG, DecisionEvent
-from game.player import PlayerInfo
-from server.constants import MtgObservation, MtgAction, MtgPlayerObs
-from game.state import GameState
+from gameengine.priority.base import DECISION_EVENT_CATALOG, PriorityEvent
+from gameengine.player import PlayerInfo
+from server.api.gym_types import MtgObservation, MtgAction, MtgPlayerObs
+from gameengine.state import GameState
 
 from logging_config import api_log as logger
 
@@ -18,9 +18,9 @@ def game_state_to_obs(state: GameState, agent_position: int) -> MtgObservation:
     )
     return result
 
-def action_to_decision_intent(upcoming_decision: DecisionEvent, action: MtgAction) -> str:
-    logger.debug("Translating for decision [{}]".format(upcoming_decision))
-    intent: str = upcoming_decision.possible_actions[action[0]]
+def gym_action_to_priority_decision(upcoming_event: PriorityEvent, action: MtgAction) -> str:
+    logger.debug("Translating for decision [{}]".format(upcoming_event))
+    intent: str = upcoming_event.possible_actions[action[0]]
     logger.debug("Translated external action {} into internal intent [{}]".format(action[0], intent))
     return intent
 

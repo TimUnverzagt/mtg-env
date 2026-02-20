@@ -1,20 +1,20 @@
-from server.multi_client_session import MultiClientSession as GameSession
-from game.decision_event import DecisionEvent
+from server.session.multi_client_session import MultiClientSession as GameSession
+from gameengine.priority.base import PriorityEvent
 from server.agents.abstractions.base import AgentBase
 from threading import Condition
 from typing import Callable
 from helpers.predicate_extensions import build_either_predicate
 
-from server.player_connection import PlayerController
+from server.session.player_connection import PlayerController
 
 class ApiAgent(AgentBase):
     def __init__(self, session: GameSession, name: str, target_seat: int | None =  None) -> None:
         super().__init__(session, name, target_seat)
-        self.decision: DecisionEvent | None = None
+        self.decision: PriorityEvent | None = None
         self.api_action_input: str | None = None 
         self.api_condition: Condition = Condition()
 
-    def decide_on_action(self, upcoming_action: DecisionEvent) -> str:
+    def decide_on_action(self, upcoming_action: PriorityEvent) -> str:
         cont: PlayerController | None = self.controller
         assert cont is not None
         with self.api_condition:

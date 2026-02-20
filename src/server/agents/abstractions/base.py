@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from server.multi_client_session import MultiClientSession as GameSession
-from game.decision_event import DecisionEvent
-from server.player_connection import PlayerController
+from server.session.multi_client_session import MultiClientSession as GameSession
+from gameengine.priority.base import PriorityEvent
+from server.session.player_connection import PlayerController
 from helpers.predicate_extensions import build_either_predicate
 
 import time
@@ -59,7 +59,7 @@ class AgentBase(ABC):
 
 
     @abstractmethod
-    def decide_on_action(self, upcoming_action: DecisionEvent) -> str:
+    def decide_on_action(self, upcoming_action: PriorityEvent) -> str:
         pass
 
     def shutdown(self) -> None:

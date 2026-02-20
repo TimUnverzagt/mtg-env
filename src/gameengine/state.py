@@ -1,5 +1,5 @@
-from game.player import PlayerInfo
-from game.decision_event import DecisionEvent
+from gameengine.player import PlayerInfo
+from gameengine.priority.base import PriorityEvent
 from dataclasses import dataclass
 
 @dataclass
@@ -8,7 +8,7 @@ class GameState:
     steps_in_turn_completed: int
     active_player_index: int
     game_over: bool
-    upcoming_decision: DecisionEvent
+    upcoming_decision: PriorityEvent
     player_infos: list[PlayerInfo]
     winner_positions: list[int]
 

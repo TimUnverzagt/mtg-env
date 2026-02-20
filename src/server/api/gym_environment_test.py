@@ -1,13 +1,13 @@
 import unittest
 from operator import attrgetter
 
-from game.state import GameState
-from game.player import PlayerInfo
-from game.card import CardInstance
-from game.decision_event import DECISION_EVENT_CATALOG
-import game.constants as GameConsts
+from gameengine.state import GameState
+from gameengine.player import PlayerInfo
+from gameengine.card import CardInstance
+from gameengine.priority.base import DECISION_EVENT_CATALOG
+import gameengine.constants as GameConsts
 
-from server.api import MtgEnv, MtgObservation
+from server.api.gym_environment import MtgEnv, MtgObservation
 
 combat_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(GameConsts.COMBAT)
 mainphase_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(GameConsts.MAINPHASE)

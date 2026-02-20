@@ -1,7 +1,7 @@
 from collections import defaultdict
 import numpy as np
 from numpy.typing import NDArray
-from server.api import MtgObservation, MtgAction, MtgEnv
+from server.api.gym_environment import MtgObservation, MtgAction, MtgEnv
 from typing import cast, DefaultDict, TypeAlias
 from tqdm import tqdm 
 from logging_config import dojo_log as logger

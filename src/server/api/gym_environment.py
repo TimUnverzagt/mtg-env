@@ -7,14 +7,14 @@ from typing import Optional, TypeVar, Any, cast
 
 import app_config as app_const
 #import game.engine as MtgEngine
-from game.state import GameState
-from server.multi_client_session import MultiClientSession as MtgSession
-from server.player_connection import PlayerController
+from gameengine.state import GameState
+from server.session.multi_client_session import MultiClientSession as MtgSession
+from server.session.player_connection import PlayerController
 from server.agents.simple import Goldfish #, Monkey
 from server.agents.external import ApiAgent
 from server.agents.abstractions.base import AgentBase as Agent
-from server.constants import MtgObservation, MtgInfo, MtgAction
-from server.translation import action_to_decision_intent, game_state_to_obs
+from server.api.gym_types import MtgObservation, MtgInfo, MtgAction
+from server.translation import gym_action_to_priority_decision, game_state_to_obs
 from helpers.tree_map import tree_map
 from helpers.predicate_extensions import build_either_predicate
 
@@ -131,7 +131,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
             
             assert self.agent.decision is not None
             logger.debug("Current Upcoming Decision: {}".format(self.agent.decision.name))
-            decision_intent: str = action_to_decision_intent(self.agent.decision, action)
+            decision_intent: str = gym_action_to_priority_decision(self.agent.decision, action)
             self.agent.decision = None
             self.agent.api_condition.notify()
 

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from game.player import PlayerInfo
-from game.decision_event import DecisionEvent
-from game.state import GameState
+from gameengine.player import PlayerInfo
+from gameengine.priority.base import PriorityEvent
+from gameengine.state import GameState
 from threading import Condition
 from logging import Logger
 from logging_config import create_logger
@@ -18,7 +18,7 @@ class PlayerController:
         self.logger: Logger = create_logger(name, app_config.PLAYER_LOG_LEVEL)
         self.terminate: bool = False
         self.session_condition: Condition = Condition()
-        self.upcoming_decision: DecisionEvent | None = None
+        self.upcoming_decision: PriorityEvent | None = None
         self.game_state_before_action: GameState | None = initial_game_state
         self.game_state_after_action: GameState | None = None
         self.intended_next_decision: str | None = None

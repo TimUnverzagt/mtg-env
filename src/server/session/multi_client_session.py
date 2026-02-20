@@ -1,7 +1,7 @@
-from server.player_connection import PlayerController
-import game.engine as GameEngine
+from server.session.player_connection import PlayerController
+import gameengine.core as GameEngine
 #from game.state import GameState
-from game.player import PlayerInfo
+from gameengine.player import PlayerInfo
 from rendering.simple import SimpleVisualization
 
 import time
