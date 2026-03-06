@@ -1,5 +1,6 @@
 from gameengine.player import PlayerInfo
 from gameengine.priority.base import PriorityEvent
+from gameengine.enums import ManaColor
 from dataclasses import dataclass
 
 @dataclass
@@ -11,6 +12,7 @@ class GameState:
     upcoming_decision: PriorityEvent
     player_infos: list[PlayerInfo]
     winner_positions: list[int]
+    floating_mana: dict[ManaColor, int]
 
     def __str__(self) -> str:
         return "\n".join([

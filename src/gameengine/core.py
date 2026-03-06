@@ -1,8 +1,10 @@
 from __future__ import annotations
+from collections import defaultdict
+from gameengine.enums import Phase, Action
 import gameengine.constants as const
 from gameengine.player import Player, PlayerInfo, is_player_alive
 from gameengine.priority.base import PriorityEvent, DECISION_EVENT_CATALOG
-from gameengine.card import CardInstance
+from gameengine.gameobjects import CardInstance
 from gameengine.state import GameState
 from typing import Callable, Generic, Optional, ParamSpec, TypeVar, Any, Concatenate, cast
 from uuid import UUID
@@ -19,14 +21,15 @@ def get_initial_game_state() -> GameState:
         game_over = False,
         upcoming_decision=DECISION_EVENT_CATALOG[0],
         player_infos = [player1.info, player2.info],
-        winner_positions=[]
+        winner_positions=[],
+        floating_mana=defaultdict(lambda: 0)
     )
     return game_state
 
 #def is_legal_action(decision_intent: str, game_state: GameState) -> bool:
 #    return True
 
-def step(acting_seat: int, decision_intent: str, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
+def step(acting_seat: int, decision_intent: Action, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
     # Don't respond if the game is over
     if(game_state.game_over):
         return
@@ -37,11 +40,11 @@ def step(acting_seat: int, decision_intent: str, game_state: GameState, decision
     # Handle decision of step
     # TODO: How to handle exceptions/enforcement for nonsensical decision inputs
     logger.info("Handling intent '{}' for decision event '{}' from {}".format(
-        decision_intent, applicable_decision.name, acting_player_info.name
+        decision_intent, applicable_decision.applicable_phase, acting_player_info.name
         ))
-    if (applicable_decision.name == const.COMBAT):
+    if (applicable_decision.applicable_phase == Phase.COMBAT):
         handle_combat_decision(acting_seat, decision_intent, game_state)
-    if (applicable_decision.name == const.MAINPHASE):
+    if (applicable_decision.applicable_phase == Phase.MAINPHASE):
         handle_main_phase_decision(acting_seat, decision_intent, game_state, decision_details)
     # Stop immediatly if game is over now
     if(game_state.game_over):
@@ -52,8 +55,8 @@ def step(acting_seat: int, decision_intent: str, game_state: GameState, decision
         pass_turn(game_state)
     return 
 
-def handle_main_phase_decision(acting_seat: int, decision: str, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
-    if(decision==const.MAINPHASE_PASS):
+def handle_main_phase_decision(acting_seat: int, decision: Action, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
+    if(decision==Action.PASS):
         return
     if(decision_details is None):
         # TODO: Raise and handle error
@@ -71,8 +74,8 @@ def handle_main_phase_decision(acting_seat: int, decision: str, game_state: Game
     
     return
 
-def handle_combat_decision(acting_seat: int, decision: str, game_state: GameState) -> None:
-    if(decision==const.COMBAT_PASS):
+def handle_combat_decision(acting_seat: int, decision: Action, game_state: GameState) -> None:
+    if(decision==Action.PASS):
         return
     
     logger.warning("Turn {}/{}: {} is attacking!".format(

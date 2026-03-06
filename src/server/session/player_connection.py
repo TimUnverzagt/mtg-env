@@ -3,6 +3,7 @@ from __future__ import annotations
 from gameengine.player import PlayerInfo
 from gameengine.priority.base import PriorityEvent
 from gameengine.state import GameState
+from gameengine.enums import Action
 from threading import Condition
 from logging import Logger
 from logging_config import create_logger
@@ -21,7 +22,7 @@ class PlayerController:
         self.upcoming_decision: PriorityEvent | None = None
         self.game_state_before_action: GameState | None = initial_game_state
         self.game_state_after_action: GameState | None = None
-        self.intended_next_decision: str | None = None
+        self.intended_next_decision: Action | None = None
         self.position: int = position
 
     def set_action_result(self, new_state: GameState) -> None:

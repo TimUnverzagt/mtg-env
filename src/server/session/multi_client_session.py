@@ -1,5 +1,6 @@
 from server.session.player_connection import PlayerController
 import gameengine.core as GameEngine
+from gameengine.enums import Action
 #from game.state import GameState
 from gameengine.player import PlayerInfo
 from rendering.simple import SimpleVisualization
@@ -82,7 +83,7 @@ class MultiClientSession():
 
                 # Process Player Input and report state update
                 assert cont.intended_next_decision is not None
-                player_intent: str = cont.intended_next_decision
+                player_intent: Action = cont.intended_next_decision
                 cont.intended_next_decision = None
                 GameEngine.step(self.game_state.active_player_index, player_intent, self.game_state)
                 cont.set_action_result(self.game_state)

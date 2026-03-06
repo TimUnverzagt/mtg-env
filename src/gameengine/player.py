@@ -1,6 +1,6 @@
 from __future__ import annotations
 import app_config as conf
-from gameengine.card import CardInstance
+from gameengine.gameobjects import CardInstance
 
 from dataclasses import dataclass
 from typing import Optional

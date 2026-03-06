@@ -1,24 +1,24 @@
 from __future__ import annotations
 from typing import TypeVar, Generic
 from abc import ABC, abstractmethod
-import gameengine.constants as const
+from gameengine.enums import Phase, Action
 from gameengine.state import GameState
 
 
 
 class PriorityEvent:
-    def __init__(self, name: str, neutral_action_index: int, possible_actions: list [str]) -> None:
-        self.name: str = name
+    def __init__(self, applicable_phase: Phase, neutral_action_index: int, possible_actions: list [Action]) -> None:
+        self.applicable_phase: Phase = applicable_phase
         self.neutral_action_index: int = neutral_action_index
-        self.possible_actions: list [str] =  possible_actions
+        self.possible_actions: list[Action] =  possible_actions
 
     def __str__(self) -> str:
-        return "{}: <{}>".format(self.name, ",".join(self.possible_actions))
+        return "{}: <{}>".format(self.applicable_phase, ",".join(str(self.possible_actions)))
     
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, PriorityEvent):
             return False
-        return self.name == other.name
+        return self.applicable_phase == other.applicable_phase
     
 
 T = TypeVar("T")
@@ -34,6 +34,6 @@ class PriorityDecision(ABC, Generic[T]):
     
 
 DECISION_EVENT_CATALOG: list[PriorityEvent] = [
-    PriorityEvent(const.MAINPHASE, 0, [const.MAINPHASE_PASS, const.MAINPHASE_PLAY_CREATURE]),
-    PriorityEvent(const.COMBAT, 0,[const.COMBAT_PASS, const.COMBAT_ATTACK])        
+    PriorityEvent(Phase.MAINPHASE, 0, [Action.PASS, Action.PLAY_CARD]),
+    PriorityEvent(Phase.COMBAT, 0,[Action.PASS, Action.ATTACK])        
 ]

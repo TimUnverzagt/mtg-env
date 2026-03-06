@@ -54,7 +54,7 @@ class SimpleVisualization:
         ui_elements: list[Surface] = []
         ui_elements.append(self._render_text("Turn: {}".format(game_state.player_turns_completed//len(game_state.player_infos) + 1)))
         ui_elements.append(self._render_text("Active Player: {}".format(game_state.player_infos[game_state.active_player_index].name)))
-        current_env_step: str  = DECISION_EVENT_CATALOG[game_state.steps_in_turn_completed].name
+        current_env_step: str  = DECISION_EVENT_CATALOG[game_state.steps_in_turn_completed].applicable_phase.name
         ui_elements.append(self._render_text("Current Step: {}".format(current_env_step)))
 
         ui_width: int = max(map(get_surface_width, ui_elements))

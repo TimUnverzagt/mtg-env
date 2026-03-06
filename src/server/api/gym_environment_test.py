@@ -1,16 +1,17 @@
 import unittest
 from operator import attrgetter
+from collections import defaultdict
 
 from gameengine.state import GameState
 from gameengine.player import PlayerInfo
-from gameengine.card import CardInstance
+from gameengine.gameobjects import CardInstance
 from gameengine.priority.base import DECISION_EVENT_CATALOG
-import gameengine.constants as GameConsts
+from gameengine.enums import Phase
 
 from server.api.gym_environment import MtgEnv, MtgObservation
 
-combat_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(GameConsts.COMBAT)
-mainphase_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(GameConsts.MAINPHASE)
+combat_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(Phase.COMBAT)
+mainphase_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(Phase.MAINPHASE)
 
 class TestApi(unittest.TestCase):
 
@@ -28,7 +29,8 @@ class TestApi(unittest.TestCase):
             game_over=False,
             player_infos=[opp_info, agent_info],
             upcoming_decision=DECISION_EVENT_CATALOG[1],
-            winner_positions=[]
+            winner_positions=[],
+            floating_mana=defaultdict(lambda: 0)
         )
 
         api_under_test.reset()
@@ -62,7 +64,8 @@ class TestApi(unittest.TestCase):
             game_over=False,
             player_infos=[opp_info, agent_info],
             upcoming_decision=DECISION_EVENT_CATALOG[1],
-            winner_positions=[]
+            winner_positions=[],
+            floating_mana=defaultdict(lambda: 0)
         )
         observation_limits: MtgObservation = (1, 1, 1, (2, 0, 4), (4, 0, 2))
         api_under_test.reset(options={"observation_limits": observation_limits})

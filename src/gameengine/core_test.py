@@ -2,10 +2,11 @@ import unittest
 
 from gameengine.state import GameState
 from gameengine.player import PlayerInfo
-from gameengine.card import CardInstance
+from gameengine.gameobjects import CardInstance
 from gameengine.priority.base import DECISION_EVENT_CATALOG
-import gameengine.constants as GameConsts
+from gameengine.enums import Action
 import gameengine.core as Engine
+from collections import defaultdict
 
 
 class TestGameEngine(unittest.TestCase):
@@ -21,11 +22,12 @@ class TestGameEngine(unittest.TestCase):
             game_over=False,
             player_infos=[alice_info, bob_info],
             upcoming_decision=DECISION_EVENT_CATALOG[0],
-            winner_positions=[]
+            winner_positions=[],
+            floating_mana=defaultdict(lambda: 0)
         )
 
         #Execute
-        Engine.handle_combat_decision(0, GameConsts.COMBAT_ATTACK, game_state)
+        Engine.handle_combat_decision(0, Action.ATTACK, game_state)
 
         #Assert
         self.assertEqual(bob_info.current_life, 4)
