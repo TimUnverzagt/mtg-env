@@ -5,11 +5,11 @@ from gameengine.constants import ManaColor, Zone
 from gameengine.capabilities import IManaProvider
 from gameengine.state import GameState
 
-class Name(Enum):
+class LandNames(Enum):
     WASTES = "Wastes"
 
 LAND_CATALOG: dict[str, CardInfo] = {
-    Name.WASTES.value: LandInfo(Name.WASTES.value)
+    LandNames.WASTES.value: LandInfo(LandNames.WASTES.value)
 }
 
 class Wastes(CardInstance, IManaProvider):

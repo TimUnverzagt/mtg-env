@@ -3,9 +3,9 @@ import unittest
 from gameengine.state import GameState
 from gameengine.player import PlayerInfo
 from gameengine.gameobjects import CardInstance
-from gameengine.priority.base import EventCatalog
+from gameengine.priority.event import PlayerEvent
 from gameengine.constants import Action
-from gameengine.cards.creatures import Names as CreatureNames
+from gameengine.cards.creatures import CreatureNames as CreatureNames
 import gameengine.core as Engine
 from collections import defaultdict
 
@@ -22,7 +22,7 @@ class TestGameEngine(unittest.TestCase):
             active_player_index=0,
             game_over=False,
             player_infos=[alice_info, bob_info],
-            upcoming_decision=EventCatalog.MAIN_PHASE_EMPTY_STACK.value,
+            upcoming_event=PlayerEvent.MAIN_PHASE_EMPTY_STACK,
             winner_positions=[],
             floating_mana=defaultdict(lambda: 0)
         )

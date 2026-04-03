@@ -3,7 +3,7 @@ from typing import Protocol
 from abc import abstractmethod
 from uuid import UUID
 from gameengine.state import GameState
-from gameengine.enums import Zone
+from gameengine.constants import Zone
 
 class ITargetable(Protocol):
     @abstractmethod

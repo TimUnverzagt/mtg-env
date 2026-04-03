@@ -1,17 +1,17 @@
 import unittest
-from operator import attrgetter
 from collections import defaultdict
 
 from gameengine.state import GameState
 from gameengine.player import PlayerInfo
 from gameengine.gameobjects import CardInstance
-from gameengine.priority.base import DECISION_EVENT_CATALOG
-from gameengine.enums import Phase
+from gameengine.priority.event import PlayerEvent
 
+import translation
 from server.api.gym_environment import MtgEnv, MtgObservation
 
-combat_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(Phase.COMBAT)
-mainphase_index: int = list(map(attrgetter("name"), DECISION_EVENT_CATALOG)).index(Phase.MAINPHASE)
+second_card_name: str = translation.card_index_to_name(1)
+mainphase_index: int = translation.event_to_index(PlayerEvent.MAIN_PHASE_EMPTY_STACK)
+combat_index: int = translation.event_to_index(PlayerEvent.DECLARE_ATTACKS)
 
 class TestApi(unittest.TestCase):
 
@@ -20,15 +20,15 @@ class TestApi(unittest.TestCase):
         #Setup
         api_under_test: MtgEnv = MtgEnv()
 
-        agent_info: PlayerInfo = PlayerInfo("External", 3, [CardInstance(1)], 5, None)
-        opp_info: PlayerInfo = PlayerInfo("Opp-Goldfish", 3, [CardInstance(1), CardInstance(1)], 10, None)
+        agent_info: PlayerInfo = PlayerInfo("External", 3, [CardInstance(second_card_name)], 5, None)
+        opp_info: PlayerInfo = PlayerInfo("Opp-Goldfish", 3, [CardInstance(second_card_name), CardInstance(second_card_name)], 10, None)
         game_state: GameState = GameState(
             player_turns_completed=0,
             steps_in_turn_completed=1,
             active_player_index=0,
             game_over=False,
             player_infos=[opp_info, agent_info],
-            upcoming_decision=DECISION_EVENT_CATALOG[1],
+            upcoming_event=PlayerEvent.DECLARE_ATTACKS,
             winner_positions=[],
             floating_mana=defaultdict(lambda: 0)
         )
@@ -55,15 +55,15 @@ class TestApi(unittest.TestCase):
         #Setup
         api_under_test: MtgEnv = MtgEnv()
 
-        agent_info: PlayerInfo = PlayerInfo("External", 3, [CardInstance(1)], 5, None)
-        opp_info: PlayerInfo = PlayerInfo("Opp-Goldfish", 3, [CardInstance(1), CardInstance(1)], 10, None)
+        agent_info: PlayerInfo = PlayerInfo("External", 3, [CardInstance(second_card_name)], 5, None)
+        opp_info: PlayerInfo = PlayerInfo("Opp-Goldfish", 3, [CardInstance(second_card_name), CardInstance(second_card_name)], 10, None)
         game_state: GameState = GameState(
             player_turns_completed=0,
             steps_in_turn_completed=1,
             active_player_index=0,
             game_over=False,
             player_infos=[opp_info, agent_info],
-            upcoming_decision=DECISION_EVENT_CATALOG[1],
+            upcoming_event=PlayerEvent.DECLARE_ATTACKS,
             winner_positions=[],
             floating_mana=defaultdict(lambda: 0)
         )

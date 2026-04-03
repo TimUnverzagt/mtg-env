@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from server.session.multi_client_session import MultiClientSession as GameSession
-from gameengine.priority.base import PriorityEvent
+from gameengine.priority.event import EventData
 from server.session.player_connection import PlayerController
 from helpers.predicate_extensions import build_either_predicate
-from gameengine.enums import Action
+from gameengine.constants import Action
 
 import time
 from logging_config import main_log
@@ -40,11 +40,11 @@ class AgentBase(ABC):
                     lambda: self.session.shutting_down))
                 if self.session.shutting_down:
                     continue
-                assert cont.upcoming_decision is not None
+                assert cont.upcoming_event is not None
 
-                cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_decision.applicable_phase))
-                cont.intended_next_decision = self.decide_on_action(cont.upcoming_decision)
-                cont.upcoming_decision = None
+                cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_event.applicable_phase))
+                cont.intended_next_decision = self.decide_on_action(cont.upcoming_event)
+                cont.upcoming_event = None
                 cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intended_next_decision))
                 cont.session_condition.notify_all()
 
@@ -60,7 +60,7 @@ class AgentBase(ABC):
 
 
     @abstractmethod
-    def decide_on_action(self, upcoming_action: PriorityEvent) -> Action:
+    def decide_on_action(self, upcoming_action: EventData) -> Action:
         pass
 
     def shutdown(self) -> None:

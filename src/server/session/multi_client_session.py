@@ -1,6 +1,6 @@
 from server.session.player_connection import PlayerController
 import gameengine.core as GameEngine
-from gameengine.enums import Action
+from gameengine.constants import Action
 #from game.state import GameState
 from gameengine.player import PlayerInfo
 from rendering.simple import SimpleVisualization
@@ -73,7 +73,7 @@ class MultiClientSession():
                     cont.player_info.name,
                     self.game_state
                     ))
-                cont.upcoming_decision = GameEngine.get_upcoming_event(self.game_state)
+                cont.upcoming_event = GameEngine.get_upcoming_event(self.game_state).value
                 cont.game_state_before_action = self.game_state
                 cont.session_condition.notify_all()
 

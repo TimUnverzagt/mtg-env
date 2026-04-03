@@ -1,6 +1,8 @@
 from __future__ import annotations
 import app_config as conf
 from gameengine.gameobjects import CardInstance
+from gameengine.cards.creatures import CreatureNames
+from gameengine.cards.lands import LandNames
 
 from dataclasses import dataclass
 from typing import Optional
@@ -18,7 +20,10 @@ class Player:
         self.info: PlayerInfo = PlayerInfo(
             name = name,
             current_life = conf.STARTING_LIFE,
-            cards_in_hand = [CardInstance(1), CardInstance(2), CardInstance(1)],
+            cards_in_hand = [
+                 CardInstance(CreatureNames.ALPHA_MYR.value),
+                 CardInstance(LandNames.WASTES.value),
+                 CardInstance(LandNames.WASTES.value)],
             cards_in_library = conf.DECK_SIZE,
             death_description = None
         )

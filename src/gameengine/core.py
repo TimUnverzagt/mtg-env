@@ -3,10 +3,10 @@ from collections import defaultdict
 from gameengine.constants import Phase, Action
 import gameengine.constants as const
 from gameengine.player import Player, PlayerInfo, is_player_alive
-from gameengine.priority.base import PriorityEvent, EventCatalog
+from gameengine.priority.event import PlayerEvent
 from gameengine.gameobjects import CardInstance
 from gameengine.state import GameState
-from gameengine.cards.creatures import Names as CreatureNames
+from gameengine.cards.creatures import CreatureNames as CreatureNames
 from typing import Callable, Generic, Optional, ParamSpec, TypeVar, Any, Concatenate, cast
 from uuid import UUID
 
@@ -20,7 +20,7 @@ def get_initial_game_state() -> GameState:
         steps_in_turn_completed = 0,
         active_player_index = 0,
         game_over = False,
-        upcoming_decision=EventCatalog.MAIN_PHASE_EMPTY_STACK.value,
+        upcoming_event=PlayerEvent.MAIN_PHASE_EMPTY_STACK,
         player_infos = [player1.info, player2.info],
         winner_positions=[],
         floating_mana=defaultdict(lambda: 0)
@@ -36,13 +36,18 @@ def step(acting_seat: int, decision_intent: Action, game_state: GameState, decis
         return
         
     acting_player_info: PlayerInfo = game_state.player_infos[acting_seat]
-    upcoming_event: PriorityEvent = get_upcoming_event(game_state)
+    upcoming_event: PlayerEvent = get_upcoming_event(game_state)
 
     # Handle decision of step
     # TODO: How to handle exceptions/enforcement for nonsensical decision inputs
     logger.info("Handling intent '{}' for priority event '{}' from {}".format(
-        decision_intent, upcoming_event.applicable_phase, acting_player_info.name
+        decision_intent, upcoming_event, acting_player_info.name
         ))
+    match upcoming_event:
+        case PlayerEvent.MAIN_PHASE_EMPTY_STACK:
+            return
+        case PlayerEvent.DECLARE_ATTACKS:
+            return
     if (upcoming_event.applicable_phase == Phase.COMBAT):
         handle_combat_decision(acting_seat, decision_intent, game_state)
     if (upcoming_event.applicable_phase == Phase.MAINPHASE):
@@ -52,7 +57,7 @@ def step(acting_seat: int, decision_intent: Action, game_state: GameState, decis
         return
         
     game_state.steps_in_turn_completed += 1
-    if(game_state.steps_in_turn_completed >= len(EventCatalog)):
+    if(game_state.steps_in_turn_completed >= len(PlayerEvent)):
         pass_turn(game_state)
     return 
 
@@ -122,10 +127,10 @@ def handle_player_death(victim_seat: int, game_state: GameState, cause: str):
     logger.warning("{} died by {}.".format(game_state.player_infos[victim_seat].name, cause))
     return
     
-def get_upcoming_event(game_state: GameState) -> PriorityEvent:
+def get_upcoming_event(game_state: GameState) -> PlayerEvent:
     if(game_state.steps_in_turn_completed == 0):
-        return EventCatalog.MAIN_PHASE_EMPTY_STACK.value
-    return EventCatalog.DECLARE_ATTACKS.value
+        return PlayerEvent.MAIN_PHASE_EMPTY_STACK
+    return PlayerEvent.DECLARE_ATTACKS
 
 def pass_turn(game_state: GameState) -> None:
     # complete old turn

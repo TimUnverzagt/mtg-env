@@ -1,6 +1,6 @@
 from server.session.multi_client_session import MultiClientSession as GameSession
-from gameengine.priority.base import PriorityEvent
-from gameengine.enums import Action
+from gameengine.priority.event import EventData
+from gameengine.constants import Action
 from server.agents.abstractions.base import AgentBase
 from typing import Callable
 
@@ -8,10 +8,10 @@ class ConsoleAgent(AgentBase):
     def __init__(self, session: GameSession, name: str, target_seat: int | None =  None) -> None:
         super().__init__(session, name, target_seat)
 
-    def decide_on_action(self, upcoming_action: PriorityEvent) -> Action:
+    def decide_on_action(self, upcoming_action: EventData) -> Action:
         return self._get_input_for_event(upcoming_action)
     
-    def _get_input_for_event(self, action_event: PriorityEvent) -> Action:
+    def _get_input_for_event(self, action_event: EventData) -> Action:
         print ("Upcoming Event: {}".format(action_event.applicable_phase))
         while True:
             get_action_name: Callable[[Action], str] = lambda action: action.name

@@ -8,7 +8,7 @@ from typing import Optional, TypeVar, Any, cast
 import app_config as app_const
 #import game.engine as MtgEngine
 from gameengine.state import GameState
-from gameengine.enums import Action
+from gameengine.constants import Action
 from server.session.multi_client_session import MultiClientSession as MtgSession
 from server.session.player_connection import PlayerController
 from server.agents.simple import Goldfish #, Monkey
