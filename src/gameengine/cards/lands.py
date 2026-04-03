@@ -1,17 +1,21 @@
 from gameengine.cards.model.templates import CardInfo, LandInfo
+from enum import Enum
 from gameengine.gameobjects import CardInstance
-from gameengine.enums import ManaColor, Zone
+from gameengine.constants import ManaColor, Zone
 from gameengine.capabilities import IManaProvider
 from gameengine.state import GameState
 
-LAND_CATALOG: list[CardInfo]
+class Name(Enum):
+    WASTES = "Wastes"
 
-WASTES_INFO: LandInfo = LandInfo("Wastes")
+LAND_CATALOG: dict[str, CardInfo] = {
+    Name.WASTES.value: LandInfo(Name.WASTES.value)
+}
 
 class Wastes(CardInstance, IManaProvider):
 
-    def __init__(self, card_id: int, zone: Zone = Zone.LIBRARY) -> None:
-        super().__init__(card_id, zone)
+    def __init__(self, card_name: str, zone: Zone = Zone.LIBRARY) -> None:
+        super().__init__(card_name, zone)
     
     def is_ready(self) -> bool:
         return not self.tapped

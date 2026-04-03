@@ -1,10 +1,9 @@
 from __future__ import annotations
 from typing import TypeVar, Generic
 from abc import ABC, abstractmethod
-from gameengine.enums import Phase, Action
+from gameengine.constants import Phase, Action
 from gameengine.state import GameState
-
-
+from enum import Enum
 
 class PriorityEvent:
     def __init__(self, applicable_phase: Phase, neutral_action_index: int, possible_actions: list [Action]) -> None:
@@ -33,7 +32,6 @@ class PriorityDecision(ABC, Generic[T]):
         raise NotImplementedError
     
 
-DECISION_EVENT_CATALOG: list[PriorityEvent] = [
-    PriorityEvent(Phase.MAINPHASE, 0, [Action.PASS, Action.PLAY_CARD]),
-    PriorityEvent(Phase.COMBAT, 0,[Action.PASS, Action.ATTACK])        
-]
+class EventCatalog(Enum):
+    MAIN_PHASE_EMPTY_STACK = PriorityEvent(Phase.MAINPHASE, 0, [Action.PASS, Action.PLAY_CARD, Action.ACTIVATE_LANDS])
+    DECLARE_ATTACKS = PriorityEvent(Phase.COMBAT, 0,[Action.PASS, Action.ATTACK]) 

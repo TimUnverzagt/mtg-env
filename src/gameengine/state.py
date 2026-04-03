@@ -1,6 +1,6 @@
 from gameengine.player import PlayerInfo
 from gameengine.priority.base import PriorityEvent
-from gameengine.enums import ManaColor
+from gameengine.constants import ManaColor
 from dataclasses import dataclass
 
 @dataclass
@@ -18,6 +18,9 @@ class GameState:
         return "\n".join([
             "---------------------------------------------",
             "---------------- Environment ----------------",
+            "---------------------------------------------",
+            "Active Player Index: {}".format(self.active_player_index),
+            "Floating Mana: {}".format(self.floating_mana[ManaColor.COLORLESS]),
             "---------------------------------------------",
             "Completed Halfturns: {}".format(self.player_turns_completed),
             "Completed DecisionEvents: {}".format(self.steps_in_turn_completed),

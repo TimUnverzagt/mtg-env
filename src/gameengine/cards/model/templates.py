@@ -1,5 +1,5 @@
 from __future__ import annotations
-from gameengine.enums import CardType
+from gameengine.constants import CardType
 
 SEPERATOR: str = " -- "
 
