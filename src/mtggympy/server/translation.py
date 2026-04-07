@@ -4,7 +4,7 @@ from server.api.gym_types import MtgObservation, MtgAction, MtgPlayerObs
 from gameengine.state import GameState
 from gameengine.constants import Action
 from gameengine.priority.event import PlayerEvent
-from gameengine.cards.model.catalog import CARD_CATALOG
+from gameengine.cards.catalog.full import CARD_CATALOG
 
 from logging_config import api_log as logger
 

@@ -1,8 +1,8 @@
 from __future__ import annotations
 import app_config as conf
 from gameengine.gameobjects import CardInstance
-from gameengine.cards.creatures import CreatureNames
-from gameengine.cards.lands import LandNames
+from gameengine.cards.catalog.creatures import CreatureNames
+from gameengine.cards.catalog.lands import LandNames
 
 from dataclasses import dataclass
 from typing import Optional

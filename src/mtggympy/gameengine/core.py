@@ -1,12 +1,12 @@
 from __future__ import annotations
 from collections import defaultdict
-from gameengine.constants import Phase, Action
+from gameengine.constants import Action
 import gameengine.constants as const
 from gameengine.player import Player, PlayerInfo, is_player_alive
 from gameengine.priority.event import PlayerEvent
 from gameengine.gameobjects import CardInstance
 from gameengine.state import GameState
-from gameengine.cards.creatures import CreatureNames as CreatureNames
+from gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
 from typing import Callable, Generic, Optional, ParamSpec, TypeVar, Any, Concatenate, cast
 from uuid import UUID
 
@@ -45,13 +45,10 @@ def step(acting_seat: int, decision_intent: Action, game_state: GameState, decis
         ))
     match upcoming_event:
         case PlayerEvent.MAIN_PHASE_EMPTY_STACK:
-            return
+            handle_main_phase_decision(acting_seat, decision_intent, game_state, decision_details)
         case PlayerEvent.DECLARE_ATTACKS:
-            return
-    if (upcoming_event.applicable_phase == Phase.COMBAT):
-        handle_combat_decision(acting_seat, decision_intent, game_state)
-    if (upcoming_event.applicable_phase == Phase.MAINPHASE):
-        handle_main_phase_decision(acting_seat, decision_intent, game_state, decision_details)
+            handle_combat_decision(acting_seat, decision_intent, game_state)
+
     # Stop immediatly if game is over now
     if(game_state.game_over):
         return

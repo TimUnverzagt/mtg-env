@@ -1,4 +1,5 @@
 import unittest
+
 from collections import defaultdict
 
 from gameengine.state import GameState
@@ -6,7 +7,7 @@ from gameengine.player import PlayerInfo
 from gameengine.gameobjects import CardInstance
 from gameengine.priority.event import PlayerEvent
 
-import translation
+import server.translation as translation
 from server.api.gym_environment import MtgEnv, MtgObservation
 
 second_card_name: str = translation.card_index_to_name(1)

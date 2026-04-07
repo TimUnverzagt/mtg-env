@@ -1,4 +1,4 @@
-from gameengine.cards.model.templates import CardInfo, CreatureInfo
+from gameengine.cards.catalog.templates import CardInfo, CreatureInfo
 from enum import Enum
 
 class CreatureNames(Enum):

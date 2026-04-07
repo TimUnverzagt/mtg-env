@@ -1,5 +1,5 @@
-from gameengine.cards.model.templates import CardInfo
-from gameengine.cards.model.catalog import CARD_CATALOG
+from gameengine.cards.catalog.templates import CardInfo
+from gameengine.cards.catalog.full import CARD_CATALOG
 from gameengine.constants import Zone
 from gameengine.capabilities import IActiveGameElement
 from uuid import UUID, uuid4

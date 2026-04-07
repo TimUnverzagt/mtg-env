@@ -5,7 +5,7 @@ from gameengine.player import PlayerInfo
 from gameengine.gameobjects import CardInstance
 from gameengine.priority.event import PlayerEvent
 from gameengine.constants import Action
-from gameengine.cards.creatures import CreatureNames as CreatureNames
+from gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
 import gameengine.core as Engine
 from collections import defaultdict
 

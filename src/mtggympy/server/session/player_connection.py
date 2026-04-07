@@ -7,7 +7,7 @@ from gameengine.constants import Action
 from threading import Condition
 from logging import Logger
 from logging_config import create_logger
-import app_config
+import app_config as app_config
 
 from typing import Callable
 

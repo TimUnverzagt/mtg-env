@@ -2,8 +2,7 @@ from __future__ import annotations
 from typing import Protocol
 from abc import abstractmethod
 from uuid import UUID
-from gameengine.state import GameState
-from gameengine.constants import Zone
+from gameengine.constants import Zone, ManaColor
 
 class ITargetable(Protocol):
     @abstractmethod
@@ -23,7 +22,7 @@ class IManaProvider(Protocol):
     def is_ready(self) -> bool:
         raise NotImplementedError
     @abstractmethod
-    def produce_mana(self, state: GameState) -> GameState:
+    def produce_mana(self) -> list[ManaColor]:
         raise NotImplementedError
     
 class IActiveGameElement(Protocol):
