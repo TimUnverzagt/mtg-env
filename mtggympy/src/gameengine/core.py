@@ -147,9 +147,11 @@ def get_player_position(info: PlayerInfo, game_state:GameState) -> int:
 ##################################
 
 def draw_card(acting_seat: int, game_state: GameState) -> None:
-    game_state.player_infos[acting_seat].cards_in_hand.append(CardInstance(CreatureNames.METALLIC_SLIVER.value))
+    hand: list[CardInstance] = game_state.player_infos[acting_seat].cards_in_hand
+    library: list[CardInstance] = game_state.player_infos[acting_seat].cards_in_library
     # Decking is handled prior
-    game_state.player_infos[acting_seat].cards_in_library -= 1
+    card_drawn: CardInstance = library.pop(0)
+    hand.append(card_drawn)
     return
     
 def deal_damage(acting_seat: int, game_state: GameState, target_seat:int, damage_amount:int) -> None:
@@ -180,7 +182,7 @@ def _execute_action_with_replacment(acting_seat: int, game_state: GameState, att
                     *args: AdditionalParam.args, **kwargs: AdditionalParam.kwargs) -> ActionResult:
         
     if attempted_action == replacement_catalog[const.DECKING].input_action \
-    and game_state.player_infos[acting_seat].cards_in_library <= 0:
+    and not game_state.player_infos[acting_seat].cards_in_library:
         return replacement_catalog[const.DECKING].replacing_action(acting_seat, game_state, *args, **kwargs)
         
     return attempted_action(acting_seat, game_state, *args, **kwargs)

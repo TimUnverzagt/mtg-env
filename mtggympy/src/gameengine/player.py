@@ -14,6 +14,20 @@ from logging_config import engine_log as logger
 def is_player_alive(info: PlayerInfo) -> bool:
         return info.death_description is None
 
+def get_default_library() -> list[CardInstance]:
+    return [
+    CardInstance(CreatureNames.ALPHA_MYR.value),
+    CardInstance(LandNames.WASTES.value),
+    CardInstance(CreatureNames.ALPHA_MYR.value),
+    CardInstance(LandNames.WASTES.value),
+    CardInstance(CreatureNames.ALPHA_MYR.value),
+    CardInstance(LandNames.WASTES.value),
+    CardInstance(CreatureNames.ALPHA_MYR.value),
+    CardInstance(LandNames.WASTES.value),
+    CardInstance(CreatureNames.ALPHA_MYR.value),
+    CardInstance(LandNames.WASTES.value)
+]
+
 class Player:
     def __init__(self, name: str) -> None:
         logger.info("Setting up the new player {}".format(name))
@@ -21,10 +35,11 @@ class Player:
             name = name,
             current_life = conf.STARTING_LIFE,
             cards_in_hand = [
-                 CardInstance(CreatureNames.ALPHA_MYR.value),
-                 CardInstance(LandNames.WASTES.value),
-                 CardInstance(LandNames.WASTES.value)],
-            cards_in_library = conf.DECK_SIZE,
+                CardInstance(CreatureNames.ALPHA_MYR.value),
+                CardInstance(LandNames.WASTES.value),
+                CardInstance(LandNames.WASTES.value)],
+            cards_in_play=[],
+            cards_in_library = get_default_library(),
             death_description = None
         )
 
@@ -38,7 +53,8 @@ class PlayerInfo:
     name: str
     current_life: int 
     cards_in_hand: list[CardInstance]
-    cards_in_library: int
+    cards_in_play: list[CardInstance]
+    cards_in_library: list[CardInstance]
     death_description: Optional[str]
 
     def __str__(self) -> str:
