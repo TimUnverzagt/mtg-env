@@ -37,10 +37,14 @@ def step(acting_seat: int, decision_intent: Action, game_state: GameState, decis
         
     acting_player_info: PlayerInfo = game_state.player_infos[acting_seat]
     upcoming_event: PlayerEvent = get_upcoming_event(game_state)
+    if(not decision_intent in upcoming_event.value.possible_actions):
+        logger.error("Action '{}' not legal. Refusing to process intent.".format(
+            decision_intent
+        ))
+        return
 
     # Handle decision of step
-    # TODO: How to handle exceptions/enforcement for nonsensical decision inputs
-    logger.info("Handling intent '{}' for priority event '{}' from {}".format(
+    logger.info("Handling intent '{}' for player event '{}' from {}".format(
         decision_intent, upcoming_event, acting_player_info.name
         ))
     match upcoming_event:
@@ -52,33 +56,36 @@ def step(acting_seat: int, decision_intent: Action, game_state: GameState, decis
     # Stop immediatly if game is over now
     if(game_state.game_over):
         return
-        
-    game_state.steps_in_turn_completed += 1
-    if(game_state.steps_in_turn_completed >= len(PlayerEvent)):
-        pass_turn(game_state)
     return 
 
 def handle_main_phase_decision(acting_seat: int, decision: Action, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
     if(decision==Action.PASS):
+        game_state.steps_in_turn_completed += 1
+        game_state.upcoming_event = PlayerEvent.DECLARE_ATTACKS
         return
+    
     if(decision_details is None):
         # TODO: Raise and handle error
-        logger.warning(const.CARDS_TO_PLAY+ ": Details are missing. NoOp instead!")
+        logger.warning(const.CARDS_TO_PLAY+ ": Details are missing. Refusing to process intent!")
         return
+    
     cards_to_play = decision_details[const.CARDS_TO_PLAY]
     assert isinstance(cards_to_play, list)
     if (not all(isinstance(card_id, UUID) for card_id in cards_to_play)): # type: ignore
         # TODO: Raise and handle error
-        logger.warning(const.CARDS_TO_PLAY+ ": Non UUID object in details. NoOp instead!")
+        logger.warning(const.CARDS_TO_PLAY+ ": Non UUID object in details. Refusing to process intent!")
         return
     for card_id in cards_to_play: # type: ignore
         cast(UUID, card_id)
         logger.info("Trying to play CardInstance with UUID: " + str(card_id)); # type: ignore
     
+    game_state.upcoming_event = PlayerEvent.DECLARE_ATTACKS
     return
 
 def handle_combat_decision(acting_seat: int, decision: Action, game_state: GameState) -> None:
     if(decision==Action.PASS):
+        game_state.steps_in_turn_completed += 1
+        pass_turn(game_state)
         return
     
     logger.warning("Turn {}/{}: {} is attacking!".format(
@@ -90,6 +97,8 @@ def handle_combat_decision(acting_seat: int, decision: Action, game_state: GameS
     defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_infos)
     # Just decrease health by flat amount for poc
     execute_action(acting_seat, game_state, deal_damage, defending_position, 1)
+    game_state.steps_in_turn_completed += 1
+    pass_turn(game_state)
     return
 
 def check_state_based_actions(game_state: GameState) -> None:
@@ -139,6 +148,7 @@ def pass_turn(game_state: GameState) -> None:
     # Handle setup of new turn
     logger.info("{} will draw a card for turn".format(game_state.player_infos[next_active_seat].name))
     execute_action(next_active_seat, game_state, draw_card)
+    game_state.upcoming_event = PlayerEvent.MAIN_PHASE_EMPTY_STACK
 
 def get_player_position(info: PlayerInfo, game_state:GameState) -> int:
     return game_state.player_infos.index(info)
