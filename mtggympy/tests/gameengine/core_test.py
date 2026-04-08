@@ -16,7 +16,6 @@ class TestGameEngine():
         bob_info: PlayerInfo = PlayerInfo("Bob", 5, [CardInstance(CreatureNames.ALPHA_MYR.value)], 10, None)
         game_state: GameState = GameState(
             player_turns_completed=0,
-            steps_in_turn_completed=1,
             active_player_index=0,
             game_over=False,
             player_infos=[alice_info, bob_info],
@@ -37,7 +36,6 @@ class TestGameEngine():
         bob_info: PlayerInfo = PlayerInfo("Bob", 5, [CardInstance(CreatureNames.ALPHA_MYR.value)], 10, None)
         game_state: GameState = GameState(
             player_turns_completed=0,
-            steps_in_turn_completed=1,
             active_player_index=0,
             game_over=False,
             player_infos=[alice_info, bob_info],

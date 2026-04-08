@@ -17,7 +17,6 @@ def get_initial_game_state() -> GameState:
     player2: Player = Player("Player2")
     game_state: GameState = GameState(
         player_turns_completed = 0,
-        steps_in_turn_completed = 0,
         active_player_index = 0,
         game_over = False,
         upcoming_event=PlayerEvent.MAIN_PHASE_EMPTY_STACK,
@@ -36,7 +35,7 @@ def step(acting_seat: int, decision_intent: Action, game_state: GameState, decis
         return
         
     acting_player_info: PlayerInfo = game_state.player_infos[acting_seat]
-    upcoming_event: PlayerEvent = get_upcoming_event(game_state)
+    upcoming_event: PlayerEvent = game_state.upcoming_event
     if(not decision_intent in upcoming_event.value.possible_actions):
         logger.error("Action '{}' not legal. Refusing to process intent.".format(
             decision_intent
@@ -45,14 +44,13 @@ def step(acting_seat: int, decision_intent: Action, game_state: GameState, decis
 
     # Handle decision of step
     logger.info("Handling intent '{}' for player event '{}' from {}".format(
-        decision_intent, upcoming_event, acting_player_info.name
+        decision_intent, upcoming_event.name, acting_player_info.name
         ))
     match upcoming_event:
         case PlayerEvent.MAIN_PHASE_EMPTY_STACK:
             handle_main_phase_decision(acting_seat, decision_intent, game_state, decision_details)
         case PlayerEvent.DECLARE_ATTACKS:
             handle_combat_decision(acting_seat, decision_intent, game_state)
-
     # Stop immediatly if game is over now
     if(game_state.game_over):
         return
@@ -60,7 +58,6 @@ def step(acting_seat: int, decision_intent: Action, game_state: GameState, decis
 
 def handle_main_phase_decision(acting_seat: int, decision: Action, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
     if(decision==Action.PASS):
-        game_state.steps_in_turn_completed += 1
         game_state.upcoming_event = PlayerEvent.DECLARE_ATTACKS
         return
     
@@ -84,7 +81,6 @@ def handle_main_phase_decision(acting_seat: int, decision: Action, game_state: G
 
 def handle_combat_decision(acting_seat: int, decision: Action, game_state: GameState) -> None:
     if(decision==Action.PASS):
-        game_state.steps_in_turn_completed += 1
         pass_turn(game_state)
         return
     
@@ -97,7 +93,6 @@ def handle_combat_decision(acting_seat: int, decision: Action, game_state: GameS
     defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_infos)
     # Just decrease health by flat amount for poc
     execute_action(acting_seat, game_state, deal_damage, defending_position, 1)
-    game_state.steps_in_turn_completed += 1
     pass_turn(game_state)
     return
 
@@ -132,16 +127,10 @@ def handle_player_death(victim_seat: int, game_state: GameState, cause: str):
     game_state.player_infos[victim_seat].death_description = cause
     logger.warning("{} died by {}.".format(game_state.player_infos[victim_seat].name, cause))
     return
-    
-def get_upcoming_event(game_state: GameState) -> PlayerEvent:
-    if(game_state.steps_in_turn_completed == 0):
-        return PlayerEvent.MAIN_PHASE_EMPTY_STACK
-    return PlayerEvent.DECLARE_ATTACKS
 
 def pass_turn(game_state: GameState) -> None:
     # complete old turn
     game_state.player_turns_completed += 1
-    game_state.steps_in_turn_completed = 0
     next_active_seat: int = (game_state.active_player_index + 1) % len(game_state.player_infos)
     game_state.active_player_index = next_active_seat
 

@@ -6,7 +6,6 @@ from dataclasses import dataclass
 @dataclass
 class GameState:
     player_turns_completed: int
-    steps_in_turn_completed: int
     active_player_index: int
     game_over: bool
     upcoming_event: PlayerEvent
@@ -23,7 +22,7 @@ class GameState:
             "Floating Mana: {}".format(self.floating_mana[ManaColor.COLORLESS]),
             "---------------------------------------------",
             "Completed Halfturns: {}".format(self.player_turns_completed),
-            "Completed DecisionEvents: {}".format(self.steps_in_turn_completed),
+            "Upcoming Event: {}".format(self.upcoming_event.name),
             "Active Player Index: {}".format(self.active_player_index),
             "Game over: {}".format(self.game_over),
             "---------------------------------------------",
