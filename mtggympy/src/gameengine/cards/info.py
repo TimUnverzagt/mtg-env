@@ -1,5 +1,5 @@
 from __future__ import annotations
-from gameengine.constants import CardType
+from gameengine.constants import CardType, ManaColor
 
 SEPERATOR: str = " -- "
 
@@ -14,18 +14,18 @@ class CardInfo:
         ])
     
 class SpellInfo(CardInfo):
-    def __init__(self, name:str, mana_value: int):
+    def __init__(self, name:str, mana_cost: dict[ManaColor, int]):
         super().__init__(name)
-        self.mana_value = mana_value
+        self.mana_cost = mana_cost
     def __str__(self) -> str:
         return SEPERATOR.join([
             super().__str__(),
-            "MV: " + str(self.mana_value)
+            "MV: " + str(self.mana_cost)
         ])
     
 class CreatureInfo(SpellInfo):
-    def __init__(self, name: str, mana_value: int, power: int, thoughness: int):
-        super().__init__(name, mana_value)
+    def __init__(self, name: str, mana_cost: dict[ManaColor, int], power: int, thoughness: int):
+        super().__init__(name, mana_cost)
         self.type: CardType = CardType.CREATURE
         self.power: int = power
         self.toughness: int =  thoughness

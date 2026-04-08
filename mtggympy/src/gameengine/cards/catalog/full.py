@@ -1,4 +1,4 @@
-from gameengine.cards.catalog.templates import CardInfo
+from gameengine.cards.info import CardInfo
 from gameengine.cards.catalog.lands import LAND_CATALOG
 from gameengine.cards.catalog.creatures import CREATURE_CATALOG
 

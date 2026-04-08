@@ -1,11 +1,13 @@
 from gameengine.gameobjects import CardInstance
 from gameengine.constants import ManaColor, Zone
-from gameengine.capabilities import IManaProvider
+from gameengine.capabilities import ManaProvider
 
-class Wastes(CardInstance, IManaProvider):
+WASTES_NAME = "Wastes"
 
-    def __init__(self, card_name: str, zone: Zone = Zone.LIBRARY) -> None:
-        super().__init__(card_name, zone)
+class Wastes(CardInstance, ManaProvider):
+
+    def __init__(self, zone: Zone = Zone.LIBRARY) -> None:
+        super().__init__(WASTES_NAME, zone)
     
     def is_ready(self) -> bool:
         return not self.tapped

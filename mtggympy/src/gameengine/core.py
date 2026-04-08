@@ -1,14 +1,18 @@
 from __future__ import annotations
 from collections import defaultdict
-from gameengine.constants import Action
+from gameengine.constants import Action, ManaColor, Zone
 import gameengine.constants as const
 from gameengine.player import Player, PlayerInfo, is_player_alive
 from gameengine.priority.event import PlayerEvent
 from gameengine.gameobjects import CardInstance
 from gameengine.state import GameState
 from gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
+from gameengine.cards.info import CardInfo, SpellInfo
+from gameengine.cards.catalog.full import CARD_CATALOG
+from gameengine.capabilities import ManaProvider
+
+from helpers.dict_operations import first_dict_can_fit_second_by_value
 from typing import Callable, Generic, Optional, ParamSpec, TypeVar, Any, Concatenate
-from uuid import UUID
 
 from logging_config import engine_log as logger
 
@@ -48,18 +52,19 @@ def step(acting_seat: int, decision_intent: Action, game_state: GameState, decis
 def handle_main_phase_decision(acting_seat: int, decision: Action, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
     match decision:
         case Action.PASS:
+            empty_mana_pool(game_state)
             game_state.upcoming_event = PlayerEvent.DECLARE_ATTACKS
         case Action.PLAY_CARD:
             if(decision_details is None):
                 # TODO: Raise and handle error
                 logger.error(const.CARD_TO_PLAY+ ": Details are missing. Refusing to process intent!")
                 return
-            card_id = decision_details[const.CARD_TO_PLAY]
-            if (not isinstance(card_id, UUID)): # type: ignore
-                logger.error(const.CARD_TO_PLAY+ ": Non UUID object in details. Refusing to process intent!")
+            card_name = decision_details[const.CARD_TO_PLAY]
+            if (not isinstance(card_name, str)): # type: ignore
+                logger.error(const.CARD_TO_PLAY+ ": Non string object in details. Refusing to process intent!")
                 return
-            logger.info("Trying to play CardInstance with UUID: " + str(card_id)); # type: ignore
-            play_cards(acting_seat, game_state, card_id)
+            logger.info("Trying to play CardInstance with name: " + str(card_name)); # type: ignore
+            play_card(acting_seat, game_state, card_name)
         case Action.ACTIVATE_LANDS:
             activate_lands(acting_seat, game_state)
         case _:
@@ -67,9 +72,58 @@ def handle_main_phase_decision(acting_seat: int, decision: Action, game_state: G
     return
 
 def activate_lands(acting_seat: int, game_state:GameState):
+    if game_state.active_player_index != acting_seat:
+        logger.error("Non-active player is trying to activate lands. Refusing to process intent!")
+        return
+    cards_on_active_board: list[CardInstance] = game_state.player_infos[acting_seat].cards_in_play
+    new_mana: list[ManaColor] = []
+    for card in cards_on_active_board:
+        if not isinstance(card, ManaProvider):
+            continue
+        if not card.is_ready():
+            continue
+        new_mana += card.produce_mana()
+    for color in new_mana:
+        game_state.floating_mana[color] += 1
     return
 
-def play_cards(acting_seat: int, game_state:GameState, card_id: UUID):
+def play_card(acting_seat: int, game_state:GameState, card_name: str):
+    if game_state.active_player_index != acting_seat:
+        logger.error("Non-active player is trying to play a card. Refusing to process intent!")
+        return
+    hand: list[CardInstance] = game_state.player_infos[acting_seat].cards_in_hand
+    battlefield: list[CardInstance] = game_state.player_infos[acting_seat].cards_in_play
+    card_info: Optional[CardInfo] = CARD_CATALOG.get(card_name)
+    if card_info is None:
+        logger.error("Player on seat {} is trying to play {} which isn't a known card. Refusing to process intent".format(
+            acting_seat, card_name
+        ))
+        return
+    card_to_play: Optional[CardInstance] = None
+    for card in hand:
+        if card.card_name == card_name:
+            card_to_play = card
+            break
+    if card_to_play is None:
+        logger.error("Player on seat {} is trying to play {} without having a copy in hand. Refusing to process intent".format(
+            acting_seat, card_name
+        ))
+        return
+    
+    if isinstance(card_info, SpellInfo):
+        if not first_dict_can_fit_second_by_value(game_state.floating_mana, card_info.mana_cost):
+            logger.error("Player on seat {} is trying to play {} without having enough mana. Refusing to process intent".format(
+                acting_seat, card_name
+            ))
+            logger.info("Available mana: {}".format(game_state.floating_mana)) 
+            logger.info("Required mana: {}".format(card_info.mana_cost))
+            return
+        for color in card_info.mana_cost:
+            game_state.floating_mana[color] -= card_info.mana_cost[color]
+
+    hand.remove(card_to_play)
+    battlefield.append(card_to_play)
+    card_to_play.zone = Zone.BATTLEFIELD
     return
 
 def handle_combat_decision(acting_seat: int, decision: Action, game_state: GameState) -> None:
@@ -130,6 +184,9 @@ def handle_player_death(victim_seat: int, game_state: GameState, cause: str):
     game_state.player_infos[victim_seat].death_description = cause
     logger.warning("{} died by {}.".format(game_state.player_infos[victim_seat].name, cause))
     return
+
+def empty_mana_pool(game_state: GameState) -> None:
+    game_state.floating_mana = defaultdict(lambda: 0)
 
 def pass_turn(game_state: GameState) -> None:
     # complete old turn
