@@ -1,15 +1,14 @@
-from collections import defaultdict
-
 from gameengine.state import GameState
-from gameengine.player import PlayerInfo
-from gameengine.gameobjects import CardInstance
 from gameengine.priority.event import PlayerEvent
 
 from server.session.player_connection import PlayerController
 import server.translation as translation
 from server.api.gym_environment import MtgEnv, MtgObservation
 
-second_card_name: str = translation.card_index_to_name(1)
+from app_config import DECK_SIZE, STARTING_LIFE
+
+from tests.default_data import get_default_game_state
+
 mainphase_index: int = translation.event_to_index(PlayerEvent.MAIN_PHASE_EMPTY_STACK)
 combat_index: int = translation.event_to_index(PlayerEvent.DECLARE_ATTACKS)
 
@@ -20,23 +19,14 @@ class TestApi():
         #Setup
         api_under_test: MtgEnv = MtgEnv()
 
-        agent_info: PlayerInfo = PlayerInfo("External", 3, [CardInstance(second_card_name)], 5, None)
-        opp_info: PlayerInfo = PlayerInfo("Opp-Goldfish", 3, [CardInstance(second_card_name), CardInstance(second_card_name)], 10, None)
-        game_state: GameState = GameState(
-            player_turns_completed=0,
-            steps_in_turn_completed=1,
-            active_player_index=0,
-            game_over=False,
-            player_infos=[opp_info, agent_info],
-            upcoming_event=PlayerEvent.DECLARE_ATTACKS,
-            winner_positions=[],
-            floating_mana=defaultdict(lambda: 0)
-        )
+        game_state: GameState = get_default_game_state()
 
         api_under_test.reset()
         agent_cont: PlayerController | None = api_under_test.agent.controller
         assert agent_cont is not None
         agent_cont.game_state_after_action = game_state
+        game_state.active_player_index = 0
+        agent_cont.position = 1
 
         #Execute
         obs: MtgObservation = api_under_test.get_obs()
@@ -47,8 +37,8 @@ class TestApi():
             combat_index, #upcoming_decision
             int(False), #agent_is_active_player
             1, #agent_seat_position
-            (3, 1, 5),
-            (3, 2, 10)
+            (STARTING_LIFE, 1, DECK_SIZE),
+            (STARTING_LIFE, 1, DECK_SIZE)
         )
         assert obs == expected_obs
 
@@ -57,23 +47,15 @@ class TestApi():
         #Setup
         api_under_test: MtgEnv = MtgEnv()
 
-        agent_info: PlayerInfo = PlayerInfo("External", 3, [CardInstance(second_card_name)], 5, None)
-        opp_info: PlayerInfo = PlayerInfo("Opp-Goldfish", 3, [CardInstance(second_card_name), CardInstance(second_card_name)], 10, None)
-        game_state: GameState = GameState(
-            player_turns_completed=0,
-            steps_in_turn_completed=1,
-            active_player_index=0,
-            game_over=False,
-            player_infos=[opp_info, agent_info],
-            upcoming_event=PlayerEvent.DECLARE_ATTACKS,
-            winner_positions=[],
-            floating_mana=defaultdict(lambda: 0)
-        )
+        game_state: GameState = get_default_game_state()
         observation_limits: MtgObservation = (1, 1, 1, (2, 0, 4), (4, 0, 2))
         api_under_test.reset(options={"observation_limits": observation_limits})
+
         agent_cont: PlayerController | None = api_under_test.agent.controller
         assert agent_cont is not None
         agent_cont.game_state_after_action = game_state
+        game_state.active_player_index = 0
+        agent_cont.position = 1
 
 
         #Execute
@@ -85,8 +67,8 @@ class TestApi():
             combat_index, #upcoming_decision
             int(False), #agent_is_active_player
             1, #agent_seat_position
-            (2, 0, 4),
-            (3, 0, 2)
+            (min(2, STARTING_LIFE), 0, min(4, DECK_SIZE)),
+            (min(4, STARTING_LIFE), 0, min(2, DECK_SIZE))
         )
 
         assert obs == expected_obs    

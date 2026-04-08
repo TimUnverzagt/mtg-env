@@ -3,6 +3,7 @@ import app_config as conf
 from gameengine.gameobjects import CardInstance
 from gameengine.cards.catalog.creatures import CreatureNames
 from gameengine.cards.catalog.lands import LandNames
+from app_config import DECK_SIZE
 
 from dataclasses import dataclass
 from typing import Optional
@@ -15,18 +16,13 @@ def is_player_alive(info: PlayerInfo) -> bool:
         return info.death_description is None
 
 def get_default_library() -> list[CardInstance]:
-    return [
-    CardInstance(CreatureNames.ALPHA_MYR.value),
-    CardInstance(LandNames.WASTES.value),
-    CardInstance(CreatureNames.ALPHA_MYR.value),
-    CardInstance(LandNames.WASTES.value),
-    CardInstance(CreatureNames.ALPHA_MYR.value),
-    CardInstance(LandNames.WASTES.value),
-    CardInstance(CreatureNames.ALPHA_MYR.value),
-    CardInstance(LandNames.WASTES.value),
-    CardInstance(CreatureNames.ALPHA_MYR.value),
-    CardInstance(LandNames.WASTES.value)
-]
+    library: list[CardInstance] = []
+    for i in range(0,DECK_SIZE):
+        if (i % 3) == 2:
+            library.append(CardInstance(CreatureNames.ALPHA_MYR.value))
+        else:
+            library.append(CardInstance(LandNames.WASTES.value))
+    return library
 
 class Player:
     def __init__(self, name: str) -> None:

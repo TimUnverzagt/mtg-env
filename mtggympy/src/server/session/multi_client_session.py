@@ -73,7 +73,7 @@ class MultiClientSession():
                     cont.player_info.name,
                     self.game_state
                     ))
-                cont.upcoming_event = GameEngine.get_upcoming_event(self.game_state).value
+                cont.upcoming_event = self.game_state.upcoming_event.value
                 cont.game_state_before_action = self.game_state
                 cont.session_condition.notify_all()
 

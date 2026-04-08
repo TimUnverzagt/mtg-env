@@ -4,7 +4,7 @@ from enum import Enum
 GAMEOVER : str = "Game over!"
 
 #Decision details
-CARDS_TO_PLAY: str = "Cards to play"
+CARD_TO_PLAY: str = "Card to play"
 
 #Zones
 

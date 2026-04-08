@@ -39,7 +39,7 @@ def player_obs_from_info(player_info: PlayerInfo) -> MtgPlayerObs:
     return (
         player_info.current_life, #hp
         len(player_info.cards_in_hand), #cards_in_hand
-        player_info.cards_in_library #cards_in_library
+        len(player_info.cards_in_library) #cards_in_library
     )
 
 def card_index_to_name(index: int) -> str:

@@ -7,7 +7,7 @@ from gameengine.priority.event import PlayerEvent
 from gameengine.gameobjects import CardInstance
 from gameengine.state import GameState
 from gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
-from typing import Callable, Generic, Optional, ParamSpec, TypeVar, Any, Concatenate, cast
+from typing import Callable, Generic, Optional, ParamSpec, TypeVar, Any, Concatenate
 from uuid import UUID
 
 from logging_config import engine_log as logger
@@ -33,67 +33,70 @@ def step(acting_seat: int, decision_intent: Action, game_state: GameState, decis
     # Don't respond if the game is over
     if(game_state.game_over):
         return
-        
-    acting_player_info: PlayerInfo = game_state.player_infos[acting_seat]
-    upcoming_event: PlayerEvent = game_state.upcoming_event
-    if(not decision_intent in upcoming_event.value.possible_actions):
-        logger.error("Action '{}' not legal. Refusing to process intent.".format(
-            decision_intent
-        ))
-        return
-
+    
     # Handle decision of step
     logger.info("Handling intent '{}' for player event '{}' from {}".format(
-        decision_intent, upcoming_event.name, acting_player_info.name
+        decision_intent, game_state.upcoming_event.name, game_state.player_infos[acting_seat].name
         ))
-    match upcoming_event:
+    match game_state.upcoming_event:
         case PlayerEvent.MAIN_PHASE_EMPTY_STACK:
             handle_main_phase_decision(acting_seat, decision_intent, game_state, decision_details)
         case PlayerEvent.DECLARE_ATTACKS:
             handle_combat_decision(acting_seat, decision_intent, game_state)
-    # Stop immediatly if game is over now
-    if(game_state.game_over):
-        return
     return 
 
 def handle_main_phase_decision(acting_seat: int, decision: Action, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
-    if(decision==Action.PASS):
-        game_state.upcoming_event = PlayerEvent.DECLARE_ATTACKS
-        return
-    
-    if(decision_details is None):
-        # TODO: Raise and handle error
-        logger.warning(const.CARDS_TO_PLAY+ ": Details are missing. Refusing to process intent!")
-        return
-    
-    cards_to_play = decision_details[const.CARDS_TO_PLAY]
-    assert isinstance(cards_to_play, list)
-    if (not all(isinstance(card_id, UUID) for card_id in cards_to_play)): # type: ignore
-        # TODO: Raise and handle error
-        logger.warning(const.CARDS_TO_PLAY+ ": Non UUID object in details. Refusing to process intent!")
-        return
-    for card_id in cards_to_play: # type: ignore
-        cast(UUID, card_id)
-        logger.info("Trying to play CardInstance with UUID: " + str(card_id)); # type: ignore
-    
-    game_state.upcoming_event = PlayerEvent.DECLARE_ATTACKS
+    match decision:
+        case Action.PASS:
+            game_state.upcoming_event = PlayerEvent.DECLARE_ATTACKS
+        case Action.PLAY_CARD:
+            if(decision_details is None):
+                # TODO: Raise and handle error
+                logger.error(const.CARD_TO_PLAY+ ": Details are missing. Refusing to process intent!")
+                return
+            card_id = decision_details[const.CARD_TO_PLAY]
+            if (not isinstance(card_id, UUID)): # type: ignore
+                logger.error(const.CARD_TO_PLAY+ ": Non UUID object in details. Refusing to process intent!")
+                return
+            logger.info("Trying to play CardInstance with UUID: " + str(card_id)); # type: ignore
+            play_cards(acting_seat, game_state, card_id)
+        case Action.ACTIVATE_LANDS:
+            activate_lands(acting_seat, game_state)
+        case _:
+            handle_illegal_action(decision, PlayerEvent.MAIN_PHASE_EMPTY_STACK)
+    return
+
+def activate_lands(acting_seat: int, game_state:GameState):
+    return
+
+def play_cards(acting_seat: int, game_state:GameState, card_id: UUID):
     return
 
 def handle_combat_decision(acting_seat: int, decision: Action, game_state: GameState) -> None:
-    if(decision==Action.PASS):
-        pass_turn(game_state)
-        return
-    
-    logger.warning("Turn {}/{}: {} is attacking!".format(
-        game_state.player_turns_completed,
-        len(game_state.player_infos),
-        game_state.player_infos[acting_seat].name)
-    )
-    # Just use the only other player as target
-    defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_infos)
-    # Just decrease health by flat amount for poc
-    execute_action(acting_seat, game_state, deal_damage, defending_position, 1)
-    pass_turn(game_state)
+    match decision:
+        case Action.PASS:
+            pass_turn(game_state)
+        case Action.ATTACK:
+            logger.warning("Turn {}/{}: {} is attacking!".format(
+                game_state.player_turns_completed,
+                len(game_state.player_infos),
+                game_state.player_infos[acting_seat].name)
+            )
+
+            # Just use the only other player as target until multiplayer is implemented
+            defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_infos)
+            # Just decrease health by flat amount for poc
+            execute_action(acting_seat, game_state, deal_damage, defending_position, 1)
+            pass_turn(game_state)
+        case _:
+            handle_illegal_action(decision, PlayerEvent.DECLARE_ATTACKS)
+    return
+
+def handle_illegal_action(action: Action, event: PlayerEvent) -> None:
+    logger.error("Action '{}' not legal for event {}. Refusing to process intent.".format(
+        action.name,
+        event.name
+    ))
     return
 
 def check_state_based_actions(game_state: GameState) -> None:
