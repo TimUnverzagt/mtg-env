@@ -5,6 +5,7 @@ from gameengine.player import PlayerInfo
 from gameengine.gameobjects import CardInstance
 from gameengine.priority.event import PlayerEvent
 
+from server.session.player_connection import PlayerController
 import server.translation as translation
 from server.api.gym_environment import MtgEnv, MtgObservation
 
@@ -33,7 +34,9 @@ class TestApi():
         )
 
         api_under_test.reset()
-        api_under_test.game_session.game_state = game_state
+        agent_cont: PlayerController | None = api_under_test.agent.controller
+        assert agent_cont is not None
+        agent_cont.game_state_after_action = game_state
 
         #Execute
         obs: MtgObservation = api_under_test.get_obs()
@@ -68,7 +71,10 @@ class TestApi():
         )
         observation_limits: MtgObservation = (1, 1, 1, (2, 0, 4), (4, 0, 2))
         api_under_test.reset(options={"observation_limits": observation_limits})
-        api_under_test.game_session.game_state = game_state
+        agent_cont: PlayerController | None = api_under_test.agent.controller
+        assert agent_cont is not None
+        agent_cont.game_state_after_action = game_state
+
 
         #Execute
         obs: MtgObservation = api_under_test.get_obs()
