@@ -1,0 +1,26 @@
+[project]
+name = "mtggympy"
+version = "0.1.0"
+requires-python = "==3.13.*"
+dependencies = [
+    "numpy==2.4.4",
+    "pandas==3.0.2",
+    "pyright==1.1.408",
+    "pygame==2.6.1", 
+    "keyboard==0.13.5",
+    "gymnasium==1.2.3",
+    "tqdm==4.67.3",
+    "py-spy==0.4.1"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
