@@ -3,7 +3,7 @@ import gameengine.core as GameEngine
 from gameengine.constants import Action
 #from game.state import GameState
 from gameengine.player import PlayerInfo
-from rendering.simple import SimpleVisualization
+from rendering.renderer import SimpleRenderer
 
 import time
 from functools import reduce
@@ -20,9 +20,9 @@ class MultiClientSession():
     def __init__(self) -> None:
         self.game_state = GameEngine.get_initial_game_state()
         self.seats: list[Optional[PlayerController]] = [None, None]
-        self.vis: SimpleVisualization | None = None
+        self.vis: SimpleRenderer | None = None
         if conf.HUMAN_RENDERING:
-            self.vis = SimpleVisualization()
+            self.vis = SimpleRenderer()
         self.shutting_down: bool = False
 
     def connect(self, name: str) -> PlayerController | None:

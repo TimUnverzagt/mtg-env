@@ -3,7 +3,7 @@ from pygame import Surface
 from pygame import Rect
 from pygame.font import Font
 from typing import Callable
-from logging_config import main_log
+from logging_config import ui_log as logger
 
 import rendering.constants as const
 from gameengine.player import PlayerInfo
@@ -12,7 +12,7 @@ from gameengine.state import GameState
 get_surface_width: Callable[[Surface], int] = lambda surf: surf.get_width()
 get_surface_height: Callable[[Surface], int] = lambda surf: surf.get_height()
 
-class SimpleVisualization:
+class SimpleRenderer:
 
     def __init__(self) -> None:
         pygame.init()
@@ -23,7 +23,7 @@ class SimpleVisualization:
         self.seperator_thickness: int = 10
         self._draw_background()
         pygame.display.flip()
-        main_log.debug("Vizualisation is ready.")
+        logger.debug("Vizualisation is ready.")
 
     def step(self, game_state: GameState) -> None:
         self.render_environment(game_state)                

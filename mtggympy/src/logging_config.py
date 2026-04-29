@@ -25,6 +25,7 @@ def create_logger(name: str, logging_level: int) -> logging.Logger:
 
 # Create the loggers ONCE
 main_log   = create_logger("main", logging.INFO)
+ui_log = create_logger("ui", logging.INFO)
 dojo_log = create_logger("dojo", logging.INFO)
 session_log   = create_logger("session", logging.INFO)
 api_log   = create_logger("api", logging.INFO)
