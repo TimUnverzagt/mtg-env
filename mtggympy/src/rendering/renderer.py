@@ -67,7 +67,7 @@ class SimpleRenderer:
         return ui_screen
     
     def _render_text(self, text: str) -> Surface:
-        font: Font = Font (None, 30)
+        font: Font = Font(None, 30)
         return font.render(
             text,
             True,

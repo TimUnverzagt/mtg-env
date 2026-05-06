@@ -1,40 +1,66 @@
 from dataclasses import dataclass
+from pygame import Vector2 as Vector
 
 
 @dataclass
 class BoundingBox:
-        width: int
-        height: int
-        horizontal_offset: int
-        vertical_offset: int
+    dimensions: Vector
+    offsets: Vector
 
-def get_horizontal_spread(box: BoundingBox) -> tuple[int, int]:
-      return (box.horizontal_offset, box.horizontal_offset + box.width)
+@dataclass
+class MultiInterval:
+    start: Vector
+    end: Vector 
 
-def get_vertical_spread(box: BoundingBox) -> tuple[int, int]:
-      return (box.vertical_offset, box.vertical_offset + box.height)
+@dataclass
+class SimpleInterval:
+    start: float
+    end: float
 
-def are_intervals_seperable(first_interval: tuple[int, int], second_interval: tuple[int,int]) -> bool:
-      are_seperable: bool = False
-      are_seperable |= (max(first_interval) <= min(second_interval))
-      are_seperable |= (min(first_interval) >= max(second_interval))
-      return not are_seperable
+def get_interval_representation(box: BoundingBox) -> MultiInterval:
+    return MultiInterval(box.offsets, box.offsets + box.dimensions)
 
-def do_bounding_boxes_collide(first_box: BoundingBox, second_box: BoundingBox) -> bool:
+def are_simple_intervals_seperable(first: SimpleInterval, second: SimpleInterval) -> bool:
     are_seperable: bool = False
-    are_seperable |= are_intervals_seperable(get_horizontal_spread(first_box), get_horizontal_spread(second_box))
-    are_seperable |= are_intervals_seperable(get_vertical_spread(first_box), get_vertical_spread(second_box))
+    are_seperable |= (first.end <= second.start)
+    are_seperable |= (first.start >= second.end)
+    return are_seperable
+
+def do_bounding_boxes_collide(first: BoundingBox, second: BoundingBox) -> bool:
+    first_multi: MultiInterval = get_interval_representation(first)
+    second_multi: MultiInterval = get_interval_representation(second)
+    are_seperable: bool = False
+    are_seperable |= are_simple_intervals_seperable(
+        SimpleInterval(first_multi.start[0], first_multi.end[0]), 
+        SimpleInterval(second_multi.start[0], second_multi.end[0])
+        )
+    are_seperable |= are_simple_intervals_seperable(
+        SimpleInterval(first_multi.start[1], first_multi.end[1]), 
+        SimpleInterval(second_multi.start[1], second_multi.end[1])
+        )
     return not are_seperable
 
-def does_first_interval_fit_into_second(first_interval: tuple[int, int], second_interval: tuple[int,int]) -> bool:
+def does_first_simple_interval_fit_into_second(first: SimpleInterval, second: SimpleInterval) -> bool:
     fits: bool = True
-    fits &= (max(first_interval) <= max(second_interval))
-    fits &= (min(first_interval) >= min(second_interval))
+    fits &= (first.end <= second.end)
+    fits &= (first.start >= second.start)
     return fits
 
-
-def does_first_box_fit_into_second(first_box: BoundingBox, second_box: BoundingBox) -> bool:
+def does_first_box_fit_into_second(first: BoundingBox, second: BoundingBox) -> bool:
+    first_multi: MultiInterval = get_interval_representation(first)
+    second_multi: MultiInterval = get_interval_representation(second)
     fits: bool = True
-    fits &= does_first_interval_fit_into_second(get_horizontal_spread(first_box), get_horizontal_spread(second_box))
-    fits &= does_first_interval_fit_into_second(get_vertical_spread(first_box), get_vertical_spread(second_box))
+    fits &= does_first_simple_interval_fit_into_second(
+        SimpleInterval(first_multi.start[0], first_multi.end[0]), 
+        SimpleInterval(second_multi.start[0], second_multi.end[0])
+        )
+    fits &= does_first_simple_interval_fit_into_second(
+        SimpleInterval(first_multi.start[1], first_multi.end[1]), 
+        SimpleInterval(second_multi.start[1], second_multi.end[1])
+        )
     return fits
+
+def get_scaling_to_fit_first_box_to_second(first: BoundingBox, second: BoundingBox) -> float:
+    x_scaling: float =  second.dimensions[0] / first.dimensions[0]
+    y_scaling: float =  second.dimensions[1] / first.dimensions[1]
+    return min(x_scaling, y_scaling)

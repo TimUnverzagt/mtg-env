@@ -1,16 +1,23 @@
 import unittest
 from rendering.frame_renderer import FrameRenderer
-from rendering.frame_tree import FrameTree
-import rendering.ui_state as ui
+from gameengine.state import GameState
+from gameengine.gameobjects import CardInstance
+from gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
+from tests.default_data import get_default_game_state
+#from logging_config import ui_log as logger
 
 class FrameRendererTest(unittest.TestCase):
 
-    def test_background_rendering(self):
+    def test_basic_rendering(self):
         #Prepare
-        base_tree: FrameTree = ui.build_new_visualisation_tree()
+        renderer: FrameRenderer = FrameRenderer()
+        game_state: GameState = get_default_game_state()
+        game_state.player_infos[0].cards_in_hand.pop()
+        game_state.player_infos[0].cards_in_hand.append(CardInstance(CreatureNames.SLIVER_CONSTRUCT.value))
+        #logger.info("Testing logger")
         
         #Execute 
-        renderer: FrameRenderer = FrameRenderer(base_tree)
+        renderer.render_state(game_state)
 
         #Assert
         self.assertTrue(renderer)

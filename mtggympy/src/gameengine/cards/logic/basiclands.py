@@ -2,7 +2,7 @@ from gameengine.gameobjects import CardInstance
 from gameengine.constants import ManaColor, Zone
 from gameengine.capabilities import ManaProvider
 
-WASTES_NAME = "Wastes"
+WASTES_NAME = "wastes"
 
 class Wastes(CardInstance, ManaProvider):
 

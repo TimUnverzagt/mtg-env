@@ -107,7 +107,6 @@ class MultiClientSession():
                 cont.session_condition.notify_all()
         return
 
-
     def get_active_player_controller(self) -> Optional[PlayerController]:
         if self.seats[0] is None or self.seats[1] is None:
             logger.error("Can't get active controller because a player disconnected!")

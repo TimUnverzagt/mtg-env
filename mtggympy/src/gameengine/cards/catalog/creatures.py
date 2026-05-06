@@ -3,10 +3,10 @@ from gameengine.constants import ManaColor as MC
 from enum import Enum
 
 class CreatureNames(Enum):
-    METALLIC_SLIVER = "Metallic Sliver"
-    ALPHA_MYR = "Alpha Myr"
-    OMEGA_MYR = "Omega Myr"
-    SLIVER_CONSTRUCT =  "Sliver Construct"
+    METALLIC_SLIVER = "metallic-sliver"
+    ALPHA_MYR = "alpha-myr"
+    OMEGA_MYR = "omega-myr"
+    SLIVER_CONSTRUCT =  "sliver-construct"
 
 CREATURE_CATALOG: dict[str, CardInfo] = {
     CreatureNames.METALLIC_SLIVER.value: CreatureInfo(CreatureNames.METALLIC_SLIVER.value, {MC.COLORLESS: 1}, 1, 1),
