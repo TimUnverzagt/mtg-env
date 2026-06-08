@@ -1,8 +1,8 @@
 import unittest
-from rendering.frame_renderer import FrameRenderer
-from gameengine.state import GameState
-from gameengine.gameobjects import CardInstance
-from gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
+from mtggympy.rendering.frame_renderer import FrameRenderer
+from mtggympy.gameengine.state import GameState
+from mtggympy.gameengine.gameobjects import CardInstance
+from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
 from tests.default_data import get_default_game_state
 #from logging_config import ui_log as logger
 

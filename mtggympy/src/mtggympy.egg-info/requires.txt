@@ -6,3 +6,4 @@ keyboard==0.13.5
 gymnasium==1.2.3
 tqdm==4.67.3
 py-spy==0.4.1
+imgui[pygame]>=2.0.0

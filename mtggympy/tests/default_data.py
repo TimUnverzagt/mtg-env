@@ -1,11 +1,11 @@
-from gameengine.player import PlayerInfo, get_default_library
-from gameengine.gameobjects import CardInstance
+from mtggympy.gameengine.player import PlayerInfo, get_default_library
+from mtggympy.gameengine.gameobjects import CardInstance
 from collections import defaultdict
-from gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
-from gameengine.state import GameState
-from gameengine.priority.event import PlayerEvent
+from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
+from mtggympy.gameengine.state import GameState
+from mtggympy.gameengine.priority.event import PlayerEvent
 
-from config.app_config import STARTING_LIFE
+from mtggympy.app_config import STARTING_LIFE
 
 def get_default_player(name: str) -> PlayerInfo:
     return PlayerInfo(

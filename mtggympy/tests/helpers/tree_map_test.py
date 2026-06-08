@@ -1,6 +1,6 @@
 import unittest
-from helpers.typing_extensions import Tree
-from helpers.tree_map import tree_map
+from mtggympy.helpers.typing_extensions import Tree
+from mtggympy.helpers.tree_map import tree_map
 
 class TestTreeMap(unittest.TestCase):
 

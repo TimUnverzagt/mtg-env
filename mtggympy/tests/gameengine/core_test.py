@@ -1,12 +1,12 @@
-from gameengine.state import GameState
-from gameengine.priority.event import PlayerEvent
-from gameengine.constants import Action, ManaColor, CARD_TO_PLAY
-from gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
-from gameengine.cards.logic.basiclands import Wastes, WASTES_NAME
-from gameengine.gameobjects import CardInstance
-import gameengine.core as Engine
-from config import app_config
-from helpers.dict_operations import dicts_equal_with_default
+from mtggympy.gameengine.state import GameState
+from mtggympy.gameengine.priority.event import PlayerEvent
+from mtggympy.gameengine.constants import Action, ManaColor, CARD_TO_PLAY
+from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
+from mtggympy.gameengine.cards.logic.basiclands import Wastes, WASTES_NAME
+from mtggympy.gameengine.gameobjects import CardInstance
+import mtggympy.gameengine.core as Engine
+from mtggympy import app_config
+from mtggympy.helpers.dict_operations import dicts_equal_with_default
 from tests.default_data import get_default_game_state
 
 

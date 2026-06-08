@@ -1,0 +1,2 @@
+2026-06-08 10:23:04,370 - ui - ERROR - Can't scale tree PlayerHand1-child-0 inside PlayerHand1 by 0.8289473684210527: child bounding box exceeds parent bounding box
+2026-06-08 10:23:04,383 - ui - ERROR - Can't scale tree PlayerHand2-child-0 inside PlayerHand2 by 0.8289473684210527: child bounding box exceeds parent bounding box

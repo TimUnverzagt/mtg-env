@@ -10,3 +10,4 @@ Requires-Dist: keyboard==0.13.5
 Requires-Dist: gymnasium==1.2.3
 Requires-Dist: tqdm==4.67.3
 Requires-Dist: py-spy==0.4.1
+Requires-Dist: imgui[pygame]>=2.0.0

@@ -1,11 +1,11 @@
-from gameengine.state import GameState
-from gameengine.priority.event import PlayerEvent
+from mtggympy.gameengine.state import GameState
+from mtggympy.gameengine.priority.event import PlayerEvent
 
-from server.session.player_connection import PlayerController
-import server.translation as translation
-from server.api.gym_environment import MtgEnv, MtgObservation
+from mtggympy.server.session.player_connection import PlayerController
+import mtggympy.server.translation as translation
+from mtggympy.server.api.gym_environment import MtgEnv, MtgObservation
 
-from config.app_config import DECK_SIZE, STARTING_LIFE
+from mtggympy.app_config import DECK_SIZE, STARTING_LIFE
 
 from tests.default_data import get_default_game_state
 

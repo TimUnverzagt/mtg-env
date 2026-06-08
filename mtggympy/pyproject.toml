@@ -6,25 +6,29 @@ dependencies = [
     "numpy==2.4.4",
     "pandas==3.0.2",
     "pyright==1.1.408",
-    "pygame==2.6.1", 
+    "pygame==2.6.1",
     "keyboard==0.13.5",
     "gymnasium==1.2.3",
     "tqdm==4.67.3",
-    "py-spy==0.4.1"
+    "py-spy==0.4.1",
+    "imgui[pygame]>=2.0.0",
 ]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
 
-[tool.uv.sources]
-mtggympy = { workspace = true }
-
 [dependency-groups]
 dev = [
-    "mtggympy==0.1.0",
+    "mtggympy",
     "pytest>=9.0.3",
 ]

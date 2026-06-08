@@ -1,6 +1,3 @@
 assets
-dojo
-gameengine
-helpers
-rendering
-server
+logs
+mtggympy
