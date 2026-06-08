@@ -4,7 +4,7 @@ from numpy.typing import NDArray
 from server.api.gym_environment import MtgObservation, MtgAction, MtgEnv
 from typing import cast, DefaultDict, TypeAlias
 from tqdm import tqdm 
-from logging_config import dojo_log as logger
+from config.logging_config import dojo_log as logger
 
 QValue: TypeAlias = np.float32
 MtgActionSpace: TypeAlias = NDArray[np.int8]

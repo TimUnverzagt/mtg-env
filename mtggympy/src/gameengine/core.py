@@ -14,7 +14,7 @@ from gameengine.capabilities import ManaProvider
 from helpers.dict_operations import first_dict_can_fit_second_by_value
 from typing import Callable, Generic, Optional, ParamSpec, TypeVar, Any, Concatenate
 
-from logging_config import engine_log as logger
+from config.logging_config import engine_log as logger
 
 def get_initial_game_state() -> GameState:
     player1: Player = Player("Player1")

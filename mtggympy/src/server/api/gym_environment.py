@@ -5,7 +5,7 @@ from threading import Thread
 from gymnasium.spaces import Discrete, Tuple, MultiDiscrete
 from typing import Optional, TypeVar, Any, cast
 
-import app_config as app_const
+import config.app_config as app_const
 #import game.engine as MtgEngine
 from gameengine.state import GameState
 from gameengine.constants import Action
@@ -19,7 +19,7 @@ from server.translation import gym_action_to_priority_decision, game_state_to_ob
 from helpers.tree_map import tree_map
 from helpers.predicate_extensions import build_either_predicate
 
-from logging_config import api_log as logger
+from config.logging_config import api_log as logger
 
 
 ObsType = TypeVar("ObsType")

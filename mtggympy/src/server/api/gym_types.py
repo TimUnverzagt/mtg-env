@@ -1,7 +1,7 @@
-from typing import Any
+from typing import Any, TypeAlias
 
 # information type at external border of server 
-type MtgObservation = tuple[int, int, int, MtgPlayerObs, MtgPlayerObs]
-type MtgAction = tuple[int]
-type MtgInfo = dict[str, Any]
-type MtgPlayerObs = tuple[int, int, int]
+MtgPlayerObs: TypeAlias = tuple[int, int, int]
+MtgObservation: TypeAlias = tuple[int, int, int, MtgPlayerObs, MtgPlayerObs]
+MtgAction: TypeAlias = tuple[int]
+MtgInfo: TypeAlias = dict[str, Any]

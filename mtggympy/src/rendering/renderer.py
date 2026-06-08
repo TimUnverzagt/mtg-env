@@ -3,7 +3,7 @@ from pygame import Surface
 from pygame import Rect
 from pygame.font import Font
 from typing import Callable
-from logging_config import ui_log as logger
+from config.logging_config import ui_log as logger
 
 import rendering.constants as const
 from gameengine.player import PlayerInfo

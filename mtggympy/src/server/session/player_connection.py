@@ -6,8 +6,8 @@ from gameengine.state import GameState
 from gameengine.constants import Action
 from threading import Condition
 from logging import Logger
-from logging_config import create_logger
-import app_config as app_config
+from config.logging_config import create_logger
+import config.app_config as app_config
 
 from typing import Callable
 

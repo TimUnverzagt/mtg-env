@@ -9,10 +9,10 @@ import time
 from functools import reduce
 from typing import Optional
 import operator
-import app_config as conf
+import config.app_config as conf
 from copy import deepcopy
 
-from logging_config import session_log as logger
+from config.logging_config import session_log as logger
 
 
 class MultiClientSession():

@@ -1,7 +1,7 @@
 [project]
 name = "mtggympy"
 version = "0.1.0"
-requires-python = "==3.13.*"
+requires-python = "==3.11.*"
 dependencies = [
     "numpy==2.4.4",
     "pandas==3.0.2",
@@ -20,7 +20,11 @@ include = ["*"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
 
+[tool.uv.sources]
+mtggympy = { workspace = true }
+
 [dependency-groups]
 dev = [
+    "mtggympy==0.1.0",
     "pytest>=9.0.3",
 ]

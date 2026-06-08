@@ -6,8 +6,8 @@ from helpers.predicate_extensions import build_either_predicate
 from gameengine.constants import Action
 
 import time
-from logging_config import main_log
-import app_config as conf
+from config.logging_config import main_log
+import config.app_config as conf
 
 class AgentBase(ABC):
 

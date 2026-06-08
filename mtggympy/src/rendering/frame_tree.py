@@ -5,7 +5,7 @@ from pygame import Surface
 from pygame import Vector2 as Vector
 from typing import Optional
 
-from logging_config import ui_log as logger
+from config.logging_config import ui_log as logger
 from rendering.bounding_box import BoundingBox, do_bounding_boxes_collide, does_first_box_fit_into_second
 
 class Texture():
@@ -34,51 +34,66 @@ class FrameTree():
         self.content: Optional[Surface] = None
         self.children: list[FrameTree] = []
 
-    def child_exceeds_bounding_box(self, child: FrameTree) -> bool:
-        return not does_first_box_fit_into_second(child.global_bounding_box, self.global_bounding_box)
+    def child_exceeds_bounding_box(self, child_box: BoundingBox) -> bool:
+        return not does_first_box_fit_into_second(child_box, self.global_bounding_box)
     
-    def child_collides_with_existing_children(self, child: FrameTree) -> bool:
+    def child_collides_with_other_children(self, child_box: BoundingBox, child_name: str) -> bool:
         does_collide_with_any: bool = False
         for prior_child in self.children:
+            if(child_name ==  prior_child.name):
+                continue
             does_collide_with_any |= do_bounding_boxes_collide(
-                child.global_bounding_box, 
+                child_box, 
                 prior_child.global_bounding_box)
         return does_collide_with_any
+    
+    def is_new_child_position_valid(self, child_box: BoundingBox, child_name: str, error_prefix: str) -> bool:
+        if (self.child_exceeds_bounding_box(child_box)):
+            logger.error("{} child bounding box exceeds parent bounding box".format(error_prefix))
+            logger.info("Parent {}: {}".format(self.name, self.global_bounding_box))
+            logger.info("Child {}: {}".format(child_name, child_box))
+            return False
+    
+        if (self.child_collides_with_other_children(child_box, child_name)):
+            logger.info("{} child bounding box collides with other child".format(error_prefix))
+            logger.info("Parent {}: {}".format(self.name, self.global_bounding_box))
+            logger.info("Child {}: {}".format(child_name, child_box))
+            for prev_child in self.children:
+                logger.info("Prior child {}: {}".format(prev_child.name,prev_child.global_bounding_box))
+                return False
+        return True
+
 
     def add_child(self, child: FrameTree) -> None:
-        if (self.child_exceeds_bounding_box(child)):
-            logger.error("Can't add child {} to {} TextureTree because it would exceed parent bounding box. Aborting addition!"
-                         .format(child.name, self.name))
-            logger.error("Parent {}: {}".format(self.name, self.global_bounding_box))
-            logger.error("Child {}: {}".format(child.name, child.global_bounding_box))
-            return
-        if (self.child_collides_with_existing_children(child)):
-            logger.error("Can't add child {} to {} TextureTree because it collided with preexisting children. Aborting addition!"
-                         .format(child.name, self.name))
-            logger.error("Parent {}: {}".format(self.name, self.global_bounding_box))
-            logger.error("Child {}: {}".format(child.name, child.global_bounding_box))
-            for prev_child in self.children:
-                logger.error("Prior child {}: {}".format(prev_child.name,prev_child.global_bounding_box))
-            return
+        error_prefix: str = "Can't add child {} to {} TextureTree:".format(child.name, self.name)
+        if not self.is_new_child_position_valid(child.global_bounding_box, child.name, error_prefix):
+            logger.warning("Aborting child addition!")
         self.children.append(child)
 
-    def set_content(self, new_content: Surface):
+    def set_content(self, new_content: Optional[Surface]) -> None:
+        if not new_content:
+            return
         target_dimensons: Vector = self.global_bounding_box.dimensions
         self.content = pygame.transform.scale(new_content, (target_dimensons[0], target_dimensons[1]))
 
-    def scale_by(self, scaling_factor: float, prior_root_box: BoundingBox) -> None:
-        if (scaling_factor > 1.0):
-            logger.error("Can't scale up {} without additional checks, because then this element might exceed parent bounding box. Aborting scaling!"
-                         .format(self.name))
-            return
-        for child in self.children:
-            child.scale_by(scaling_factor, prior_root_box)
-        local_offset: Vector = self.global_bounding_box.offsets - prior_root_box.offsets
+    def scale_by(self, scaling_factor: float, root_box: BoundingBox, parent: FrameTree) -> None:
+        local_offset: Vector = self.global_bounding_box.offsets - root_box.offsets
+        new_bounding_box:BoundingBox = BoundingBox(
+            self.global_bounding_box.dimensions * scaling_factor,
+            root_box.offsets + local_offset*scaling_factor
+        )
+        error_prefix: str = "Can't scale tree {} inside {} by {}:".format(self.name, parent.name, scaling_factor)
+        executing_properly: bool = parent.is_new_child_position_valid(new_bounding_box, self.name, error_prefix)
         self.global_bounding_box.dimensions *= scaling_factor
-        self.global_bounding_box.offsets = prior_root_box.offsets + local_offset*scaling_factor
-        if not self.content:
-            return        
-        self.content = pygame.transform.scale_by(self.content, scaling_factor)
+        self.global_bounding_box.offsets = root_box.offsets + local_offset*scaling_factor
+        self.set_content(self.content)
+        if (not executing_properly):
+            return 
+        if (scaling_factor < 1):
+            for child in self.children:
+                child.scale_by(scaling_factor, root_box, self)
+        else:
+            logger.info("Not propagating upscaling to children, because its messy.")
         
 
 def build_frame_tree_from_ratios(name: str, parent_box: BoundingBox, dimension_ratios: Vector, 

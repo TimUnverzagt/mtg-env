@@ -4,7 +4,7 @@ from gameengine.constants import Action
 #import environment.constants as EnvConsts
 from server.agents.abstractions.base import AgentBase
 
-from logging_config import main_log
+from config.logging_config import main_log
 import random
 import sys
 

@@ -1,9 +1,9 @@
 import pygame 
 from pygame import Surface
 from rendering.frame_tree import FrameTree
-import rendering.frames as Frames
+import rendering.composition as Composition
 from gameengine.state import GameState
-from logging_config import ui_log as logger
+from config.logging_config import ui_log as logger
 
 WINDOW_WIDTH: int = 1920
 WINDOW_HEIGHT: int = 1080
@@ -16,7 +16,7 @@ class FrameRenderer:
         logger.debug("Vizualisation is ready.")
 
     def render_state(self, game_state:GameState) -> None:
-        frame_tree: FrameTree = Frames.build_full_frame(game_state, WINDOW_WIDTH, WINDOW_HEIGHT)
+        frame_tree: FrameTree = Composition.build_full_frame(game_state, WINDOW_WIDTH, WINDOW_HEIGHT)
         self._render_frame(frame_tree)
         pygame.display.flip()
 

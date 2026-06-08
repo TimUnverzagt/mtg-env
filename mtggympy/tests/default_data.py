@@ -5,7 +5,7 @@ from gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
 from gameengine.state import GameState
 from gameengine.priority.event import PlayerEvent
 
-from app_config import STARTING_LIFE
+from config.app_config import STARTING_LIFE
 
 def get_default_player(name: str) -> PlayerInfo:
     return PlayerInfo(

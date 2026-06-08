@@ -29,9 +29,15 @@ src/mtggympy.egg-info/dependency_links.txt
 src/mtggympy.egg-info/requires.txt
 src/mtggympy.egg-info/top_level.txt
 src/rendering/__init__.py
+src/rendering/bounding_box.py
+src/rendering/composition.py
 src/rendering/constants.py
-src/rendering/simple.py
-src/rendering/texture_tree.py
+src/rendering/frame_renderer.py
+src/rendering/frame_tree.py
+src/rendering/renderer.py
+src/rendering/surface.py
+src/rendering/frames/__init__.py
+src/rendering/frames/padding.py
 src/server/__init__.py
 src/server/translation.py
 src/server/agents/__init__.py

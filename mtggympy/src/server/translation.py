@@ -6,7 +6,7 @@ from gameengine.constants import Action
 from gameengine.priority.event import PlayerEvent
 from gameengine.cards.catalog.full import CARD_CATALOG
 
-from logging_config import api_log as logger
+from config.logging_config import api_log as logger
 
 def game_state_to_obs(state: GameState, agent_position: int) -> MtgObservation:
     player_info: PlayerInfo = state.player_infos[agent_position]

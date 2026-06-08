@@ -5,6 +5,7 @@ from gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
 from gameengine.cards.logic.basiclands import Wastes, WASTES_NAME
 from gameengine.gameobjects import CardInstance
 import gameengine.core as Engine
+from config import app_config
 from helpers.dict_operations import dicts_equal_with_default
 from tests.default_data import get_default_game_state
 
@@ -26,7 +27,7 @@ class TestGameEngine():
         Engine.handle_combat_decision(0, Action.ATTACK, game_state)
         #Assert
         assert game_state.upcoming_event == PlayerEvent.MAIN_PHASE_EMPTY_STACK
-        assert game_state.player_infos[1].current_life == 4
+        assert game_state.player_infos[1].current_life == app_config.STARTING_LIFE - 1
 
 
     def test_drawing_a_card(self):

@@ -5,7 +5,7 @@ from server.session.player_connection import PlayerController
 import server.translation as translation
 from server.api.gym_environment import MtgEnv, MtgObservation
 
-from app_config import DECK_SIZE, STARTING_LIFE
+from config.app_config import DECK_SIZE, STARTING_LIFE
 
 from tests.default_data import get_default_game_state
 

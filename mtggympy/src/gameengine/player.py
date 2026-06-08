@@ -1,15 +1,15 @@
 from __future__ import annotations
-import app_config as conf
+import config.app_config as conf
 from gameengine.gameobjects import CardInstance
 from gameengine.cards.catalog.creatures import CreatureNames
 from gameengine.cards.catalog.lands import LandNames
-from app_config import DECK_SIZE
+from config.app_config import DECK_SIZE
 
 from dataclasses import dataclass
 from typing import Optional
 
 
-from logging_config import engine_log as logger
+from config.logging_config import engine_log as logger
 
     
 def is_player_alive(info: PlayerInfo) -> bool:
