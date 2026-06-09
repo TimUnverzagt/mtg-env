@@ -64,18 +64,11 @@ def main():
 
         imgui.new_frame()
 
-        # --- UI ---
-        #layout.gui({"alpha-myr": load_image(os.path.join("cards", "alpha-myr.png"))})
-        
-
-        imgui.begin("DEBUG", True)
-        imgui.text("ImGui is rendering")
-        imgui.end()
-
         # Flush old frame
         gl.glClearColor(0, 0, 0, 1) # type: ignore
         gl.glClear(gl.GL_COLOR_BUFFER_BIT) # type: ignore
 
+        # --- UI ---
         layout.gui({"background": background_id}, io.display_size)
 
         imgui.render()
