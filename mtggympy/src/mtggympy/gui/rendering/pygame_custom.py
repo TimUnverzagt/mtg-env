@@ -5,7 +5,8 @@ from pygame.font import Font
 from typing import Callable
 from mtggympy.logging_config import ui_log as logger
 
-import mtggympy.rendering.constants as const
+import mtggympy.gui.constants as const
+import mtggympy.app_config as conf
 from mtggympy.gameengine.player import PlayerInfo
 from mtggympy.gameengine.state import GameState
                 
@@ -16,8 +17,8 @@ class SimpleRenderer:
 
     def __init__(self) -> None:
         pygame.init()
-        self.width: int = 1280
-        self.height: int = 960
+        self.width: int = conf.UI_STARTING_WIDTH
+        self.height: int = conf.UI_STARTING_HEIGHT
         self.size: tuple[int, int] = self.width, self.height
         self.screen: Surface = pygame.display.set_mode(self.size)
         self.seperator_thickness: int = 10

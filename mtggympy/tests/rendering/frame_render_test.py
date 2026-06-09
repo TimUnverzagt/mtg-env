@@ -1,5 +1,5 @@
 import unittest
-from mtggympy.rendering.frame_renderer import FrameRenderer
+from mtggympy.gui.layout.custom.frames.frame_renderer import FrameRenderer
 from mtggympy.gameengine.state import GameState
 from mtggympy.gameengine.gameobjects import CardInstance
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames

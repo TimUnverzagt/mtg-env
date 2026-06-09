@@ -3,9 +3,9 @@ from pygame import Surface
 from pygame import Vector2 as Vector
 from typing import Optional
 
-import mtggympy.rendering.bounding_box as BoxFunctions
-from mtggympy.rendering.frame_tree import FrameTree
-from mtggympy.rendering.bounding_box import BoundingBox
+import mtggympy.gui.layout.custom.bounding_box as BoxFunctions
+from mtggympy.gui.layout.custom.frames.frame_tree import FrameTree
+from mtggympy.gui.layout.custom.bounding_box import BoundingBox
 
 def build_padded_frame_in_place(inner_frame: FrameTree, parent: FrameTree, padding_background: Optional[Surface],
                        x_start_padding: float, x_end_padding: float,

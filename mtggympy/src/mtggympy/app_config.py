@@ -1,16 +1,29 @@
 import logging
 import os
 
+###############
+# Project 
+###############
 # file --> config --> module --> src
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ASSET_DIR = os.path.join(SRC_DIR, "assets")
+PLAYER_LOG_LEVEL: int = logging.WARN
 
+###############
+# UI 
+###############
 HUMAN_RENDERING: bool = False
+UI_STARTING_WIDTH = 1920
+UI_STARTING_HEIGHT = 1080
+CARD_HEIGHT = 180
+CARD_WH_RATIO = 63/88
 
+###############
+# Logic
+###############
 SESSION_TICK_LENGTH: float = 0#.2
 AGENT_TICK_LENGTH: float = 0#.137
 API_TICK_LENGTH: float = 0#.1
 STARTING_LIFE: int = 20
 DECK_SIZE: int = 40
 
-
-PLAYER_LOG_LEVEL: int = logging.WARN

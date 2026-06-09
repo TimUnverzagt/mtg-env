@@ -3,7 +3,7 @@ import mtggympy.gameengine.core as GameEngine
 from mtggympy.gameengine.constants import Action
 #from game.state import GameState
 from mtggympy.gameengine.player import PlayerInfo
-from mtggympy.rendering.renderer import SimpleRenderer
+from mtggympy.gui.rendering.pygame_custom import SimpleRenderer
 
 import time
 from functools import reduce

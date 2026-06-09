@@ -2,15 +2,15 @@ from pygame import Surface
 from pygame.font import Font
 from pygame import Vector2 as Vector
 
-import mtggympy.rendering.bounding_box as BoxFunctions
-import mtggympy.rendering.surface as SurfaceFuntions
-import mtggympy.rendering.frames.padding as Padding
+import mtggympy.gui.layout.custom.bounding_box as BoxFunctions
+import mtggympy.gui.layout.custom.surface as SurfaceFuntions
+import mtggympy.gui.layout.custom.padding as Padding
 from mtggympy.gameengine.state import GameState
 from mtggympy.gameengine.player import PlayerInfo
 from mtggympy.gameengine.gameobjects import CardInstance
-from mtggympy.rendering.bounding_box import BoundingBox
-from mtggympy.rendering.frame_tree import FrameTree, build_frame_tree_from_ratios
-import mtggympy.rendering.constants as const
+from mtggympy.gui.layout.custom.bounding_box import BoundingBox
+from mtggympy.gui.layout.custom.frames.frame_tree import FrameTree, build_frame_tree_from_ratios
+import mtggympy.gui.constants as const
 
 
 def render_text(text: str) -> Surface:

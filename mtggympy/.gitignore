@@ -1,2 +1,7 @@
 logs/*
 assets/*
+
+## Dear ImGui artifacts
+**/imgui.ini
+**/imgui*.ini
+*.ini

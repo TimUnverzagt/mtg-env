@@ -1,7 +1,7 @@
 import pygame 
 from pygame import Surface
-from mtggympy.rendering.frame_tree import FrameTree
-import mtggympy.rendering.composition as Composition
+from mtggympy.gui.layout.custom.frames.frame_tree import FrameTree
+import mtggympy.gui.layout.custom.composition as Composition
 from mtggympy.gameengine.state import GameState
 from mtggympy.logging_config import ui_log as logger
 

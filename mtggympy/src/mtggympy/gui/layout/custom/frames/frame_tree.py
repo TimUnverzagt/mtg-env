@@ -6,7 +6,7 @@ from pygame import Vector2 as Vector
 from typing import Optional
 
 from mtggympy.logging_config import ui_log as logger
-from mtggympy.rendering.bounding_box import BoundingBox, do_bounding_boxes_collide, does_first_box_fit_into_second
+from mtggympy.gui.layout.custom.bounding_box import BoundingBox, do_bounding_boxes_collide, does_first_box_fit_into_second
 
 class Texture():
     def __init__(self) -> None:
