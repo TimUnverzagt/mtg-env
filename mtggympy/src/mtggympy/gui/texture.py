@@ -1,7 +1,8 @@
 from dataclasses import dataclass
+from imgui_bundle.imgui import ImTextureRef
 
 @dataclass
-class Texture:
-    id: int
+class ImageMetaData:
+    shader_ref: ImTextureRef
     width: int
     height: int
