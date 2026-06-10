@@ -1,6 +1,6 @@
 from mtggympy.gameengine.priority.event import EventData
 from mtggympy.gameengine.player import PlayerInfo
-from mtggympy.server.api.gym_types import MtgObservation, MtgAction, MtgPlayerObs
+from mtggympy.api.gym_types import MtgObservation, MtgAction, MtgPlayerObs
 from mtggympy.gameengine.state import GameState
 from mtggympy.gameengine.constants import Action
 from mtggympy.gameengine.priority.event import PlayerEvent

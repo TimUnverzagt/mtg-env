@@ -1,4 +1,4 @@
-from mtggympy.server.api.gym_environment import MtgEnv
+from mtggympy.api.gym_environment import MtgEnv
 #from api.wrapper import MtgObservation
 from mtggympy.dojo.q_learning import QLearner
 

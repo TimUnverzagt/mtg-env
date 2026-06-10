@@ -5,8 +5,8 @@ from imgui_bundle.imgui import ImTextureRef
 
 import mtggympy.app_config as conf
 import mtggympy.gui.constants as const
-from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
-from mtggympy.gameengine.cards.catalog.lands import LandNames
+#from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
+#from mtggympy.gameengine.cards.catalog.lands import LandNames
 from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
 from mtggympy.gameengine.state import GameState, PlayerInfo
 from mtggympy.gameengine.constants import CardType
@@ -17,7 +17,7 @@ counter = 0 # our app state
 tapped_creatures: defaultdict[int, bool] = defaultdict(lambda: False)
 tapped_lands: defaultdict[int, bool] = defaultdict(lambda: False)
 
-def background(image_ref: ImTextureRef, display_size: ImVec2):
+def add_background(image_ref: ImTextureRef, display_size: ImVec2):
     imgui.set_next_window_pos((0, 0))
     imgui.set_next_window_size(display_size)
     imgui.begin("bg", False,
@@ -31,9 +31,11 @@ def background(image_ref: ImTextureRef, display_size: ImVec2):
     imgui.image(image_ref, display_size)
     imgui.end()
     
-def gui(game_state: GameState, image_refs: dict[str, ImageMetaData], display_size: ImVec2):
+def gui(game_state: GameState|None, image_refs: dict[str, ImageMetaData], display_size: ImVec2):
 
-    background(image_refs[const.BACKGROUND_IMAGE_NAME].shader_ref, display_size)
+    add_background(image_refs[const.BACKGROUND_IMAGE_NAME].shader_ref, display_size)
+    if game_state is None:
+        return
 
     imgui.set_next_window_pos((0, 0))
     imgui.set_next_window_size(display_size)

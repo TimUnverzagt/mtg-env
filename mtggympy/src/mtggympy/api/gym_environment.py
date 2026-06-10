@@ -14,7 +14,7 @@ from mtggympy.server.session.player_connection import PlayerController
 from mtggympy.server.agents.simple import Goldfish #, Monkey
 from mtggympy.server.agents.external import ApiAgent
 from mtggympy.server.agents.abstractions.base import AgentBase as Agent
-from mtggympy.server.api.gym_types import MtgObservation, MtgInfo, MtgAction
+from mtggympy.api.gym_types import MtgObservation, MtgInfo, MtgAction
 from mtggympy.server.translation import gym_action_to_priority_decision, game_state_to_obs
 from mtggympy.helpers.tree_map import tree_map
 from mtggympy.helpers.predicate_extensions import build_either_predicate

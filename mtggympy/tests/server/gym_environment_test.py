@@ -3,7 +3,7 @@ from mtggympy.gameengine.priority.event import PlayerEvent
 
 from mtggympy.server.session.player_connection import PlayerController
 import mtggympy.server.translation as translation
-from mtggympy.server.api.gym_environment import MtgEnv, MtgObservation
+from mtggympy.api.gym_environment import MtgEnv, MtgObservation
 
 from mtggympy.app_config import DECK_SIZE, STARTING_LIFE
 

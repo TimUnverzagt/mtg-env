@@ -1,5 +1,9 @@
+import threading
+
 import pygame
+import time
 from pygame import Surface
+from threading import Thread
 from imgui_bundle import imgui, ImVec2
 from imgui_bundle.python_backends import pygame_backend
 import OpenGL.GL as gl
@@ -16,7 +20,7 @@ from mtggympy.gameengine.priority.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
 from mtggympy.gameengine.gameobjects import CardInstance
-
+    
 def load_image(path_from_asset_dir: str) -> Surface:
     filepath: str = os.path.join(conf.ASSET_DIR, path_from_asset_dir)
     return pygame.image.load(filepath)
@@ -24,83 +28,95 @@ def load_image(path_from_asset_dir: str) -> Surface:
 def load_card_image(card_name:str) -> Surface:
     return load_image(os.path.join("cards", card_name + ".png"))
 
-def add_texture_to_gl(surface: pygame.Surface) -> ImageMetaData:
-    surface = surface.convert_alpha()
+class GlRenderer():
 
-    width, height = surface.get_size()
-    pixel_data = pygame.image.tostring(surface, "RGBA", False)
+    def __init__(self) -> None:
+        self.ui_thread = Thread(target=self.run_renderer, daemon=True)
+        self.ui_thread.start()
+        
+    def _init_from_thread(self) -> None:
+        pygame.init()
+        imgui.create_context()
 
-    tex_id = gl.glGenTextures(1) # type: ignore
-    gl.glBindTexture(gl.GL_TEXTURE_2D, tex_id) # type: ignore
-
-    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR) # type: ignore
-    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR) # type: ignore
-
-    gl.glTexImage2D(
-        gl.GL_TEXTURE_2D, # type: ignore
-        0,
-        gl.GL_RGBA, # type: ignore
-        width,
-        height,
-        0,
-        gl.GL_RGBA, # type: ignore
-        gl.GL_UNSIGNED_BYTE, # type: ignore
-        pixel_data
-    )
-    tex_id = int(tex_id)# type:ignore
-    return ImageMetaData(imgui.ImTextureRef(tex_id), surface.get_width(), surface.get_height())
+        self.screen = pygame.display.set_mode((conf.UI_STARTING_WIDTH, conf.UI_STARTING_HEIGHT), pygame.DOUBLEBUF | pygame.OPENGL | pygame.RESIZABLE)
+        self.clock = pygame.time.Clock()
+        self.impl = pygame_backend.PygameRenderer()
+        self.running = True
+        self.io = imgui.get_io()
+        self.io.display_size = ImVec2(self.screen.get_size()[0], self.screen.get_size()[1])
+        self.observations: GameState | None = None
 
 
-def render_state(game_state: GameState):
-    pygame.init()
-    screen = pygame.display.set_mode((conf.UI_STARTING_WIDTH, conf.UI_STARTING_HEIGHT), pygame.DOUBLEBUF | pygame.OPENGL | pygame.RESIZABLE)
-    clock = pygame.time.Clock()
+        self.image_assets: dict[str, ImageMetaData] = {}
+        background: Surface = load_image(const.BACKGROUND_IMAGE_NAME)
+        self.image_assets[const.BACKGROUND_IMAGE_NAME] = self.add_texture_to_gl(background)
+        cardback: Surface = load_image(const.CARDBACK_IMAGE_NAME)
+        self.image_assets[const.CARDBACK_IMAGE_NAME] = self.add_texture_to_gl(cardback)
 
-    imgui.create_context()
-    impl = pygame_backend.PygameRenderer()
-    running = True
+        for name in CreatureNames:
+            card_surface:Surface = load_card_image(name.value)
+            self.image_assets[name.value] = self.add_texture_to_gl(card_surface)
+            self.image_assets[name.value + const.TAPPED_MODIFIER] = self.add_texture_to_gl(pygame.transform.rotate(card_surface, 270.0))
+        for name in LandNames:
+            card_surface:Surface = load_card_image(name.value)
+            self.image_assets[name.value] = self.add_texture_to_gl(card_surface)
+            self.image_assets[name.value + const.TAPPED_MODIFIER] = self. add_texture_to_gl(pygame.transform.rotate(card_surface, 270.0))
 
-    image_assets: dict[str, ImageMetaData] = {}
-    background: Surface = load_image(const.BACKGROUND_IMAGE_NAME)
-    image_assets[const.BACKGROUND_IMAGE_NAME] = add_texture_to_gl(background)
-    cardback: Surface = load_image(const.CARDBACK_IMAGE_NAME)
-    image_assets[const.CARDBACK_IMAGE_NAME] = add_texture_to_gl(cardback)
+    def _del_from_thread(self):
+        pygame.quit()
 
-    for name in CreatureNames:
-        card_surface:Surface = load_card_image(name.value)
-        image_assets[name.value] = add_texture_to_gl(card_surface)
-        image_assets[name.value + const.TAPPED_MODIFIER] = add_texture_to_gl(pygame.transform.rotate(card_surface, 270.0))
 
-    for name in LandNames:
-        card_surface:Surface = load_card_image(name.value)
-        image_assets[name.value] = add_texture_to_gl(card_surface)
-        image_assets[name.value + const.TAPPED_MODIFIER] = add_texture_to_gl(pygame.transform.rotate(card_surface, 270.0))
-    
-    io = imgui.get_io()
-    io.display_size = ImVec2(screen.get_size()[0], screen.get_size()[1])
+    def add_texture_to_gl(self, surface: pygame.Surface) -> ImageMetaData:
+        surface = surface.convert_alpha()
 
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            impl.process_event(event) # type: ignore
-        impl.process_inputs()
+        width, height = surface.get_size()
+        pixel_data = pygame.image.tostring(surface, "RGBA", False)
 
-        imgui.new_frame()
+        tex_id = gl.glGenTextures(1) # type: ignore
+        gl.glBindTexture(gl.GL_TEXTURE_2D, tex_id) # type: ignore
 
-        # Flush old frame
-        gl.glClearColor(0, 0, 0, 1) # type: ignore
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT) # type: ignore
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR) # type: ignore
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR) # type: ignore
 
-        # --- UI ---
-        layout.gui(game_state, image_assets, io.display_size)
+        gl.glTexImage2D(
+            gl.GL_TEXTURE_2D, # type: ignore
+            0,
+            gl.GL_RGBA, # type: ignore
+            width,
+            height,
+            0,
+            gl.GL_RGBA, # type: ignore
+            gl.GL_UNSIGNED_BYTE, # type: ignore
+            pixel_data
+        )
+        tex_id = int(tex_id)# type:ignore
+        return ImageMetaData(imgui.ImTextureRef(tex_id), surface.get_width(), surface.get_height())
 
-        imgui.render()
-        impl.render(imgui.get_draw_data())
-        pygame.display.flip()
-        clock.tick(60)
+    def run_renderer(self):
+        self._init_from_thread()
+        while self.running:
 
-    pygame.quit()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                self.impl.process_event(event) # type: ignore
+            self.impl.process_inputs()
+
+            imgui.new_frame()
+
+            # Flush old frame
+            gl.glClearColor(0, 0, 0, 1) # type: ignore
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT) # type: ignore
+
+            # --- UI ---
+            layout.gui(self.observations, self.image_assets, self.io.display_size)
+
+            imgui.render()
+            self.impl.render(imgui.get_draw_data())
+            pygame.display.flip()
+            self.clock.tick(60)
+
+        self._del_from_thread()
 
 
 if __name__ == "__main__":
@@ -143,4 +159,8 @@ if __name__ == "__main__":
               player_infos=[p1_info, p2_info],
               winner_positions=[],
               floating_mana=defaultdict(lambda: 0))
-    render_state(current_state)
+    
+    renderer: GlRenderer = GlRenderer()
+    time.sleep(1)
+    renderer.observations = current_state
+    forever = threading.Event(); forever.wait()
