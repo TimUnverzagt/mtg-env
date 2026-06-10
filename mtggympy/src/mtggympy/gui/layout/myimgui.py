@@ -7,6 +7,10 @@ import mtggympy.app_config as conf
 import mtggympy.gui.constants as const
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
+from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
+from mtggympy.gameengine.state import GameState, PlayerInfo
+from mtggympy.gameengine.constants import CardType
+from mtggympy.gameengine.gameobjects import CardInstance
 from mtggympy.gui.texture import ImageMetaData
 
 counter = 0 # our app state
@@ -27,7 +31,7 @@ def background(image_ref: ImTextureRef, display_size: ImVec2):
     imgui.image(image_ref, display_size)
     imgui.end()
     
-def gui(image_refs: dict[str, ImageMetaData], display_size: ImVec2):
+def gui(game_state: GameState, image_refs: dict[str, ImageMetaData], display_size: ImVec2):
 
     background(image_refs[const.BACKGROUND_IMAGE_NAME].shader_ref, display_size)
 
@@ -37,13 +41,14 @@ def gui(image_refs: dict[str, ImageMetaData], display_size: ImVec2):
     root_flags |= imgui.WindowFlags_.no_title_bar
     root_flags |= imgui.WindowFlags_.no_scrollbar
     root_flags |= imgui.WindowFlags_.no_background
+    root_flags |= imgui.WindowFlags_.no_resize
 
     imgui.begin("root", False, root_flags)
     shared_space_avail: ImVec2 = imgui.get_content_region_avail()
 
-    add_meta(shared_space_avail)
+    add_meta(game_state, shared_space_avail)
     imgui.same_line()
-    add_players(shared_space_avail, image_refs)
+    add_players(game_state, shared_space_avail, image_refs)
     imgui.same_line()
     add_interface(shared_space_avail)
     imgui.end()
@@ -74,22 +79,22 @@ def add_card(image_refs: dict[str, ImageMetaData], card_name:str, position: int,
     imgui.pop_style_var()
     return clicked
 
-def add_meta(parent_space_avail: ImVec2):
+def add_meta(game_state: GameState, parent_space_avail: ImVec2):
     meta_flags = imgui.WindowFlags_.no_scrollbar
     meta_flags |= imgui.WindowFlags_.no_background
     imgui.begin_child("Meta", ImVec2(parent_space_avail.x * 0.1, 0), True, meta_flags)
     shared_space_avail: ImVec2 = ImVec2(imgui.get_content_region_avail().x, imgui.get_content_region_avail().y-10)
-    add_meta_p1(shared_space_avail)
-    add_meta_game(shared_space_avail)
-    add_meta_p2(shared_space_avail)
+    add_meta_p1(game_state.player_infos[0], shared_space_avail)
+    add_meta_game(game_state, shared_space_avail)
+    add_meta_p2(game_state.player_infos[1], shared_space_avail)
     imgui.end_child()
 
-def add_meta_p1(parent_space_avail: ImVec2):
+def add_meta_p1(player_state: PlayerInfo, parent_space_avail: ImVec2):
     meta_p1_flags = imgui.WindowFlags_.no_scrollbar
     meta_p1_flags |= imgui.WindowFlags_.no_background
     imgui.begin_child("MetaP1", ImVec2(parent_space_avail.x, parent_space_avail.y*0.4), False, meta_p1_flags)
-    imgui.bullet_text("Life: 20")
-    imgui.bullet_text("Library: 33")
+    imgui.bullet_text("Life: {}".format(player_state.current_life))
+    imgui.bullet_text("Library: {}".format(len(player_state.cards_in_library)))
     imgui.bullet_text("Mana_W: 0")
     imgui.bullet_text("Mana_U: 0")
     imgui.bullet_text("Mana_B: 0")
@@ -97,21 +102,22 @@ def add_meta_p1(parent_space_avail: ImVec2):
     imgui.bullet_text("Mana_G: 0")
     imgui.end_child()
 
-def add_meta_game(parent_space_avail: ImVec2):
+def add_meta_game(game_state: GameState, parent_space_avail: ImVec2):
     meta_game_flags = imgui.WindowFlags_.no_scrollbar
     meta_game_flags |= imgui.WindowFlags_.no_background
     imgui.begin_child("MetaGame", ImVec2(parent_space_avail.x, parent_space_avail.y*0.2), False, meta_game_flags)
-    imgui.bullet_text("Current turn: 1")
-    imgui.bullet_text("Active Player: 1")
-    imgui.bullet_text("Current Step: MainPhase 1")
+    imgui.bullet_text("Current turn: {}".format(game_state.player_turns_completed + 1))
+    active_player_name: str = game_state.player_infos[game_state.active_player_index].name
+    imgui.bullet_text("Active Player: {}".format(active_player_name))
+    imgui.bullet_text("Current Step: {}".format(game_state.upcoming_event.name))
     imgui.end_child()
 
-def add_meta_p2(parent_space_avail: ImVec2):
+def add_meta_p2(player_state: PlayerInfo, parent_space_avail: ImVec2):
     meta_p2_flags = imgui.WindowFlags_.no_scrollbar
     meta_p2_flags |= imgui.WindowFlags_.no_background
     imgui.begin_child("MetaP2", ImVec2(parent_space_avail.x, parent_space_avail.y*0.4), False, meta_p2_flags)
-    imgui.bullet_text("Life: 20")
-    imgui.bullet_text("Library: 33")
+    imgui.bullet_text("Life: {}".format(player_state.current_life))
+    imgui.bullet_text("Library: {}".format(len(player_state.cards_in_library)))
     imgui.bullet_text("Mana_W: 0")
     imgui.bullet_text("Mana_U: 0")
     imgui.bullet_text("Mana_B: 0")
@@ -120,65 +126,73 @@ def add_meta_p2(parent_space_avail: ImVec2):
     imgui.end_child()
 
 
-def add_players(parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData]):
+def add_players(game_state: GameState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData]):
     players_flags = imgui.WindowFlags_.no_scrollbar
     players_flags |= imgui.WindowFlags_.no_background
     imgui.begin_child("Players", ImVec2(parent_space_avail.x * 0.75, 0), False, players_flags)
     shared_space_avail: ImVec2 = ImVec2(imgui.get_content_region_avail().x, imgui.get_content_region_avail().y-25)
-    add_player(shared_space_avail,image_refs, hand_on_bottom=False, player_id="2")
-    add_player(shared_space_avail,image_refs, hand_on_bottom=True, player_id="1")
+    add_player(game_state.player_infos[1], shared_space_avail, image_refs, hand_on_bottom=False, position=2)
+    add_player(game_state.player_infos[0], shared_space_avail, image_refs, hand_on_bottom=True, position=1)
     imgui.end_child()
 
-def add_player(parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], hand_on_bottom: bool, player_id: str):
+def add_player(player_state: PlayerInfo, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], hand_on_bottom: bool, position: int):
     player_flags = imgui.WindowFlags_.no_scrollbar
     player_flags |= imgui.WindowFlags_.no_background
-    imgui.begin_child("Player-{}".format(player_id), ImVec2(0, parent_space_avail.y * 0.5), True, player_flags)
+    imgui.begin_child("Player-{}".format(position), ImVec2(0, parent_space_avail.y * 0.5), True, player_flags)
     shared_space_avail: ImVec2 = ImVec2(imgui.get_content_region_avail().x, imgui.get_content_region_avail().y)
-    imgui.begin_child("Player-{}".format(player_id), ImVec2(shared_space_avail.x*0.85, 0), 
+    imgui.begin_child("Player-{}".format(position), ImVec2(shared_space_avail.x*0.85, 0), 
                       False,
                       imgui.WindowFlags_.no_scrollbar)
     shared_child_space_avail: ImVec2 = ImVec2(imgui.get_content_region_avail().x, imgui.get_content_region_avail().y-10)
     if hand_on_bottom:
-        add_battlefield(shared_child_space_avail, image_refs, player_id)
-        add_hand(shared_child_space_avail, image_refs, player_id)
+        add_battlefield(player_state, shared_child_space_avail, image_refs, position)
+        add_hand(player_state, shared_child_space_avail, image_refs, position)
     else:
-        add_hand(shared_child_space_avail, image_refs, player_id)
-        add_battlefield(shared_child_space_avail, image_refs, player_id)
+        add_hand(player_state, shared_child_space_avail, image_refs, position)
+        add_battlefield(player_state,shared_child_space_avail, image_refs, position)
     imgui.end_child()
     imgui.same_line()
-    add_lands(shared_space_avail, image_refs, player_id)
+    add_lands(player_state, shared_space_avail, image_refs, position)
     imgui.end_child()
 
-def add_hand(parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], player_id: str):
+def add_hand(player_state: PlayerInfo, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
     hand_flags = imgui.WindowFlags_.horizontal_scrollbar
     hand_flags |= imgui.WindowFlags_.no_background
-    imgui.begin_child("Hand-{}".format(player_id), ImVec2(0, parent_space_avail.y * 0.5), False, hand_flags)
-    for n in range(7):
-        if(player_id == "1"):
-            add_card(image_refs, CreatureNames.METALLIC_SLIVER.value, n, False)
+    imgui.begin_child("Hand-{}".format(position), ImVec2(0, parent_space_avail.y * 0.5), False, hand_flags)
+    for n in range(len(player_state.cards_in_hand)):
+        if(position == 1):
+            add_card(image_refs, player_state.cards_in_hand[n].card_name, n, False)
         else:
             add_card(image_refs, const.CARDBACK_IMAGE_NAME, n, False)
         imgui.same_line()
     imgui.end_child()
 
-def add_battlefield(parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], player_id: str):
+def add_battlefield(player_state: PlayerInfo, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
     battlefield_flags = imgui.WindowFlags_.horizontal_scrollbar
     battlefield_flags |= imgui.WindowFlags_.no_background
-    imgui.begin_child("Battlefield-{}".format(player_id), ImVec2(0, parent_space_avail.y * 0.5), False, battlefield_flags)
-    for n in range(3):
-        clicked: bool = add_card(image_refs, CreatureNames.ALPHA_MYR.value ,n, tapped_creatures[n])
+    nonlands: list[CardInstance] = []
+    for card in player_state.cards_in_play:
+        if FULL_CATALOG[card.card_name].type is not CardType.LAND:
+            nonlands.append(card)
+    imgui.begin_child("Battlefield-{}".format(position), ImVec2(0, parent_space_avail.y * 0.5), False, battlefield_flags)
+    for n, card in enumerate(nonlands):
+        clicked: bool = add_card(image_refs, card.card_name, n , card.tapped)
         if clicked:
-            tapped_creatures[n] = not tapped_creatures[n]
+            card.tapped = not card.tapped
         imgui.same_line()
     imgui.end_child()
 
-def add_lands(parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], player_id: str):
+def add_lands(player_state: PlayerInfo, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
     lands_flags = imgui.WindowFlags_.no_background
-    imgui.begin_child("Lands-{}".format(player_id), ImVec2(parent_space_avail.x*0.15, 0), False, lands_flags)
-    for n in range(5):
-        clicked: bool = add_card(image_refs, LandNames.WASTES.value ,n, tapped_lands[n])
+    lands: list[CardInstance] = []
+    for card in player_state.cards_in_play:
+        if FULL_CATALOG[card.card_name].type is CardType.LAND:
+            lands.append(card)
+    imgui.begin_child("Lands-{}".format(position), ImVec2(parent_space_avail.x*0.15, 0), False, lands_flags)
+    for n, card in enumerate(lands):
+        clicked: bool = add_card(image_refs, card.card_name , n , card.tapped)
         if clicked:
-            tapped_lands[n] = not tapped_lands[n]
+            card.tapped = not card.tapped
         imgui.set_cursor_pos_y(imgui.get_cursor_pos_y() - conf.CARD_HEIGHT * 0.9)
     imgui.end_child()
 

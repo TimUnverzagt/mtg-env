@@ -8,7 +8,7 @@ from mtggympy.gameengine.gameobjects import CardInstance
 from mtggympy.gameengine.state import GameState
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
 from mtggympy.gameengine.cards.info import CardInfo, SpellInfo
-from mtggympy.gameengine.cards.catalog.full import CARD_CATALOG
+from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
 from mtggympy.gameengine.capabilities import ManaProvider
 
 from mtggympy.helpers.dict_operations import first_dict_can_fit_second_by_value
@@ -93,7 +93,7 @@ def play_card(acting_seat: int, game_state:GameState, card_name: str):
         return
     hand: list[CardInstance] = game_state.player_infos[acting_seat].cards_in_hand
     battlefield: list[CardInstance] = game_state.player_infos[acting_seat].cards_in_play
-    card_info: Optional[CardInfo] = CARD_CATALOG.get(card_name)
+    card_info: Optional[CardInfo] = FULL_CATALOG.get(card_name)
     if card_info is None:
         logger.error("Player on seat {} is trying to play {} which isn't a known card. Refusing to process intent".format(
             acting_seat, card_name

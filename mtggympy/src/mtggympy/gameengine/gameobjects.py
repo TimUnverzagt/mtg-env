@@ -1,5 +1,6 @@
 from mtggympy.gameengine.constants import Zone
 from mtggympy.gameengine.capabilities import ActiveGameElement
+from mtggympy.gameengine.constants import CardType
 from uuid import UUID, uuid4
 
 class CardInstance(ActiveGameElement):
@@ -8,6 +9,7 @@ class CardInstance(ActiveGameElement):
         self.card_name: str = card_name
         self.zone: Zone = zone
         self.tapped: bool = False
+        self.type: CardType = CardType.UNKNOWN
 
     def get_id(self) -> UUID:
         return self.instance_id

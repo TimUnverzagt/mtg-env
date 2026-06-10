@@ -4,7 +4,7 @@ from mtggympy.server.api.gym_types import MtgObservation, MtgAction, MtgPlayerOb
 from mtggympy.gameengine.state import GameState
 from mtggympy.gameengine.constants import Action
 from mtggympy.gameengine.priority.event import PlayerEvent
-from mtggympy.gameengine.cards.catalog.full import CARD_CATALOG
+from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
 
 from mtggympy.logging_config import api_log as logger
 
@@ -43,9 +43,9 @@ def player_obs_from_info(player_info: PlayerInfo) -> MtgPlayerObs:
     )
 
 def card_index_to_name(index: int) -> str:
-    card_names: list[str] = sorted(CARD_CATALOG)
+    card_names: list[str] = sorted(FULL_CATALOG)
     return card_names[min(index, len(card_names) - 1)]
 
 def card_name_to_index(name: str) -> int:
-    card_names: list[str] = sorted(CARD_CATALOG)
+    card_names: list[str] = sorted(FULL_CATALOG)
     return card_names.index(name)

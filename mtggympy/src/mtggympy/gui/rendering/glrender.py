@@ -5,13 +5,17 @@ from imgui_bundle.python_backends import pygame_backend
 import OpenGL.GL as gl
 
 import os
+from collections import defaultdict
 
 import mtggympy.app_config as conf
 import mtggympy.gui.layout.myimgui as layout
 import mtggympy.gui.constants as const
 from mtggympy.gui.texture import ImageMetaData
+from mtggympy.gameengine.state import GameState, PlayerInfo
+from mtggympy.gameengine.priority.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
+from mtggympy.gameengine.gameobjects import CardInstance
 
 def load_image(path_from_asset_dir: str) -> Surface:
     filepath: str = os.path.join(conf.ASSET_DIR, path_from_asset_dir)
@@ -47,7 +51,7 @@ def add_texture_to_gl(surface: pygame.Surface) -> ImageMetaData:
     return ImageMetaData(imgui.ImTextureRef(tex_id), surface.get_width(), surface.get_height())
 
 
-def main():
+def render_state(game_state: GameState):
     pygame.init()
     screen = pygame.display.set_mode((conf.UI_STARTING_WIDTH, conf.UI_STARTING_HEIGHT), pygame.DOUBLEBUF | pygame.OPENGL | pygame.RESIZABLE)
     clock = pygame.time.Clock()
@@ -89,7 +93,7 @@ def main():
         gl.glClear(gl.GL_COLOR_BUFFER_BIT) # type: ignore
 
         # --- UI ---
-        layout.gui(image_assets, io.display_size)
+        layout.gui(game_state, image_assets, io.display_size)
 
         imgui.render()
         impl.render(imgui.get_draw_data())
@@ -100,4 +104,43 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    p1_info: PlayerInfo = PlayerInfo("Alice",
+                                     current_life=20,
+                                     cards_in_hand=[CardInstance(CreatureNames.ALPHA_MYR.value),
+                                                    CardInstance(LandNames.WASTES.value),
+                                                    CardInstance(CreatureNames.SLIVER_CONSTRUCT.value),
+                                                    CardInstance(CreatureNames.OMEGA_MYR.value),
+                                                    CardInstance(LandNames.WASTES.value),
+                                                    CardInstance(LandNames.WASTES.value)],
+                                     cards_in_play=[CardInstance(LandNames.WASTES.value),
+                                                    CardInstance(LandNames.WASTES.value),
+                                                    CardInstance(CreatureNames.OMEGA_MYR.value)],
+                                     cards_in_library=[CardInstance(CreatureNames.SLIVER_CONSTRUCT.value),
+                                                       CardInstance(CreatureNames.SLIVER_CONSTRUCT.value),
+                                                       CardInstance(CreatureNames.SLIVER_CONSTRUCT.value)],
+                                     death_description=None)
+    p2_info: PlayerInfo = PlayerInfo("Bob",
+                                     current_life=20,
+                                     cards_in_hand=[CardInstance(CreatureNames.ALPHA_MYR.value),
+                                                    CardInstance(LandNames.WASTES.value),
+                                                    CardInstance(CreatureNames.SLIVER_CONSTRUCT.value),
+                                                    CardInstance(CreatureNames.OMEGA_MYR.value),
+                                                    CardInstance(LandNames.WASTES.value),
+                                                    CardInstance(LandNames.WASTES.value)],
+                                     cards_in_play=[CardInstance(LandNames.WASTES.value),
+                                                    CardInstance(LandNames.WASTES.value),
+                                                    CardInstance(CreatureNames.OMEGA_MYR.value),
+                                                    CardInstance(CreatureNames.METALLIC_SLIVER.value)],
+                                     cards_in_library=[CardInstance(CreatureNames.METALLIC_SLIVER.value),
+                                                       CardInstance(CreatureNames.METALLIC_SLIVER.value),
+                                                       CardInstance(CreatureNames.METALLIC_SLIVER.value),
+                                                       CardInstance(CreatureNames.METALLIC_SLIVER.value)],
+                                     death_description=None)
+    current_state: GameState = GameState(player_turns_completed=2, 
+              active_player_index=0, 
+              game_over=False,
+              upcoming_event=PlayerEvent.MAIN_PHASE_EMPTY_STACK,
+              player_infos=[p1_info, p2_info],
+              winner_positions=[],
+              floating_mana=defaultdict(lambda: 0))
+    render_state(current_state)
