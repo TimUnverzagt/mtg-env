@@ -28,6 +28,7 @@ def create_logger(name: str, logging_level: int) -> logging.Logger:
 main_log   = create_logger("main", logging.ERROR)
 ui_log = create_logger("ui", logging.ERROR)
 dojo_log = create_logger("dojo", logging.ERROR)
-session_log   = create_logger("session", logging.ERROR)
+session_log   = create_logger("session", logging.DEBUG)
+desktop_app_log   = create_logger("dektop-app", logging.DEBUG)
 api_log   = create_logger("api", logging.ERROR)
 engine_log   = create_logger("engine", logging.ERROR)

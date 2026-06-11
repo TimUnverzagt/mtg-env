@@ -73,9 +73,9 @@ class MultiClientSession():
                     cont.player_info.name,
                     self.game_state
                     ))
-                cont.upcoming_event = self.game_state.upcoming_event.value
-                cont.game_state_before_action = self.game_state
+                cont.set_action_priors(self.game_state, self.game_state.upcoming_event.value)
                 cont.session_condition.notify_all()
+                cont.session_condition.wait_for(cont.get_ready_for_session_consumption_predicate())
 
                 # Await Player Input
                 logger.debug("SessionTick: {}: Waiting for Player Input".format(cont.player_info.name))
@@ -84,14 +84,16 @@ class MultiClientSession():
                 # Process Player Input and report state update
                 assert cont.intended_next_decision is not None
                 player_intent: Action = cont.intended_next_decision
-                cont.intended_next_decision = None
                 GameEngine.step(self.game_state.active_player_index, player_intent, self.game_state)
                 cont.set_action_result(self.game_state)
-                logger.debug("SessionTick: {}: Anwsering player with new state {}".format(
+                cont.session_condition.notify_all()
+                cont.session_condition.wait()
+                logger.debug("SessionTick: {}: Anwsered player with new state {}".format(
                     cont.player_info.name,
                     self.game_state
-                    ))
-                cont.session_condition.notify_all()
+                ))
+                logger.debug("SessionTick: {}: Waiting for player to be ready before continuing".format(cont.player_info.name))
+                cont.session_condition.wait_for(cont.get_ready_for_next_loop_predicate())
 
 
             if(conf.HUMAN_RENDERING):

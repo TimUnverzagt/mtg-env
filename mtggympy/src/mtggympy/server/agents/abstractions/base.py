@@ -11,14 +11,16 @@ import mtggympy.app_config as conf
 
 class AgentBase(ABC):
 
-    def __init__(self, session: GameSession, name: str, target_seat: int | None =  None) -> None:
+    def __init__(self, session: GameSession, name: str, target_seat: int | None =  None, wait_for_state_reading: bool = False) -> None:
         self.session: GameSession = session
         self.controller: PlayerController | None
+        self.ensure_readable_state: bool = wait_for_state_reading
         if target_seat is None:
             self.controller = session.connect(name)
         else:
             self.controller = session.connect_to_seat(target_seat, name)
         assert self.controller is not None
+        self.controller.wait_for_state_reading = wait_for_state_reading
 
     def play_game(self) -> None:
         cont: PlayerController | None = self.controller
@@ -36,24 +38,38 @@ class AgentBase(ABC):
             with cont.session_condition:
                 cont.logger.debug("{}: Waiting for my turn to act. (Signaled by session setting upcoming_decision)".format(cont.player_info.name))
                 cont.session_condition.wait_for(build_either_predicate(
-                    cont.get_session_ready_predicate(),
+                    cont.get_ready_for_session_consumption_predicate(),
                     lambda: self.session.shutting_down))
                 if self.session.shutting_down:
                     continue
                 assert cont.upcoming_event is not None
-
+                
+                if(self.ensure_readable_state):
+                    with cont.state_reading_condition:
+                        cont.logger.debug("{}: Waiting for my game state to be read before continuing".format(cont.player_info.name))
+                        cont.state_reading_condition.notify_all()
+                        cont.state_reading_condition.wait_for(cont.get_last_state_read_predicate(True))
                 cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_event.applicable_phase))
                 cont.intended_next_decision = self.decide_on_action(cont.upcoming_event)
                 cont.upcoming_event = None
                 cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intended_next_decision))
                 cont.session_condition.notify_all()
-
+                
                 cont.logger.debug("{}: Waiting for the session to consume my intent".format(cont.player_info.name))
                 cont.session_condition.wait_for(cont.get_intent_predicate(expected_to_be_set=False))
                 
                 cont.logger.debug("{}: Waiting for response from game session.".format(cont.player_info.name))
                 cont.session_condition.wait_for(cont.get_action_result_predicate(expected_to_be_set=True))
                 cont.logger.debug("{}: Got response from game session.".format(cont.player_info.name))
+                if(self.ensure_readable_state):
+                    with cont.state_reading_condition:
+                        cont.logger.debug("{}: Waiting for my game state to be read before continuing".format(cont.player_info.name))
+                        cont.state_reading_condition.notify_all()
+                        cont.state_reading_condition.wait_for(cont.get_last_state_read_predicate(True))
+                        cont.needs_processing_time = False
+                
+                cont.logger.debug("{}: Controller ready? {}.".format(cont.player_info.name, cont.get_ready_for_next_loop_predicate()()))
+                cont.session_condition.notify_all()
 
         cont.logger.info("Stopping because session is shutting down")
         self.shutdown()

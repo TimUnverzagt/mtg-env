@@ -5,3 +5,5 @@ T = TypeVar("T")
 
 def build_either_predicate(first: Predicate, second: Predicate) -> Predicate:
     return lambda: first() or second()
+def build_joint_predicate(first: Predicate, second: Predicate) -> Predicate:
+    return lambda: first() and second()

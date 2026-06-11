@@ -7,7 +7,7 @@ import os
 # file --> config --> module --> src
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSET_DIR = os.path.join(SRC_DIR, "assets")
-PLAYER_LOG_LEVEL: int = logging.WARN
+PLAYER_LOG_LEVEL: int = logging.DEBUG
 
 ###############
 # UI 

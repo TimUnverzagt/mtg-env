@@ -3,13 +3,16 @@ import threading
 import pygame
 import time
 from pygame import Surface
-from threading import Thread
+from threading import Thread, Condition
 from imgui_bundle import imgui, ImVec2
+from imgui_bundle.imgui import IO
 from imgui_bundle.python_backends import pygame_backend
 import OpenGL.GL as gl
 
 import os
 from collections import defaultdict
+
+from pygame.time import Clock
 
 import mtggympy.app_config as conf
 import mtggympy.gui.layout.myimgui as layout
@@ -33,6 +36,13 @@ class GlRenderer():
     def __init__(self) -> None:
         self.ui_thread = Thread(target=self.run_renderer, daemon=True)
         self.ui_thread.start()
+        self.obs_condition = Condition()
+        self.screen: Surface
+        self.clock: Clock
+        self.impl: pygame_backend.PygameRenderer
+        self.running: bool
+        self.io: IO
+        self.observations: GameState | None = None
         
     def _init_from_thread(self) -> None:
         pygame.init()
@@ -44,7 +54,6 @@ class GlRenderer():
         self.running = True
         self.io = imgui.get_io()
         self.io.display_size = ImVec2(self.screen.get_size()[0], self.screen.get_size()[1])
-        self.observations: GameState | None = None
 
 
         self.image_assets: dict[str, ImageMetaData] = {}
@@ -109,7 +118,8 @@ class GlRenderer():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT) # type: ignore
 
             # --- UI ---
-            layout.gui(self.observations, self.image_assets, self.io.display_size)
+            with self.obs_condition:
+                layout.gui(self.observations, self.image_assets, self.io.display_size)
 
             imgui.render()
             self.impl.render(imgui.get_draw_data())

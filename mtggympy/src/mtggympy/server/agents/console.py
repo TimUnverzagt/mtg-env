@@ -5,8 +5,8 @@ from mtggympy.server.agents.abstractions.base import AgentBase
 from typing import Callable
 
 class ConsoleAgent(AgentBase):
-    def __init__(self, session: GameSession, name: str, target_seat: int | None =  None) -> None:
-        super().__init__(session, name, target_seat)
+    def __init__(self, session: GameSession, name: str, target_seat: int | None =  None, wait_for_state_reading: bool = False) -> None:
+        super().__init__(session, name, target_seat, wait_for_state_reading)
 
     def decide_on_action(self, upcoming_action: EventData) -> Action:
         return self._get_input_for_event(upcoming_action)
@@ -17,7 +17,7 @@ class ConsoleAgent(AgentBase):
             get_action_name: Callable[[Action], str] = lambda action: action.name
             action_names: list[str] = list(map(get_action_name, action_event.possible_actions))
             intent: str = input("Please input one from the following actions: [{}]\nInput: ".format(
-                action_event.possible_actions
+                action_names
             ))
             if intent in action_names:
                 return Action[intent]
