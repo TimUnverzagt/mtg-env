@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 from mtggympy.server.session.multi_client_session import MultiClientSession as GameSession
-from mtggympy.gameengine.priority.event import EventData
+from mtggympy.gameengine.priority.event import ActionIntent, EventData
 from mtggympy.server.session.player_connection import PlayerController
 from mtggympy.helpers.predicate_extensions import build_either_predicate
-from mtggympy.gameengine.constants import Action
 
 import time
 from mtggympy.logging_config import main_log
@@ -76,7 +75,7 @@ class AgentBase(ABC):
 
 
     @abstractmethod
-    def decide_on_action(self, upcoming_action: EventData) -> Action:
+    def decide_on_action(self, upcoming_action: EventData) -> ActionIntent:
         pass
 
     def shutdown(self) -> None:

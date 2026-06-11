@@ -7,8 +7,8 @@ from typing import Optional, TypeVar, Any, cast
 
 import mtggympy.app_config as app_const
 #import game.engine as MtgEngine
+from mtggympy.gameengine.priority.event import ActionData
 from mtggympy.gameengine.state import GameState
-from mtggympy.gameengine.constants import Action
 from mtggympy.server.session.multi_client_session import MultiClientSession as MtgSession
 from mtggympy.server.session.player_connection import PlayerController
 from mtggympy.server.agents.simple import Goldfish #, Monkey
@@ -132,7 +132,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
             
             assert self.agent.decision is not None
             logger.debug("Current Upcoming Decision: {}".format(self.agent.decision.applicable_phase))
-            decision_intent: Action = gym_action_to_priority_decision(self.agent.decision, action)
+            decision_intent: ActionData = gym_action_to_priority_decision(self.agent.decision, action)
             self.agent.decision = None
             self.agent.api_condition.notify()
 

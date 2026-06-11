@@ -6,7 +6,7 @@ import mtggympy.gui.layout.custom.bounding_box as BoxFunctions
 import mtggympy.gui.layout.custom.surface as SurfaceFuntions
 import mtggympy.gui.layout.custom.padding as Padding
 from mtggympy.gameengine.state import GameState
-from mtggympy.gameengine.player import PlayerInfo
+from mtggympy.gameengine.player import PlayerState
 from mtggympy.gameengine.gameobjects import CardInstance
 from mtggympy.gui.layout.custom.bounding_box import BoundingBox
 from mtggympy.gui.layout.custom.frames.frame_tree import FrameTree, build_frame_tree_from_ratios
@@ -37,7 +37,7 @@ def compose_surfaces_into_bounding_frame(name: str, surfaces: list[Surface], tar
 
 def build_player_ui_frame(parent: FrameTree, player_number:int, game_state: GameState) -> FrameTree:
     parent_box: BoundingBox = parent.global_bounding_box
-    info: PlayerInfo = game_state.player_infos[player_number - 1]
+    info: PlayerState = game_state.player_states[player_number - 1]
     ui_target_box:BoundingBox = BoundingBox(
         Vector(parent_box.dimensions[0] * 0.2, parent_box.dimensions[1]), 
         parent_box.offsets)
@@ -54,7 +54,7 @@ def render_card(card: CardInstance) -> Surface:
 
 def build_player_hand_frame(parent: FrameTree, player_number:int, game_state: GameState, render_topside: bool):
     parent_box: BoundingBox = parent.global_bounding_box
-    info: PlayerInfo = game_state.player_infos[player_number-1]
+    info: PlayerState = game_state.player_states[player_number-1]
     y_offset_ratio:float = 0 if render_topside else 0.5
     hand_target_box: BoundingBox = BoundingBox(
         Vector(parent_box.dimensions[0]*0.8, parent_box.dimensions[1]*0.5), 

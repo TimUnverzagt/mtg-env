@@ -1,17 +1,16 @@
-from mtggympy.gameengine.priority.event import EventData
-from mtggympy.gameengine.player import PlayerInfo
+from mtggympy.gameengine.priority.event import ActionData, EventData
+from mtggympy.gameengine.player import PlayerState
 from mtggympy.api.gym_types import MtgObservation, MtgAction, MtgPlayerObs
 from mtggympy.gameengine.state import GameState
-from mtggympy.gameengine.constants import Action
 from mtggympy.gameengine.priority.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
 
 from mtggympy.logging_config import api_log as logger
 
 def game_state_to_obs(state: GameState, agent_position: int) -> MtgObservation:
-    player_info: PlayerInfo = state.player_infos[agent_position]
+    player_info: PlayerState = state.player_states[agent_position]
     #Assume two players for the momement
-    opponent_info: PlayerInfo = state.player_infos[(agent_position + 1) % 2]
+    opponent_info: PlayerState = state.player_states[(agent_position + 1) % 2]
     result: MtgObservation = (
         event_to_index(state.upcoming_event), #upcoming_decision
         int(state.active_player_index == agent_position), #agent_is_active_player
@@ -28,13 +27,13 @@ def event_to_index(event: PlayerEvent) -> int:
         case PlayerEvent.DECLARE_ATTACKS:
             return 1 
 
-def gym_action_to_priority_decision(upcoming_event: EventData, action: MtgAction) -> Action:
+def gym_action_to_priority_decision(upcoming_event: EventData, action: MtgAction) -> ActionData:
     logger.debug("Translating for decision [{}]".format(upcoming_event))
-    intent: Action = upcoming_event.possible_actions[action[0]]
+    intent: ActionData = upcoming_event.possible_actions[action[0]]
     logger.debug("Translated external action {} into internal intent [{}]".format(action[0], intent))
     return intent
 
-def player_obs_from_info(player_info: PlayerInfo) -> MtgPlayerObs:
+def player_obs_from_info(player_info: PlayerState) -> MtgPlayerObs:
     #
     return (
         player_info.current_life, #hp

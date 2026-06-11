@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from mtggympy.gameengine.player import PlayerInfo
-from mtggympy.gameengine.priority.event import EventData
+from mtggympy.gameengine.player import PlayerState
+from mtggympy.gameengine.priority.event import ActionIntent, EventData
 from mtggympy.gameengine.state import GameState
-from mtggympy.gameengine.constants import Action
 from threading import Condition
 from logging import Logger
 from mtggympy.logging_config import create_logger
@@ -13,8 +12,8 @@ from typing import Callable
 
 
 class PlayerController:
-    def __init__(self, player_info: PlayerInfo, position: int, name: str, initial_game_state: GameState):
-        self.player_info: PlayerInfo = player_info
+    def __init__(self, player_info: PlayerState, position: int, name: str, initial_game_state: GameState):
+        self.player_info: PlayerState = player_info
         self.player_info.name = name
         self.logger: Logger = create_logger(name, app_config.PLAYER_LOG_LEVEL)
         self.terminate: bool = False
@@ -24,7 +23,7 @@ class PlayerController:
         self.upcoming_event: EventData | None = None
         self.game_state_before_action: GameState | None = initial_game_state
         self.game_state_after_action: GameState | None = None
-        self.intended_next_decision: Action | None = None
+        self.intended_next_decision: ActionIntent | None = None
         self.position: int = position
         self.needs_processing_time: bool = False
         self.wait_for_state_reading: bool = False

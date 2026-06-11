@@ -1,8 +1,8 @@
+from mtggympy.gameengine.priority.event import ActionIntent
 from mtggympy.server.session.player_connection import PlayerController
 import mtggympy.gameengine.core as GameEngine
-from mtggympy.gameengine.constants import Action
 #from game.state import GameState
-from mtggympy.gameengine.player import PlayerInfo
+from mtggympy.gameengine.player import PlayerState
 from mtggympy.gui.rendering.pygame_custom import SimpleRenderer
 
 import time
@@ -40,7 +40,7 @@ class MultiClientSession():
         if self.seats[seat_position] is not None:
             logger.error("Aborting connection: Tried to connect to an occupied seat")
             return
-        player_info: PlayerInfo = self.game_state.player_infos[seat_position]
+        player_info: PlayerState = self.game_state.player_states[seat_position]
         cont = PlayerController(player_info, seat_position, name, deepcopy(self.game_state))
         self.seats[seat_position] = cont
         logger.info("Seated agent at seat {} with new player {}". format(seat_position, cont.player_info.name))
@@ -83,7 +83,8 @@ class MultiClientSession():
 
                 # Process Player Input and report state update
                 assert cont.intended_next_decision is not None
-                player_intent: Action = cont.intended_next_decision
+
+                player_intent: ActionIntent = cont.intended_next_decision
                 GameEngine.step(self.game_state.active_player_index, player_intent, self.game_state)
                 cont.set_action_result(self.game_state)
                 cont.session_condition.notify_all()
@@ -114,7 +115,7 @@ class MultiClientSession():
             logger.error("Can't get active controller because a player disconnected!")
             return
         
-        active_player_info: PlayerInfo = self.game_state.player_infos[self.game_state.active_player_index] 
+        active_player_info: PlayerState = self.game_state.player_states[self.game_state.active_player_index] 
         for controller in self.seats:
             assert controller is not None
             if active_player_info == controller.player_info: 

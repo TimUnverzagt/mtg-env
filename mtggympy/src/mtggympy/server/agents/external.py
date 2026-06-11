@@ -1,6 +1,5 @@
 from mtggympy.server.session.multi_client_session import MultiClientSession as GameSession
-from mtggympy.gameengine.priority.event import EventData
-from mtggympy.gameengine.constants import Action
+from mtggympy.gameengine.priority.event import ActionData, ActionIntent, EventData
 from mtggympy.server.agents.abstractions.base import AgentBase
 from threading import Condition
 from typing import Callable
@@ -12,10 +11,10 @@ class ApiAgent(AgentBase):
     def __init__(self, session: GameSession, name: str, target_seat: int | None =  None) -> None:
         super().__init__(session, name, target_seat)
         self.decision: EventData | None = None
-        self.api_action_input: Action | None = None 
+        self.api_action_input: ActionData | None = None 
         self.api_condition: Condition = Condition()
 
-    def decide_on_action(self, upcoming_action: EventData) -> Action:
+    def decide_on_action(self, upcoming_action: EventData) -> ActionIntent:
         cont: PlayerController | None = self.controller
         assert cont is not None
         with self.api_condition:
@@ -29,7 +28,7 @@ class ApiAgent(AgentBase):
                 lambda: self.decision is None,
                 self.get_intent_declared_predicate(expected_to_be_set=True)))
             assert self.api_action_input is not None
-            intent: Action = self.api_action_input
+            intent: ActionIntent = ActionIntent(self.api_action_input, None)
             self.api_action_input = None
             cont.logger.debug("Declaration of intent received and consumed")
         

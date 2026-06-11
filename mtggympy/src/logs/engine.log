@@ -1,0 +1,33 @@
+2026-06-11 17:21:23,434 - engine - INFO - Setting up the new player Player1
+2026-06-11 17:21:23,434 - engine - INFO - Setting up the new player Player2
+2026-06-11 17:21:31,476 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PLAY_CARD: ActionArgumentType(name='play_card', dimensionality=1, expects_collection=False)>, parameters=array([[1]]))' for player event 'MAIN_PHASE_EMPTY_STACK' from Tim
+2026-06-11 17:21:34,131 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PLAY_CARD: ActionArgumentType(name='play_card', dimensionality=1, expects_collection=False)>, parameters=array([[1]]))' for player event 'MAIN_PHASE_EMPTY_STACK' from Tim
+2026-06-11 17:21:42,583 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.ACTIVATE_LANDS: ActionArgumentType(name='activate_lands', dimensionality=1, expects_collection=True)>, parameters=array([[0],
+       [1]]))' for player event 'MAIN_PHASE_EMPTY_STACK' from Tim
+2026-06-11 17:21:49,716 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PLAY_CARD: ActionArgumentType(name='play_card', dimensionality=1, expects_collection=False)>, parameters=array([[0]]))' for player event 'MAIN_PHASE_EMPTY_STACK' from Tim
+2026-06-11 17:21:53,948 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'MAIN_PHASE_EMPTY_STACK' from Tim
+2026-06-11 17:21:55,020 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'DECLARE_ATTACKS' from Tim
+2026-06-11 17:21:55,020 - engine - INFO - Opp-Goldfish will draw a card for turn
+2026-06-11 17:21:55,020 - engine - DEBUG - Checking state-based effects
+2026-06-11 17:21:55,039 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'MAIN_PHASE_EMPTY_STACK' from Opp-Goldfish
+2026-06-11 17:21:55,043 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'DECLARE_ATTACKS' from Opp-Goldfish
+2026-06-11 17:21:55,044 - engine - INFO - Tim will draw a card for turn
+2026-06-11 17:21:55,044 - engine - DEBUG - Checking state-based effects
+2026-06-11 17:21:56,316 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'MAIN_PHASE_EMPTY_STACK' from Tim
+2026-06-11 17:21:57,247 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'DECLARE_ATTACKS' from Tim
+2026-06-11 17:21:57,247 - engine - INFO - Opp-Goldfish will draw a card for turn
+2026-06-11 17:21:57,247 - engine - DEBUG - Checking state-based effects
+2026-06-11 17:21:57,256 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'MAIN_PHASE_EMPTY_STACK' from Opp-Goldfish
+2026-06-11 17:21:57,260 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'DECLARE_ATTACKS' from Opp-Goldfish
+2026-06-11 17:21:57,260 - engine - INFO - Tim will draw a card for turn
+2026-06-11 17:21:57,261 - engine - DEBUG - Checking state-based effects
+2026-06-11 17:21:59,434 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'MAIN_PHASE_EMPTY_STACK' from Tim
+2026-06-11 17:22:07,933 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.ATTACK: ActionArgumentType(name='attack', dimensionality=1, expects_collection=True)>, parameters=array([[0]]))' for player event 'DECLARE_ATTACKS' from Tim
+2026-06-11 17:22:07,934 - engine - WARNING - Turn 4/2: Tim is attacking!
+2026-06-11 17:22:07,934 - engine - DEBUG - Checking state-based effects
+2026-06-11 17:22:07,934 - engine - INFO - Opp-Goldfish will draw a card for turn
+2026-06-11 17:22:07,934 - engine - DEBUG - Checking state-based effects
+2026-06-11 17:22:07,949 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'MAIN_PHASE_EMPTY_STACK' from Opp-Goldfish
+2026-06-11 17:22:07,954 - engine - INFO - Handling intent 'ActionIntent(action=<ActionData.PASS: ActionArgumentType(name='pass', dimensionality=0, expects_collection=False)>, parameters=None)' for player event 'DECLARE_ATTACKS' from Opp-Goldfish
+2026-06-11 17:22:07,954 - engine - INFO - Tim will draw a card for turn
+2026-06-11 17:22:07,955 - engine - DEBUG - Checking state-based effects

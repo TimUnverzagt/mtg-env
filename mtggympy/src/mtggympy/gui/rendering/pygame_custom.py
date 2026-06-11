@@ -7,7 +7,7 @@ from mtggympy.logging_config import ui_log as logger
 
 import mtggympy.gui.constants as const
 import mtggympy.app_config as conf
-from mtggympy.gameengine.player import PlayerInfo
+from mtggympy.gameengine.player import PlayerState
 from mtggympy.gameengine.state import GameState
                 
 get_surface_width: Callable[[Surface], int] = lambda surf: surf.get_width()
@@ -33,9 +33,9 @@ class SimpleRenderer:
         self._draw_background()
         
         # Render player screens
-        self.screen.blit(self.render_player_screen(game_state.player_infos[0]), (15,15))
+        self.screen.blit(self.render_player_screen(game_state.player_states[0]), (15,15))
         player2_origin: tuple[int, int] = (0 + 15, self.height//2 + self.seperator_thickness//2 + 15)
-        self.screen.blit(self.render_player_screen(game_state.player_infos[1]), player2_origin)
+        self.screen.blit(self.render_player_screen(game_state.player_states[1]), player2_origin)
 
         # Render misc ui
         ui: Surface = self.render_ui(game_state)
@@ -52,8 +52,8 @@ class SimpleRenderer:
     
     def render_ui(self, game_state: GameState) -> Surface:
         ui_elements: list[Surface] = []
-        ui_elements.append(self._render_text("Turn: {}".format(game_state.player_turns_completed//len(game_state.player_infos) + 1)))
-        ui_elements.append(self._render_text("Active Player: {}".format(game_state.player_infos[game_state.active_player_index].name)))
+        ui_elements.append(self._render_text("Turn: {}".format(game_state.halfturns_completed//len(game_state.player_states) + 1)))
+        ui_elements.append(self._render_text("Active Player: {}".format(game_state.player_states[game_state.active_player_index].name)))
         current_env_step: str  = game_state.upcoming_event.name
         ui_elements.append(self._render_text("Current Step: {}".format(current_env_step)))
 
@@ -75,7 +75,7 @@ class SimpleRenderer:
             const.WHITE,
             const.BLACK)
 
-    def render_player_screen(self, info: PlayerInfo) -> Surface:
+    def render_player_screen(self, info: PlayerState) -> Surface:
         player_screen_size: tuple[int, int] = (self.width, self.height//2 - self.seperator_thickness//2)
         player_screen: Surface = Surface(player_screen_size)
 

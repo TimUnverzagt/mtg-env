@@ -1,17 +1,41 @@
-from mtggympy.gameengine.player import PlayerInfo
+from mtggympy.gameengine.gameobjects import CardInstance
+from mtggympy.gameengine.constants import ManaColor
 from mtggympy.gameengine.priority.event import PlayerEvent
 from mtggympy.gameengine.constants import ManaColor
 from dataclasses import dataclass
+from typing import Optional
+
+
+    
+
+    
+@dataclass
+class PlayerState:
+    name: str
+    current_life: int 
+    cards_in_hand: list[CardInstance]
+    cards_in_play: list[CardInstance]
+    cards_in_library: list[CardInstance]
+    death_description: Optional[str]
+    floating_mana: dict[ManaColor, int]
+
+    def __str__(self) -> str:
+        return "\n".join([
+            "Name: {}".format(self.name),
+            "Current Life: {}".format(self.current_life),
+            "Cards in Hand:",
+            " | ".join(map(CardInstance.__str__, self.cards_in_hand)),
+            "Cards in Library: {}".format(self.cards_in_library)
+        ])
 
 @dataclass
 class GameState:
-    player_turns_completed: int
+    halfturns_completed: int
     active_player_index: int
     game_over: bool
     upcoming_event: PlayerEvent
-    player_infos: list[PlayerInfo]
+    player_states: list[PlayerState]
     winner_positions: list[int]
-    floating_mana: dict[ManaColor, int]
 
     def __str__(self) -> str:
         return "\n".join([
@@ -19,17 +43,19 @@ class GameState:
             "---------------- Environment ----------------",
             "---------------------------------------------",
             "Active Player Index: {}".format(self.active_player_index),
-            "Floating Mana: {}".format(self.floating_mana[ManaColor.COLORLESS]),
             "---------------------------------------------",
-            "Completed Halfturns: {}".format(self.player_turns_completed),
+            "Completed Halfturns: {}".format(self.halfturns_completed),
             "Upcoming Event: {}".format(self.upcoming_event.name),
             "Active Player Index: {}".format(self.active_player_index),
             "Game over: {}".format(self.game_over),
             "---------------------------------------------",
             "Player 0:",
-            str(self.player_infos[0]),
+            str(self.player_states[0]),
             "---------------------------------------------",
             "Player 1:",
-            str(self.player_infos[1]),
+            str(self.player_states[1]),
             "---------------------------------------------"
         ])
+    
+def is_player_alive(info: PlayerState) -> bool:
+        return info.death_description is None

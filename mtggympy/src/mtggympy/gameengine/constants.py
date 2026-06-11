@@ -35,10 +35,3 @@ class Zone(Enum):
 class Phase(Enum):
     MAINPHASE = 0
     COMBAT = 1
-
-# TODO: Make into proper class/type
-class Action(Enum):
-    PASS = 0
-    PLAY_CARD = 1
-    ATTACK = 2
-    ACTIVATE_LANDS = 3

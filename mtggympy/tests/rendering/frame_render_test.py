@@ -12,8 +12,8 @@ class FrameRendererTest(unittest.TestCase):
         #Prepare
         renderer: FrameRenderer = FrameRenderer()
         game_state: GameState = get_default_game_state()
-        game_state.player_infos[0].cards_in_hand.pop()
-        game_state.player_infos[0].cards_in_hand.append(CardInstance(CreatureNames.SLIVER_CONSTRUCT.value))
+        game_state.player_states[0].cards_in_hand.pop()
+        game_state.player_states[0].cards_in_hand.append(CardInstance(CreatureNames.SLIVER_CONSTRUCT.value))
         #logger.info("Testing logger")
         
         #Execute 

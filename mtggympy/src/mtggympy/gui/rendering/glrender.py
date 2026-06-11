@@ -18,7 +18,7 @@ import mtggympy.app_config as conf
 import mtggympy.gui.layout.myimgui as layout
 import mtggympy.gui.constants as const
 from mtggympy.gui.texture import ImageMetaData
-from mtggympy.gameengine.state import GameState, PlayerInfo
+from mtggympy.gameengine.state import GameState, PlayerState
 from mtggympy.gameengine.priority.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
@@ -130,7 +130,7 @@ class GlRenderer():
 
 
 if __name__ == "__main__":
-    p1_info: PlayerInfo = PlayerInfo("Alice",
+    p1_info: PlayerState = PlayerState("Alice",
                                      current_life=20,
                                      cards_in_hand=[CardInstance(CreatureNames.ALPHA_MYR.value),
                                                     CardInstance(LandNames.WASTES.value),
@@ -145,7 +145,7 @@ if __name__ == "__main__":
                                                        CardInstance(CreatureNames.SLIVER_CONSTRUCT.value),
                                                        CardInstance(CreatureNames.SLIVER_CONSTRUCT.value)],
                                      death_description=None)
-    p2_info: PlayerInfo = PlayerInfo("Bob",
+    p2_info: PlayerState = PlayerState("Bob",
                                      current_life=20,
                                      cards_in_hand=[CardInstance(CreatureNames.ALPHA_MYR.value),
                                                     CardInstance(LandNames.WASTES.value),
@@ -162,11 +162,11 @@ if __name__ == "__main__":
                                                        CardInstance(CreatureNames.METALLIC_SLIVER.value),
                                                        CardInstance(CreatureNames.METALLIC_SLIVER.value)],
                                      death_description=None)
-    current_state: GameState = GameState(player_turns_completed=2, 
+    current_state: GameState = GameState(halfturns_completed=2, 
               active_player_index=0, 
               game_over=False,
               upcoming_event=PlayerEvent.MAIN_PHASE_EMPTY_STACK,
-              player_infos=[p1_info, p2_info],
+              player_states=[p1_info, p2_info],
               winner_positions=[],
               floating_mana=defaultdict(lambda: 0))
     
