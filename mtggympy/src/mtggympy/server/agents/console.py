@@ -13,7 +13,7 @@ class ConsoleAgent(AgentBase):
         return self._get_input_for_event(upcoming_action)
     
     def _get_input_for_event(self, action_event: EventData) -> ActionIntent:
-        print ("Upcoming Event: {}".format(action_event.applicable_phase))
+        print ("Upcoming Event: {}".format(action_event.name))
         while True:
             get_action_name: Callable[[ActionData], str] = lambda action: action.name
             action_names: list[str] = list(map(get_action_name, action_event.possible_actions))

@@ -1,6 +1,6 @@
 from __future__ import annotations
 import numpy as np
-from mtggympy.gameengine.constants import Phase
+from mtggympy.gameengine.constants import GameStep
 from enum import Enum
 from dataclasses import dataclass
 
@@ -25,16 +25,25 @@ class ActionIntent:
 
 @dataclass
 class EventData:
-    applicable_phase: Phase
+    name: str
     neutral_action_index: int
     possible_actions: list[ActionData]
 
     def __str__(self) -> str:
-        return "{}: <{}>".format(self.applicable_phase, ",".join(str(self.possible_actions)))
-    
+        return "{}: <{}>".format(self.name, ",".join(str(self.possible_actions)))
 
 class PlayerEvent(Enum):
-    MAIN_PHASE_EMPTY_STACK = EventData(Phase.MAINPHASE, 0, [ActionData.PASS, ActionData.PLAY_CARD, ActionData.ACTIVATE_LANDS])
-    DECLARE_ATTACKS = EventData(Phase.COMBAT, 0, [ActionData.PASS, ActionData.ATTACK]) 
+    MAINPHASE_EMPTY_STACK = EventData("MP:EmptyStack", 0, [ActionData.PASS, ActionData.PLAY_CARD, ActionData.ACTIVATE_LANDS])
+    DECLARE_ATTACKS = EventData("COM:DeclareAttacks", 0, [ActionData.PASS, ActionData.ATTACK])
+    NO_OP = EventData("Default:NoOp", 0, [ActionData.PASS]) 
+
+def event_from_step(step: GameStep) -> PlayerEvent:
+    match step:
+        case GameStep.MAIN_1 | GameStep.MAIN_2:
+            return PlayerEvent.MAINPHASE_EMPTY_STACK
+        case GameStep.ATTACK_STEP:
+            return PlayerEvent.DECLARE_ATTACKS
+        case _:
+            return PlayerEvent.NO_OP
 
 

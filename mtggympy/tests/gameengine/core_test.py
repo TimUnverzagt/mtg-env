@@ -24,9 +24,9 @@ class TestGameEngine():
         #Setup 
         game_state: GameState = get_default_game_state()
         #Execute
-        Engine.handle_combat_decision(0, Action.ATTACK, game_state)
+        Engine.combat(0, Action.ATTACK, game_state)
         #Assert
-        assert game_state.upcoming_event == PlayerEvent.MAIN_PHASE_EMPTY_STACK
+        assert game_state.upcoming_event == PlayerEvent.MAINPHASE_1_EMPTY_STACK
         assert game_state.player_states[1].current_life == app_config.STARTING_LIFE - 1
 
 
@@ -81,14 +81,14 @@ class TestGameEngine():
             ManaColor.COLORLESS: 4
         }
         game_state.active_player_index = 0
-        game_state.upcoming_event = PlayerEvent.MAIN_PHASE_EMPTY_STACK
+        game_state.upcoming_event = PlayerEvent.MAINPHASE_1_EMPTY_STACK
 
         #Execute
         Engine.play_card(0, game_state, WASTES_NAME)
         Engine.play_card(0, game_state, CreatureNames.SLIVER_CONSTRUCT.value)
 
         #Assert
-        assert game_state.upcoming_event == PlayerEvent.MAIN_PHASE_EMPTY_STACK
+        assert game_state.upcoming_event == PlayerEvent.MAINPHASE_1_EMPTY_STACK
         assert game_state.floating_mana == {ManaColor.COLORLESS: 1}
         assert next((True for card in game_state.player_states[0].cards_in_play if card.card_name == WASTES_NAME), False)
         assert next((True for card in game_state.player_states[0].cards_in_play if card.card_name == CreatureNames.SLIVER_CONSTRUCT.value), False)
@@ -102,7 +102,7 @@ class TestGameEngine():
             Wastes()
         ]
         game_state.active_player_index = 0
-        game_state.upcoming_event = PlayerEvent.MAIN_PHASE_EMPTY_STACK
+        game_state.upcoming_event = PlayerEvent.MAINPHASE_1_EMPTY_STACK
 
         # Mixed Execution
         Engine.step(0, Action.PLAY_CARD, game_state, decision_details={CARD_TO_PLAY: WASTES_NAME})

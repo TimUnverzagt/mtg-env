@@ -1,6 +1,5 @@
 from mtggympy.gameengine.gameobjects import CardInstance
-from mtggympy.gameengine.constants import ManaColor
-from mtggympy.gameengine.priority.event import PlayerEvent
+from mtggympy.gameengine.constants import ManaColor, GameStep
 from mtggympy.gameengine.constants import ManaColor
 from dataclasses import dataclass
 from typing import Optional
@@ -33,7 +32,7 @@ class GameState:
     halfturns_completed: int
     active_player_index: int
     game_over: bool
-    upcoming_event: PlayerEvent
+    step: GameStep
     player_states: list[PlayerState]
     winner_positions: list[int]
 
@@ -45,7 +44,7 @@ class GameState:
             "Active Player Index: {}".format(self.active_player_index),
             "---------------------------------------------",
             "Completed Halfturns: {}".format(self.halfturns_completed),
-            "Upcoming Event: {}".format(self.upcoming_event.name),
+            "Upcoming Event: {}".format(self.step.name),
             "Active Player Index: {}".format(self.active_player_index),
             "Game over: {}".format(self.game_over),
             "---------------------------------------------",

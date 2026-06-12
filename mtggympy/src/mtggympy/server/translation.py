@@ -22,7 +22,7 @@ def game_state_to_obs(state: GameState, agent_position: int) -> MtgObservation:
 
 def event_to_index(event: PlayerEvent) -> int:
     match event:
-        case PlayerEvent.MAIN_PHASE_EMPTY_STACK:
+        case PlayerEvent.MAINPHASE_1_EMPTY_STACK:
             return 0
         case PlayerEvent.DECLARE_ATTACKS:
             return 1 

@@ -111,7 +111,7 @@ def add_meta_game(game_state: GameState, parent_space_avail: ImVec2):
     imgui.bullet_text("Current turn: {}".format(int(game_state.halfturns_completed/2) + 1))
     active_player_name: str = game_state.player_states[game_state.active_player_index].name
     imgui.bullet_text("Active Player: {}".format(active_player_name))
-    imgui.bullet_text("Current Step: {}".format(game_state.upcoming_event.name))
+    imgui.bullet_text("Current Step: {}".format(game_state.step.name))
     imgui.end_child()
 
 
@@ -165,9 +165,9 @@ def add_battlefield(player_state: PlayerState, parent_space_avail: ImVec2, image
             nonlands.append(card)
     imgui.begin_child("Battlefield-{}".format(position), ImVec2(0, parent_space_avail.y * 0.5), False, battlefield_flags)
     for n, card in enumerate(nonlands):
-        clicked: bool = add_card(image_refs, card.card_name, n , card.tapped)
-        if clicked:
-            card.tapped = not card.tapped
+        #clicked: bool = add_card(image_refs, card.card_name, n , card.tapped)
+        #if clicked:
+        add_card(image_refs, card.card_name, n , card.tapped)
         imgui.same_line()
     imgui.end_child()
 

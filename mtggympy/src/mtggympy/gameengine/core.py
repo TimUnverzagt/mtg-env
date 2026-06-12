@@ -1,102 +1,93 @@
 from __future__ import annotations
 from collections import defaultdict
-from mtggympy.gameengine.constants import ManaColor, Zone
+from mtggympy.gameengine.constants import GameStep, ManaColor
 import mtggympy.gameengine.constants as const
 from mtggympy.gameengine.player import Player
 from mtggympy.gameengine.priority.event import ActionIntent, PlayerEvent, ActionData
-from mtggympy.gameengine.gameobjects import CardInstance, CardType
+from mtggympy.gameengine.gameobjects import CardInstance, CreatureInstance
 from mtggympy.gameengine.state import GameState, PlayerState, is_player_alive
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
 from mtggympy.gameengine.capabilities import ManaProvider
+import mtggympy.gameengine.parsing as parse
 
 from mtggympy.helpers.dict_operations import first_dict_can_fit_second_by_value
-from typing import Callable, Generic, Optional, ParamSpec, TypeVar, Any, Concatenate
+from typing import Callable, Generic, ParamSpec, TypeVar, Any, Concatenate
 
 from mtggympy.logging_config import engine_log as logger
 
-def get_initial_game_state() -> GameState:
-    player1: Player = Player("Player1")
-    player2: Player = Player("Player2")
-    game_state: GameState = GameState(
-        halfturns_completed = 0,
-        active_player_index = 0,
-        game_over = False,
-        upcoming_event=PlayerEvent.MAIN_PHASE_EMPTY_STACK,
-        player_states = [player1.info, player2.info],
-        winner_positions=[]
-    )
-    return game_state
 
-#def is_legal_action(decision_intent: str, game_state: GameState) -> bool:
-#    return True
+##################################    
+# Steps
+##################################
+# Steps return whether they completed succesfully
 
-def step(acting_seat: int, decision_intent: ActionIntent, game_state: GameState, decision_details : Optional[dict[str, Any]] = None) -> None:
-    # Don't respond if the game is over
-    if(game_state.game_over):
-        return
-    
-    # Handle decision of step
-    logger.info("Handling intent '{}' for player event '{}' from {}".format(
-        decision_intent, game_state.upcoming_event.name, game_state.player_states[acting_seat].name
-        ))
-    match game_state.upcoming_event:
-        case PlayerEvent.MAIN_PHASE_EMPTY_STACK:
-            handle_main_phase_decision(acting_seat, decision_intent, game_state)
-        case PlayerEvent.DECLARE_ATTACKS:
-            handle_combat_decision(acting_seat, decision_intent.action, game_state)
-    return 
+def upkeep(game_state:GameState) -> bool:
+    active_battlefield: list[CardInstance] = game_state.player_states[game_state.active_player_index].cards_in_play
+    for card in active_battlefield:
+        card.tapped = False
+    return True
 
-def handle_main_phase_decision(acting_seat: int, intent: ActionIntent, game_state: GameState) -> None:
+def draw_step(game_state:GameState) -> bool:
+    # Handle setup of new turn
+    if(game_state.halfturns_completed <= 0):
+        logger.info("{} will skip their draw on the first turn".format(game_state.player_states[game_state.active_player_index].name))
+        return True
+    logger.info("{} will draw a card for turn".format(game_state.player_states[game_state.active_player_index].name))
+    execute_action(game_state.active_player_index, game_state, draw_card)
+    return True
+
+def main_phase(acting_seat: int, intent: ActionIntent, game_state: GameState) -> bool:
     match intent.action:
         case ActionData.PASS:
-            empty_mana_pool(game_state)
-            game_state.upcoming_event = PlayerEvent.DECLARE_ATTACKS
+            pass
         case ActionData.PLAY_CARD:
-            target_card: CardInstance|None = try_selecting_card_for_playing(acting_seat, intent, game_state)
+            target_card: CardInstance|None = parse.card_for_playing(acting_seat, intent, game_state)
             if target_card is None:
-                return
+                return False
             play_card(acting_seat, game_state, target_card)
         case ActionData.ACTIVATE_LANDS:
-            target_lands: list[CardInstance] | None = try_selecting_lands_for_activation(acting_seat, intent, game_state)
+            target_lands: list[CardInstance] | None = parse.lands_for_activation(acting_seat, intent, game_state)
             if target_lands is None:
-                return
+                return False
             activate_lands(acting_seat, game_state, target_lands)
         case _:
-            handle_illegal_action(intent.action, PlayerEvent.MAIN_PHASE_EMPTY_STACK)
-    return
-
-def try_selecting_card_for_playing(acting_seat: int, intent: ActionIntent, game_state: GameState) -> CardInstance | None:
-    if(intent.parameters is None):
-        logger.error("{}: Arguments are missing. Refusing to process intent!".format(intent.action.name))
-        return None
-    if(intent.parameters.size != 1):
-        logger.error("{}: More than one argument. Refusing to process intent!".format(intent.action.name))
-        return None
-    card_index: int = intent.parameters.sum() # This colapses various shapes
-    if(card_index >= len(game_state.player_states[acting_seat].cards_in_hand)):
-        logger.error("{}: No card at given position. Refusing to process intent!".format(intent.action.name))
-        return None
-    return game_state.player_states[acting_seat].cards_in_hand[card_index]
-
-def try_selecting_lands_for_activation(acting_seat: int, intent: ActionIntent, game_state: GameState) -> list[CardInstance] | None:
-    if(intent.parameters is None):
-        logger.error("{}: Arguments are missing. Refusing to process intent!".format(intent.action.name))
-        return None
-    if(intent.parameters.shape[1] != 1):
-        logger.error("{}: Arguments. Refusing to process intent!".format(intent.action.name))
-        return None
-    existing_lands: list[CardInstance] = list(filter(lambda card: card.type is CardType.LAND ,game_state.player_states[acting_seat].cards_in_play))
-    target_lands: list[CardInstance] = []
-    for index in intent.parameters:
-        if (index >= len(existing_lands)):
-            logger.error("{}: No card at given position. Refusing to process intent!".format(intent.action.name))
-            return None
-        target_lands.append(existing_lands[int(index[0])])
-    return target_lands
-    
+            handle_illegal_action(intent.action, PlayerEvent.MAINPHASE_EMPTY_STACK)
+            return False
+    return True
 
 
-def activate_lands(acting_seat: int, game_state:GameState, target_lands: list[CardInstance]):
+def combat(acting_seat: int, intent: ActionIntent, game_state: GameState) -> bool:
+    match intent.action:
+        case ActionData.PASS:
+            pass
+        case ActionData.ATTACK:
+            target_creatures: list[CreatureInstance] | None = parse.creatures_for_attacking(acting_seat, intent, game_state)
+            if target_creatures is None:
+                logger.warning("No creatures recognized from parsed input!")
+                return False
+            attack(acting_seat, game_state, target_creatures)
+        case _:
+            handle_illegal_action(intent.action, PlayerEvent.DECLARE_ATTACKS)
+            return False
+    return True
+
+def end_step(game_state: GameState) -> bool:
+    active_hand: list[CardInstance] = game_state.player_states[game_state.active_player_index].cards_in_hand
+    max_hand_size: int = 7
+    if len(active_hand) > max_hand_size:
+        logger.info("Discarding down to handsize of {} automatically".format(max_hand_size))
+        cards_to_discard: list[CardInstance] = active_hand[max_hand_size:]
+        logger.info("Discarding {} cards".format(len(cards_to_discard)))
+        active_hand = active_hand[:7]        
+    return True
+
+
+
+
+##################################    
+# Pure Tranistion after parsing
+##################################
+def activate_lands(acting_seat: int, game_state:GameState, target_lands: list[CardInstance]) -> None:
     if game_state.active_player_index != acting_seat:
         logger.error("Non-active player is trying to activate lands. Refusing to process intent!")
         return
@@ -112,7 +103,7 @@ def activate_lands(acting_seat: int, game_state:GameState, target_lands: list[Ca
         game_state.player_states[acting_seat].floating_mana[color] += 1
     return
 
-def play_card(acting_seat: int, game_state:GameState, card: CardInstance):
+def play_card(acting_seat: int, game_state:GameState, card: CardInstance) -> None:
     if game_state.active_player_index != acting_seat:
         logger.error("Non-active player is trying to play a card. Refusing to process intent!")
         return
@@ -120,7 +111,7 @@ def play_card(acting_seat: int, game_state:GameState, card: CardInstance):
     battlefield: list[CardInstance] = game_state.player_states[acting_seat].cards_in_play
     floating_mana: dict[ManaColor, int] = game_state.player_states[acting_seat].floating_mana
 
-    if card.type in [CardType.CREATURE]:
+    if isinstance(card, CreatureInstance):
         assert card.mana_cost is not None
         if not first_dict_can_fit_second_by_value(floating_mana, card.mana_cost):
             logger.error("Player on seat {} is trying to play {} without having enough mana. Refusing to process intent".format(
@@ -135,28 +126,64 @@ def play_card(acting_seat: int, game_state:GameState, card: CardInstance):
 
     hand.remove(card)
     battlefield.append(card)
-    card.zone = Zone.BATTLEFIELD
     return
 
-def handle_combat_decision(acting_seat: int, decision: ActionData, game_state: GameState) -> None:
-    match decision:
-        case ActionData.PASS:
-            pass_turn(game_state)
-        case ActionData.ATTACK:
-            logger.warning("Turn {}/{}: {} is attacking!".format(
-                game_state.halfturns_completed,
-                len(game_state.player_states),
-                game_state.player_states[acting_seat].name)
-            )
+def attack(acting_seat: int, game_state: GameState, target_creatures: list[CreatureInstance]) -> None:
+    logger.warning("Turn {}/{}: {} is attacking!".format(
+        game_state.halfturns_completed,
+        len(game_state.player_states),
+        game_state.player_states[acting_seat].name)
+    )
+    total_damage: int = 0
+    for creature in target_creatures:
+        if creature.tapped:
+            logger.error("Target creature {} is tapped and can not attack. Refusing to process intent!".format(creature.card_name))
+            return
+        creature.tapped = True
+        total_damage += creature.power
+    defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_states)#
+    execute_action(acting_seat, game_state, deal_damage, defending_position, total_damage)
 
-            # Just use the only other player as target until multiplayer is implemented
-            defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_states)
-            # Just decrease health by flat amount for poc
-            execute_action(acting_seat, game_state, deal_damage, defending_position, 1)
-            pass_turn(game_state)
-        case _:
-            handle_illegal_action(decision, PlayerEvent.DECLARE_ATTACKS)
+##################################    
+# Actions to be handled by proxy
+##################################
+def draw_card(acting_seat: int, game_state: GameState) -> None:
+    hand: list[CardInstance] = game_state.player_states[acting_seat].cards_in_hand
+    library: list[CardInstance] = game_state.player_states[acting_seat].cards_in_library
+    # Decking is handled prior
+    card_drawn: CardInstance = library.pop(0)
+    hand.append(card_drawn)
     return
+    
+def deal_damage(acting_seat: int, game_state: GameState, target_seat:int, damage_amount:int) -> None:
+    game_state.player_states[target_seat].current_life -= damage_amount
+    return    
+
+
+##################################
+# Misc
+##################################
+def get_initial_game_state() -> GameState:
+    player1: Player = Player("Player1")
+    player2: Player = Player("Player2")
+    game_state: GameState = GameState(
+        halfturns_completed = 0,
+        active_player_index = 0,
+        game_over = False,
+        step=GameStep.UPKEEP,
+        player_states = [player1.info, player2.info],
+        winner_positions=[]
+    )
+    return game_state
+
+def pass_turn(game_state: GameState) -> bool:
+    game_state.halfturns_completed += 1
+    next_active_seat: int = (game_state.active_player_index + 1) % len(game_state.player_states)
+    game_state.active_player_index = next_active_seat
+    return True
+
+def get_player_position(info: PlayerState, game_state:GameState) -> int:
+    return game_state.player_states.index(info)
 
 def handle_illegal_action(action: ActionData, event: PlayerEvent) -> None:
     logger.error("Action '{}' not legal for event {}. Refusing to process intent.".format(
@@ -197,39 +224,10 @@ def handle_player_death(victim_seat: int, game_state: GameState, cause: str):
     logger.warning("{} died by {}.".format(game_state.player_states[victim_seat].name, cause))
     return
 
-def empty_mana_pool(game_state: GameState) -> None:
+def empty_mana_pools(game_state: GameState) -> None:
     for state in game_state.player_states:
         state.floating_mana = defaultdict(lambda: 0)
 
-def pass_turn(game_state: GameState) -> None:
-    # complete old turn
-    game_state.halfturns_completed += 1
-    next_active_seat: int = (game_state.active_player_index + 1) % len(game_state.player_states)
-    game_state.active_player_index = next_active_seat
-
-    # Handle setup of new turn
-    logger.info("{} will draw a card for turn".format(game_state.player_states[next_active_seat].name))
-    execute_action(next_active_seat, game_state, draw_card)
-    game_state.upcoming_event = PlayerEvent.MAIN_PHASE_EMPTY_STACK
-
-def get_player_position(info: PlayerState, game_state:GameState) -> int:
-    return game_state.player_states.index(info)
-
-##################################    
-# Actions to be handled by proxy
-##################################
-
-def draw_card(acting_seat: int, game_state: GameState) -> None:
-    hand: list[CardInstance] = game_state.player_states[acting_seat].cards_in_hand
-    library: list[CardInstance] = game_state.player_states[acting_seat].cards_in_library
-    # Decking is handled prior
-    card_drawn: CardInstance = library.pop(0)
-    hand.append(card_drawn)
-    return
-    
-def deal_damage(acting_seat: int, game_state: GameState, target_seat:int, damage_amount:int) -> None:
-    game_state.player_states[target_seat].current_life -= damage_amount
-    return    
 
 ##################################
 # Action proxy

@@ -33,5 +33,17 @@ class Zone(Enum):
     BATTLEFIELD = 2
 
 class Phase(Enum):
-    MAINPHASE = 0
-    COMBAT = 1
+    BEGINNING = 0
+    MAINPHASE_1 = 1
+    COMBAT = 2
+    MAINPHASE_2 = 3
+    END = 4
+
+class GameStep(Enum):
+    UPKEEP = (Phase.BEGINNING, 0)
+    DRAW = (Phase.BEGINNING, 1)
+    MAIN_1 = (Phase.MAINPHASE_1, 0)
+    ATTACK_STEP = (Phase.COMBAT, 0)
+    BLOCK_STEP = (Phase.COMBAT, 1)
+    MAIN_2 = (Phase.MAINPHASE_2, 0)
+    END_STEP = (Phase.END, 0)

@@ -48,7 +48,7 @@ class AgentBase(ABC):
                         cont.logger.debug("{}: Waiting for my game state to be read before continuing".format(cont.player_info.name))
                         cont.state_reading_condition.notify_all()
                         cont.state_reading_condition.wait_for(cont.get_last_state_read_predicate(True))
-                cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_event.applicable_phase))
+                cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_event.name))
                 cont.intended_next_decision = self.decide_on_action(cont.upcoming_event)
                 cont.upcoming_event = None
                 cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intended_next_decision))

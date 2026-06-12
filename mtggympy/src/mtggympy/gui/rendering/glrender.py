@@ -165,7 +165,7 @@ if __name__ == "__main__":
     current_state: GameState = GameState(halfturns_completed=2, 
               active_player_index=0, 
               game_over=False,
-              upcoming_event=PlayerEvent.MAIN_PHASE_EMPTY_STACK,
+              upcoming_event=PlayerEvent.MAINPHASE_1_EMPTY_STACK,
               player_states=[p1_info, p2_info],
               winner_positions=[],
               floating_mana=defaultdict(lambda: 0))

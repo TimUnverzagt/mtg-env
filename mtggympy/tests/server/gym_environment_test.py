@@ -9,7 +9,7 @@ from mtggympy.app_config import DECK_SIZE, STARTING_LIFE
 
 from tests.default_data import get_default_game_state
 
-mainphase_index: int = translation.event_to_index(PlayerEvent.MAIN_PHASE_EMPTY_STACK)
+mainphase_index: int = translation.event_to_index(PlayerEvent.MAINPHASE_1_EMPTY_STACK)
 combat_index: int = translation.event_to_index(PlayerEvent.DECLARE_ATTACKS)
 
 class TestApi():

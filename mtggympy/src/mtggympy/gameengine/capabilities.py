@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable
 from abc import abstractmethod
 from uuid import UUID
-from mtggympy.gameengine.constants import Zone, ManaColor
+from mtggympy.gameengine.constants import ManaColor
 
 @runtime_checkable
 class Targetable(Protocol):
@@ -32,7 +32,4 @@ class ManaProvider(Protocol):
 class ActiveGameElement(Protocol):
     @abstractmethod
     def get_id(self) -> UUID:
-        raise NotImplementedError
-    @abstractmethod
-    def get_zone(self) -> Zone:
         raise NotImplementedError
