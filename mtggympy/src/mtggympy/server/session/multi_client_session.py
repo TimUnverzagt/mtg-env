@@ -166,12 +166,11 @@ class MultiClientSession():
                         step_success = True
                     case GameStep.MAIN_2:
                         step_success = GameEngine.main_phase(game_state.active_player_index, player_intent, game_state)
-                if not step_success:
-                    return step_success
-                succesor_step: GameStep = get_next_step(game_state.step, player_intent)
-                if (succesor_step is not game_state.step):
-                    GameEngine.empty_mana_pools(game_state)
-                game_state.step = succesor_step
+                if step_success:
+                    succesor_step: GameStep = get_next_step(game_state.step, player_intent)
+                    if (succesor_step is not game_state.step):
+                        GameEngine.empty_mana_pools(game_state)
+                    game_state.step = succesor_step
 
                 cont.set_action_result(game_state)
                 cont.session_condition.notify_all()

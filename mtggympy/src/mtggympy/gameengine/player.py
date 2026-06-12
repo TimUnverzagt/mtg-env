@@ -1,7 +1,7 @@
 from __future__ import annotations
 import mtggympy.app_config as conf
 from mtggympy.gameengine.state import PlayerState
-from mtggympy.gameengine.gameobjects import CardInstance, generate_instance
+from mtggympy.gameengine.gameobjects import CardInstance, generate_card_instance
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
 from mtggympy.app_config import DECK_SIZE
@@ -13,9 +13,9 @@ def get_default_library() -> list[CardInstance]:
     library: list[CardInstance] = []
     for i in range(0,DECK_SIZE):
         if (i % 3) >= 1:
-            library.append(generate_instance(CreatureNames.ALPHA_MYR.value))
+            library.append(generate_card_instance(CreatureNames.ALPHA_MYR.value))
         else:
-            library.append(generate_instance(LandNames.WASTES.value))
+            library.append(generate_card_instance(LandNames.WASTES.value))
     return library
 
 class Player:
@@ -25,9 +25,9 @@ class Player:
             name = name,
             current_life = conf.STARTING_LIFE,
             cards_in_hand = [
-                generate_instance(CreatureNames.ALPHA_MYR.value),
-                generate_instance(LandNames.WASTES.value),
-                generate_instance(LandNames.WASTES.value)],
+                generate_card_instance(CreatureNames.ALPHA_MYR.value),
+                generate_card_instance(LandNames.WASTES.value),
+                generate_card_instance(LandNames.WASTES.value)],
             cards_in_play=[],
             cards_in_library = get_default_library(),
             death_description = None,

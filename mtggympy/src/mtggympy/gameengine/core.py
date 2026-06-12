@@ -4,7 +4,7 @@ from mtggympy.gameengine.constants import GameStep, ManaColor
 import mtggympy.gameengine.constants as const
 from mtggympy.gameengine.player import Player
 from mtggympy.gameengine.priority.event import ActionIntent, PlayerEvent, ActionData
-from mtggympy.gameengine.gameobjects import CardInstance, CreatureInstance
+from mtggympy.gameengine.gameobjects import CardInstance, CreatureInstance, LandInstance
 from mtggympy.gameengine.state import GameState, PlayerState, is_player_alive
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
 from mtggympy.gameengine.capabilities import ManaProvider
@@ -25,6 +25,8 @@ def upkeep(game_state:GameState) -> bool:
     active_battlefield: list[CardInstance] = game_state.player_states[game_state.active_player_index].cards_in_play
     for card in active_battlefield:
         card.tapped = False
+        if isinstance(card, CreatureInstance):
+            card.summoning_sick = False
     return True
 
 def draw_step(game_state:GameState) -> bool:
@@ -39,37 +41,35 @@ def draw_step(game_state:GameState) -> bool:
 def main_phase(acting_seat: int, intent: ActionIntent, game_state: GameState) -> bool:
     match intent.action:
         case ActionData.PASS:
-            pass
+            return True
         case ActionData.PLAY_CARD:
             target_card: CardInstance|None = parse.card_for_playing(acting_seat, intent, game_state)
             if target_card is None:
                 return False
-            play_card(acting_seat, game_state, target_card)
+            return play_card(acting_seat, game_state, target_card)
         case ActionData.ACTIVATE_LANDS:
             target_lands: list[CardInstance] | None = parse.lands_for_activation(acting_seat, intent, game_state)
             if target_lands is None:
                 return False
-            activate_lands(acting_seat, game_state, target_lands)
+            return activate_lands(acting_seat, game_state, target_lands)
         case _:
             handle_illegal_action(intent.action, PlayerEvent.MAINPHASE_EMPTY_STACK)
             return False
-    return True
 
 
 def combat(acting_seat: int, intent: ActionIntent, game_state: GameState) -> bool:
     match intent.action:
         case ActionData.PASS:
-            pass
+            return True
         case ActionData.ATTACK:
             target_creatures: list[CreatureInstance] | None = parse.creatures_for_attacking(acting_seat, intent, game_state)
             if target_creatures is None:
                 logger.warning("No creatures recognized from parsed input!")
                 return False
-            attack(acting_seat, game_state, target_creatures)
+            return attack(acting_seat, game_state, target_creatures)
         case _:
             handle_illegal_action(intent.action, PlayerEvent.DECLARE_ATTACKS)
             return False
-    return True
 
 def end_step(game_state: GameState) -> bool:
     active_hand: list[CardInstance] = game_state.player_states[game_state.active_player_index].cards_in_hand
@@ -82,53 +82,60 @@ def end_step(game_state: GameState) -> bool:
     return True
 
 
-
-
 ##################################    
 # Pure Tranistion after parsing
 ##################################
-def activate_lands(acting_seat: int, game_state:GameState, target_lands: list[CardInstance]) -> None:
+def activate_lands(acting_seat: int, game_state:GameState, target_lands: list[CardInstance]) -> bool:
     if game_state.active_player_index != acting_seat:
         logger.error("Non-active player is trying to activate lands. Refusing to process intent!")
-        return
+        return False
     new_mana: list[ManaColor] = []
     for card in target_lands:
         if not isinstance(card, ManaProvider):
             logger.error("Target land {} is not a mana provider. Refusing to process intent!".format(card.card_name))
-            return
+            return False
         if not card.is_ready():
             logger.error("Target land {} is not ready. Refusing to process intent!".format(card.card_name))
+            return False
         new_mana += card.produce_mana()
     for color in new_mana:
         game_state.player_states[acting_seat].floating_mana[color] += 1
-    return
+    return True
 
-def play_card(acting_seat: int, game_state:GameState, card: CardInstance) -> None:
+def play_card(acting_seat: int, game_state:GameState, card: CardInstance) -> bool:
     if game_state.active_player_index != acting_seat:
         logger.error("Non-active player is trying to play a card. Refusing to process intent!")
-        return
-    hand: list[CardInstance] = game_state.player_states[acting_seat].cards_in_hand
-    battlefield: list[CardInstance] = game_state.player_states[acting_seat].cards_in_play
-    floating_mana: dict[ManaColor, int] = game_state.player_states[acting_seat].floating_mana
+        return False
+    player_state: PlayerState = game_state.player_states[acting_seat]
+    hand: list[CardInstance] = player_state.cards_in_hand
+    battlefield: list[CardInstance] = player_state.cards_in_play
+    floating_mana: dict[ManaColor, int] = player_state.floating_mana
 
     if isinstance(card, CreatureInstance):
         assert card.mana_cost is not None
         if not first_dict_can_fit_second_by_value(floating_mana, card.mana_cost):
-            logger.error("Player on seat {} is trying to play {} without having enough mana. Refusing to process intent".format(
-                acting_seat, card.card_name
+            logger.error("{} is trying to play {} without having enough mana. Refusing to process intent".format(
+                player_state.name, card.card_name
             ))
             logger.debug("Available mana: {}".format(floating_mana)) 
             logger.debug("Required mana: {}".format(card.mana_cost))
             logger.debug("Cards in hand: {}".format(list(map(lambda card: card.card_name, hand))))
-            return
+            return False
         for color in card.mana_cost:
             floating_mana[color] -= card.mana_cost[color]
-
+        card.summoning_sick = True
+    if isinstance(card, LandInstance):
+        if game_state.lands_played_this_turn >= 1:
+            logger.error("{} is trying to play with {} prior land drops. Refusing to process intent".format(
+                player_state.name, game_state.lands_played_this_turn
+            ))
+            return False
+        game_state.lands_played_this_turn += 1        
     hand.remove(card)
     battlefield.append(card)
-    return
+    return True
 
-def attack(acting_seat: int, game_state: GameState, target_creatures: list[CreatureInstance]) -> None:
+def attack(acting_seat: int, game_state: GameState, target_creatures: list[CreatureInstance]) -> bool:
     logger.warning("Turn {}/{}: {} is attacking!".format(
         game_state.halfturns_completed,
         len(game_state.player_states),
@@ -138,11 +145,14 @@ def attack(acting_seat: int, game_state: GameState, target_creatures: list[Creat
     for creature in target_creatures:
         if creature.tapped:
             logger.error("Target creature {} is tapped and can not attack. Refusing to process intent!".format(creature.card_name))
-            return
+            return False
+        if creature.summoning_sick:
+            logger.error("Target creature {} is summoning sick and can not attack. Refusing to process intent!".format(creature.card_name))
+            return False
         creature.tapped = True
         total_damage += creature.power
     defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_states)#
-    execute_action(acting_seat, game_state, deal_damage, defending_position, total_damage)
+    return execute_action(acting_seat, game_state, deal_damage, defending_position, total_damage)
 
 ##################################    
 # Actions to be handled by proxy
@@ -155,9 +165,9 @@ def draw_card(acting_seat: int, game_state: GameState) -> None:
     hand.append(card_drawn)
     return
     
-def deal_damage(acting_seat: int, game_state: GameState, target_seat:int, damage_amount:int) -> None:
+def deal_damage(acting_seat: int, game_state: GameState, target_seat:int, damage_amount:int) -> bool:
     game_state.player_states[target_seat].current_life -= damage_amount
-    return    
+    return True
 
 
 ##################################
@@ -172,7 +182,8 @@ def get_initial_game_state() -> GameState:
         game_over = False,
         step=GameStep.UPKEEP,
         player_states = [player1.info, player2.info],
-        winner_positions=[]
+        winner_positions=[],
+        lands_played_this_turn=0
     )
     return game_state
 
@@ -180,6 +191,7 @@ def pass_turn(game_state: GameState) -> bool:
     game_state.halfturns_completed += 1
     next_active_seat: int = (game_state.active_player_index + 1) % len(game_state.player_states)
     game_state.active_player_index = next_active_seat
+    game_state.lands_played_this_turn = 0
     return True
 
 def get_player_position(info: PlayerState, game_state:GameState) -> int:

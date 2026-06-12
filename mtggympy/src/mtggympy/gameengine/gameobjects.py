@@ -28,13 +28,18 @@ class SpellInstance(CardInstance):
         super().__init__(info)
         self.mana_cost = info.mana_cost
 
+class LandInstance(CardInstance):
+    def __init__(self, info: LandInfo) -> None:
+        super().__init__(info)
+
 class CreatureInstance(SpellInstance):
     def __init__(self, info: CreatureInfo) -> None:
         super().__init__(info)
         self.power: int = info.power
         self.toughness: int = info.toughness
+        self.summoning_sick: bool = False
 
-class WastesInstance(CardInstance, ManaProvider):
+class WastesInstance(LandInstance, ManaProvider):
     def __init__(self) -> None:
         super().__init__(LandInfo(LandNames.WASTES.value))
     
@@ -45,13 +50,15 @@ class WastesInstance(CardInstance, ManaProvider):
         self.tapped = True
         return [ManaColor.COLORLESS]
     
-def generate_instance(card_name: str) -> CardInstance:
+def generate_card_instance(card_name: str) -> CardInstance:
     info: CardInfo | None =  lookup.card_info(card_name)
     if info is None:
         logger.error("Could not instatiate card for name \"{}\"".format(card_name))
         raise Exception
-    if isinstance(info, CreatureInfo):
-        return CreatureInstance(info)
     if card_name == LandNames.WASTES.value:
         return WastesInstance()
+    if isinstance(info, CreatureInfo):
+        return CreatureInstance(info)
+    if isinstance(info, LandInfo):
+        return LandInstance(info)
     return CardInstance(info)

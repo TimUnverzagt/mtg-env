@@ -3,7 +3,10 @@ from mtggympy.gameengine.cards.catalog.lands import LAND_CATALOG
 from mtggympy.gameengine.cards.catalog.creatures import CREATURE_CATALOG
 from mtggympy.gameengine.constants import CardType, ManaColor
 
+FACEDOWN_CARD_NAME = "facedown"
+
 FULL_CATALOG: dict[str, CardInfo] = LAND_CATALOG | CREATURE_CATALOG
+FULL_CATALOG[FACEDOWN_CARD_NAME] = CardInfo(FACEDOWN_CARD_NAME)
 
 def card_info(name:str) -> CardInfo | None:
     try:

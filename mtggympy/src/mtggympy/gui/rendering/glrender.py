@@ -15,14 +15,15 @@ from collections import defaultdict
 from pygame.time import Clock
 
 import mtggympy.app_config as conf
+from mtggympy.gameengine.constants import GameStep
 import mtggympy.gui.layout.myimgui as layout
 import mtggympy.gui.constants as const
 from mtggympy.gui.texture import ImageMetaData
 from mtggympy.gameengine.state import GameState, PlayerState
-from mtggympy.gameengine.priority.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
-from mtggympy.gameengine.gameobjects import CardInstance
+import mtggympy.gameengine.cards.catalog.lookup as lookup
+from mtggympy.gameengine.gameobjects import generate_card_instance
     
 def load_image(path_from_asset_dir: str) -> Surface:
     filepath: str = os.path.join(conf.ASSET_DIR, path_from_asset_dir)
@@ -59,8 +60,8 @@ class GlRenderer():
         self.image_assets: dict[str, ImageMetaData] = {}
         background: Surface = load_image(const.BACKGROUND_IMAGE_NAME)
         self.image_assets[const.BACKGROUND_IMAGE_NAME] = self.add_texture_to_gl(background)
-        cardback: Surface = load_image(const.CARDBACK_IMAGE_NAME)
-        self.image_assets[const.CARDBACK_IMAGE_NAME] = self.add_texture_to_gl(cardback)
+        cardback: Surface = load_card_image(lookup.FACEDOWN_CARD_NAME)
+        self.image_assets[lookup.FACEDOWN_CARD_NAME] = self.add_texture_to_gl(cardback)
 
         for name in CreatureNames:
             card_surface:Surface = load_card_image(name.value)
@@ -132,43 +133,45 @@ class GlRenderer():
 if __name__ == "__main__":
     p1_info: PlayerState = PlayerState("Alice",
                                      current_life=20,
-                                     cards_in_hand=[CardInstance(CreatureNames.ALPHA_MYR.value),
-                                                    CardInstance(LandNames.WASTES.value),
-                                                    CardInstance(CreatureNames.SLIVER_CONSTRUCT.value),
-                                                    CardInstance(CreatureNames.OMEGA_MYR.value),
-                                                    CardInstance(LandNames.WASTES.value),
-                                                    CardInstance(LandNames.WASTES.value)],
-                                     cards_in_play=[CardInstance(LandNames.WASTES.value),
-                                                    CardInstance(LandNames.WASTES.value),
-                                                    CardInstance(CreatureNames.OMEGA_MYR.value)],
-                                     cards_in_library=[CardInstance(CreatureNames.SLIVER_CONSTRUCT.value),
-                                                       CardInstance(CreatureNames.SLIVER_CONSTRUCT.value),
-                                                       CardInstance(CreatureNames.SLIVER_CONSTRUCT.value)],
-                                     death_description=None)
+                                     cards_in_hand=[generate_card_instance(CreatureNames.ALPHA_MYR.value),
+                                                    generate_card_instance(LandNames.WASTES.value),
+                                                    generate_card_instance(CreatureNames.SLIVER_CONSTRUCT.value),
+                                                    generate_card_instance(CreatureNames.OMEGA_MYR.value),
+                                                    generate_card_instance(LandNames.WASTES.value),
+                                                    generate_card_instance(LandNames.WASTES.value)],
+                                     cards_in_play=[generate_card_instance(LandNames.WASTES.value),
+                                                    generate_card_instance(LandNames.WASTES.value),
+                                                    generate_card_instance(CreatureNames.OMEGA_MYR.value)],
+                                     cards_in_library=[generate_card_instance(CreatureNames.SLIVER_CONSTRUCT.value),
+                                                       generate_card_instance(CreatureNames.SLIVER_CONSTRUCT.value),
+                                                       generate_card_instance(CreatureNames.SLIVER_CONSTRUCT.value)],
+                                     death_description=None,
+                                     floating_mana=defaultdict(lambda: 0))
     p2_info: PlayerState = PlayerState("Bob",
                                      current_life=20,
-                                     cards_in_hand=[CardInstance(CreatureNames.ALPHA_MYR.value),
-                                                    CardInstance(LandNames.WASTES.value),
-                                                    CardInstance(CreatureNames.SLIVER_CONSTRUCT.value),
-                                                    CardInstance(CreatureNames.OMEGA_MYR.value),
-                                                    CardInstance(LandNames.WASTES.value),
-                                                    CardInstance(LandNames.WASTES.value)],
-                                     cards_in_play=[CardInstance(LandNames.WASTES.value),
-                                                    CardInstance(LandNames.WASTES.value),
-                                                    CardInstance(CreatureNames.OMEGA_MYR.value),
-                                                    CardInstance(CreatureNames.METALLIC_SLIVER.value)],
-                                     cards_in_library=[CardInstance(CreatureNames.METALLIC_SLIVER.value),
-                                                       CardInstance(CreatureNames.METALLIC_SLIVER.value),
-                                                       CardInstance(CreatureNames.METALLIC_SLIVER.value),
-                                                       CardInstance(CreatureNames.METALLIC_SLIVER.value)],
-                                     death_description=None)
+                                     cards_in_hand=[generate_card_instance(CreatureNames.ALPHA_MYR.value),
+                                                    generate_card_instance(LandNames.WASTES.value),
+                                                    generate_card_instance(CreatureNames.SLIVER_CONSTRUCT.value),
+                                                    generate_card_instance(CreatureNames.OMEGA_MYR.value),
+                                                    generate_card_instance(LandNames.WASTES.value),
+                                                    generate_card_instance(LandNames.WASTES.value)],
+                                     cards_in_play=[generate_card_instance(LandNames.WASTES.value),
+                                                    generate_card_instance(LandNames.WASTES.value),
+                                                    generate_card_instance(CreatureNames.OMEGA_MYR.value),
+                                                    generate_card_instance(CreatureNames.METALLIC_SLIVER.value)],
+                                     cards_in_library=[generate_card_instance(CreatureNames.METALLIC_SLIVER.value),
+                                                       generate_card_instance(CreatureNames.METALLIC_SLIVER.value),
+                                                       generate_card_instance(CreatureNames.METALLIC_SLIVER.value),
+                                                       generate_card_instance(CreatureNames.METALLIC_SLIVER.value)],
+                                     death_description=None,
+                                     floating_mana=defaultdict(lambda: 0))
     current_state: GameState = GameState(halfturns_completed=2, 
               active_player_index=0, 
               game_over=False,
-              upcoming_event=PlayerEvent.MAINPHASE_1_EMPTY_STACK,
+              step=GameStep.MAIN_1,
               player_states=[p1_info, p2_info],
               winner_positions=[],
-              floating_mana=defaultdict(lambda: 0))
+              lands_played_this_turn=1)
     
     renderer: GlRenderer = GlRenderer()
     time.sleep(1)

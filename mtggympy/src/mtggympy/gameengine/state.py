@@ -35,6 +35,7 @@ class GameState:
     step: GameStep
     player_states: list[PlayerState]
     winner_positions: list[int]
+    lands_played_this_turn: int
 
     def __str__(self) -> str:
         return "\n".join([
