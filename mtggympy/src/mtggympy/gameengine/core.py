@@ -77,8 +77,8 @@ def end_step(game_state: GameState) -> bool:
     if len(active_hand) > max_hand_size:
         logger.info("Discarding down to handsize of {} automatically".format(max_hand_size))
         cards_to_discard: list[CardInstance] = active_hand[max_hand_size:]
-        logger.info("Discarding {} cards".format(len(cards_to_discard)))
-        active_hand = active_hand[:7]        
+        logger.info("Discarding: {} ".format(len(cards_to_discard)))
+        game_state.player_states[game_state.active_player_index].cards_in_hand = active_hand[:7]        
     return True
 
 

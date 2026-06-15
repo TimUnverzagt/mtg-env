@@ -1,11 +1,14 @@
+from typing import Optional
+
 from mtggympy.server.session.multi_client_session import MultiClientSession as GameSession
-from mtggympy.gameengine.priority.event import ActionIntent, EventData
+from mtggympy.gameengine.priority.event import ActionIntent, EventData, ActionData
 #import environment.constants as EnvConsts
 from mtggympy.server.agents.abstractions.base import AgentBase
 
 from mtggympy.logging_config import main_log
 import random
 import sys
+import numpy as np
 
 class Goldfish(AgentBase):
     def __init__(self, session: GameSession, name: str, target_seat: int | None =  None) -> None:
@@ -24,8 +27,11 @@ class Monkey(AgentBase):
 
     def decide_on_action(self, upcoming_action: EventData) -> ActionIntent:
         random_index: int = self.random_generator.randint(0, len(upcoming_action.possible_actions) - 1)
-        # TODO: Respect Action dimensionality
-        return ActionIntent(upcoming_action.possible_actions[random_index], None)
+        random_action: ActionData = upcoming_action.possible_actions[random_index]
+        arguments: np.ndarray | None = None
+        if random_action.value.dimensionality >= 1:
+            arguments = np.random.randint(3, size=(1,random_action.value.dimensionality), dtype=int)
+        return ActionIntent(random_action, arguments)
 
         
 

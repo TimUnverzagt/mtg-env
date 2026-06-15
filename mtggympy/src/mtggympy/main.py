@@ -1,7 +1,7 @@
 from threading import Thread
 from mtggympy.api.gym_environment import MtgEnv
 from mtggympy.api.desktop_app import DesktopApp
-from mtggympy.server.agents.simple import Goldfish
+from mtggympy.server.agents.simple import Goldfish, Monkey
 from mtggympy.server.session.multi_client_session import MultiClientSession as MtgSession
 #from api.wrapper import MtgObservation
 from mtggympy.dojo.q_learning import QLearner
@@ -31,7 +31,7 @@ def desktop_game_example():
     session: MtgSession = MtgSession() 
     session_thread: Thread = Thread(target=session.tick_session, daemon=False)
     session_thread.start()
-    opponent = Goldfish(session, "Opp-Goldfish", target_seat=1) 
+    opponent = Monkey(session, "Opp-Monkey", target_seat=1) 
     opponent_thread: Thread = Thread(target=opponent.play_game, daemon=True)
     opponent_thread.start()
     game: DesktopApp = DesktopApp(session, "Tim")

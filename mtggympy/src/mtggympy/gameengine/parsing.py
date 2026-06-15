@@ -24,7 +24,7 @@ def lands_for_activation(acting_seat: int, intent: ActionIntent, game_state: Gam
     if(intent.parameters is None):
         logger.error("{}: Arguments are missing. Refusing to process intent!".format(intent.action.name))
         return None
-    if(intent.parameters.shape[1] != 1):
+    if((len(intent.parameters.shape) < 2) or (intent.parameters.shape[1] != 1)):
         logger.error("{}: Arguments have wrong size. Refusing to process intent!".format(intent.action.name))
         return None
     lands: list[CardInstance] = list(filter(lambda card: card.type is CardType.LAND ,game_state.player_states[acting_seat].cards_in_play))
@@ -40,7 +40,7 @@ def creatures_for_attacking(acting_seat: int, intent: ActionIntent, game_state: 
     if(intent.parameters is None):
         logger.error("{}: Arguments are missing. Refusing to process intent!".format(intent.action.name))
         return None
-    if(intent.parameters.shape[1] != 1):
+    if((len(intent.parameters.shape) < 2) or (intent.parameters.shape[1] != 1)):
         logger.error("{}: Arguments have wrong size. Refusing to process intent!".format(intent.action.name))
         return None
     nonlands: list[CardInstance] = list(filter(lambda card: card.type is not CardType.LAND ,game_state.player_states[acting_seat].cards_in_play))
