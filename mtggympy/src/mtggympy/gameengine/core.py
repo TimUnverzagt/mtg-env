@@ -1,5 +1,7 @@
 from __future__ import annotations
 from collections import defaultdict
+
+import random
 from mtggympy.gameengine.constants import GameStep, ManaColor
 import mtggympy.gameengine.constants as const
 from mtggympy.gameengine.player import Player
@@ -175,7 +177,9 @@ def deal_damage(acting_seat: int, game_state: GameState, target_seat:int, damage
 ##################################
 def get_initial_game_state() -> GameState:
     player1: Player = Player("Player1")
+    shuffle_cards(player1.info.cards_in_library)
     player2: Player = Player("Player2")
+    shuffle_cards(player2.info.cards_in_library)
     game_state: GameState = GameState(
         halfturns_completed = 0,
         active_player_index = 0,
@@ -185,7 +189,15 @@ def get_initial_game_state() -> GameState:
         winner_positions=[],
         lands_played_this_turn=0
     )
+    for i in range(0,7):
+        draw_card(0, game_state)
+        draw_card(1, game_state)
     return game_state
+
+def shuffle_cards(cards: list[CardInstance], seed: int | None = None) -> None:
+    if seed:
+        random.seed(seed)
+    random.shuffle(cards)
 
 def pass_turn(game_state: GameState) -> bool:
     game_state.halfturns_completed += 1

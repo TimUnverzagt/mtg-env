@@ -104,6 +104,7 @@ class GlRenderer():
 
     def run_renderer(self):
         self._init_from_thread()
+        ui_state: layout.UiState = layout.UiState()
         while self.running:
 
             for event in pygame.event.get():
@@ -120,7 +121,7 @@ class GlRenderer():
 
             # --- UI ---
             with self.obs_condition:
-                layout.gui(self.observations, self.image_assets, self.io.display_size)
+                layout.gui(ui_state, self.observations, self.image_assets, self.io.display_size)
 
             imgui.render()
             self.impl.render(imgui.get_draw_data())
