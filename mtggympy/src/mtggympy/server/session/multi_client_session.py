@@ -1,11 +1,12 @@
 from mtggympy.gameengine.constants import GameStep
-from mtggympy.gameengine.priority.event import ActionData, ActionIntent, EventData, event_from_step
+from mtggympy.gameengine.priority.event import ActionData, ActionIntent, PlayerEvent, event_from_step
 from mtggympy.gameengine.state import GameState
 from mtggympy.server.session.player_connection import PlayerController
 import mtggympy.gameengine.core as GameEngine
 #from game.state import GameState
 from mtggympy.gameengine.player import PlayerState
 from mtggympy.gui.rendering.pygame_custom import SimpleRenderer
+from mtggympy.server.obfuscation import observe_game_state
 
 import time
 from functools import reduce
@@ -82,23 +83,26 @@ class MultiClientSession():
                 continue
 
             step_success: bool
+            target_seat: int 
             match self.game_state.step:
                 case GameStep.UPKEEP | GameStep.DRAW  | GameStep.END_STEP:
                     step_success = self.step_without_player(self.game_state)
                 case GameStep.MAIN_1 | GameStep.ATTACK_STEP | GameStep.MAIN_2:
                     # Retrieve Player
-                    cont: Optional[PlayerController] = self.get_controller_from_active_player_onward()
+                    target_seat = self.get_seat_from_active_player_onward()
+                    cont: Optional[PlayerController] = self.get_controller_for_target_seat(target_seat)
                     if cont is None: 
                         continue
                     assert cont is not None
-                    step_success = self.step_with_player(self.game_state, cont, event_from_step(self.game_state.step).value)
+                    step_success = self.step_with_player(self.game_state, cont, target_seat, event_from_step(self.game_state.step))
                 case GameStep.BLOCK_STEP: 
                     # Retrieve Player
-                    cont: Optional[PlayerController] = self.get_controller_from_active_player_onward(seat_offset=1)
+                    target_seat = self.get_seat_from_active_player_onward(seat_offseat=1)
+                    cont: Optional[PlayerController] = self.get_controller_for_target_seat(target_seat)
                     if cont is None: 
                         continue
                     assert cont is not None
-                    step_success = self.step_with_player(self.game_state, cont, event_from_step(self.game_state.step).value)
+                    step_success = self.step_with_player(self.game_state, cont, target_seat, event_from_step(self.game_state.step))
             if not step_success:
                     logger.warning("Step Resolution was unsuccessful. This may result in a corrupted game state")
 
@@ -131,14 +135,14 @@ class MultiClientSession():
         game_state.step = succesor_step
         return step_success
     
-    def step_with_player(self, game_state: GameState, cont: PlayerController, player_event: EventData) -> bool:
+    def step_with_player(self, game_state: GameState, cont: PlayerController, player_seat: int, player_event: PlayerEvent) -> bool:
             # Prompt Player Input
             with cont.session_condition:
                 logger.debug("SessionTick: {}: Prompting Player with state {}".format(
                     cont.player_info.name,
                     game_state
                     ))
-                cont.set_action_priors(game_state, player_event)
+                cont.set_action_priors(observe_game_state(game_state, player_seat), player_event)
                 cont.session_condition.notify_all()
                 cont.session_condition.wait_for(cont.get_ready_for_session_consumption_predicate())
 
@@ -171,8 +175,7 @@ class MultiClientSession():
                     if (succesor_step is not game_state.step):
                         GameEngine.empty_mana_pools(game_state)
                     game_state.step = succesor_step
-
-                cont.set_action_result(game_state)
+                cont.set_action_result(observe_game_state(game_state, player_seat))
                 cont.session_condition.notify_all()
                 cont.session_condition.wait()
                 logger.debug("SessionTick: {}: Anwsered player with new state {}".format(
@@ -183,16 +186,18 @@ class MultiClientSession():
                 cont.session_condition.wait_for(cont.get_ready_for_next_loop_predicate())
             return step_success
 
-    def get_controller_from_active_player_onward(self, seat_offset: int = 0) -> Optional[PlayerController]:
+    def get_controller_for_target_seat(self, target_seat: int) -> Optional[PlayerController]:
         if self.seats[0] is None or self.seats[1] is None:
             logger.error("Can't get active controller because a player disconnected!")
             return
         
-        target_player_index = (self.game_state.active_player_index + seat_offset) % len(self.game_state.player_states)
-        target_player_info: PlayerState = self.game_state.player_states[target_player_index]
+        target_player_info: PlayerState = self.game_state.player_states[target_seat]
         for controller in self.seats:
             assert controller is not None
             if target_player_info == controller.player_info: 
                 return controller
         logger.error("PlayerInfo does not align with any controller! This should never happen!!")
+
+    def get_seat_from_active_player_onward(self, seat_offseat: int = 0) -> int:
+        return (self.game_state.active_player_index + seat_offseat) % len(self.game_state.player_states)
 

@@ -24,6 +24,8 @@ from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
 import mtggympy.gameengine.cards.catalog.lookup as lookup
 from mtggympy.gameengine.gameobjects import generate_card_instance
+from mtggympy.server.obfuscation import observe_game_state
+from mtggympy.server.session.observed_state import ObservedGameState
     
 def load_image(path_from_asset_dir: str) -> Surface:
     filepath: str = os.path.join(conf.ASSET_DIR, path_from_asset_dir)
@@ -43,7 +45,7 @@ class GlRenderer():
         self.impl: pygame_backend.PygameRenderer
         self.running: bool
         self.io: IO
-        self.observations: GameState | None = None
+        self.observations: ObservedGameState | None = None
         
     def _init_from_thread(self) -> None:
         pygame.init()
@@ -176,5 +178,5 @@ if __name__ == "__main__":
     
     renderer: GlRenderer = GlRenderer()
     time.sleep(1)
-    renderer.observations = current_state
+    renderer.observations = observe_game_state(current_state, 0)
     forever = threading.Event(); forever.wait()

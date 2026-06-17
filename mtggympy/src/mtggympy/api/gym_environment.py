@@ -15,7 +15,7 @@ from mtggympy.server.agents.simple import Goldfish #, Monkey
 from mtggympy.server.agents.external import ApiAgent
 from mtggympy.server.agents.abstractions.base import AgentBase as Agent
 from mtggympy.api.gym_types import MtgObservation, MtgInfo, MtgAction
-from mtggympy.server.translation import gym_action_to_priority_decision, game_state_to_obs
+from mtggympy.api.translation import gym_action_to_priority_decision, observed_state_to_obs
 from mtggympy.helpers.tree_map import tree_map
 from mtggympy.helpers.predicate_extensions import build_either_predicate
 
@@ -87,15 +87,15 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         opponent_thread.start()
         
         assert self.agent.controller is not None
-        self.agent.controller.game_state_after_action = self.agent.controller.game_state_before_action
+        self.agent.controller.obs_after_action = self.agent.controller.obs_before_action
         return self.get_obs(), self._get_inf()
 
     def get_obs(self) -> MtgObservation:
         agent_cont: PlayerController | None = self.agent.controller
         assert agent_cont is not None
-        assert agent_cont.game_state_after_action is not None
-        logger.debug("Constructing obs from following state {}".format(agent_cont.game_state_after_action))
-        obs: MtgObservation = game_state_to_obs(agent_cont.game_state_after_action, agent_cont.position)
+        assert agent_cont.obs_after_action is not None
+        logger.debug("Constructing obs from following state {}".format(agent_cont.obs_after_action))
+        obs: MtgObservation = observed_state_to_obs(agent_cont.obs_after_action, agent_cont.position)
         if self.observation_limits is not None:
             obs = cast(MtgObservation, tree_map(min, obs, self.observation_limits))
         return obs
@@ -131,7 +131,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
                 return self.get_obs(), reward, terminated, truncated, info
             
             assert self.agent.decision is not None
-            logger.debug("Current Upcoming Decision: {}".format(self.agent.decision.applicable_phase))
+            logger.debug("Current Upcoming Decision: {}".format(self.agent.decision))
             decision_intent: ActionData = gym_action_to_priority_decision(self.agent.decision, action)
             self.agent.decision = None
             self.agent.api_condition.notify()
@@ -162,7 +162,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
             ))
             logger.debug("Received processing confirmation via update of game state in controller")
             obs: MtgObservation = self.get_obs()
-            self.agent.controller.game_state_after_action = None
+            self.agent.controller.obs_after_action = None
             logger.debug("Consumed new game state information")
 
 

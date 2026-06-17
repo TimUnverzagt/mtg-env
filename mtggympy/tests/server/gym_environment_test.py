@@ -2,14 +2,14 @@ from mtggympy.gameengine.state import GameState
 from mtggympy.gameengine.priority.event import PlayerEvent
 
 from mtggympy.server.session.player_connection import PlayerController
-import mtggympy.server.translation as translation
+import mtggympy.api.translation as translation
 from mtggympy.api.gym_environment import MtgEnv, MtgObservation
 
 from mtggympy.app_config import DECK_SIZE, STARTING_LIFE
 
 from tests.default_data import get_default_game_state
 
-mainphase_index: int = translation.event_to_index(PlayerEvent.MAINPHASE_1_EMPTY_STACK)
+mainphase_index: int = translation.event_to_index(PlayerEvent.MAINPHASE_EMPTY_STACK)
 combat_index: int = translation.event_to_index(PlayerEvent.DECLARE_ATTACKS)
 
 class TestApi():
@@ -24,7 +24,7 @@ class TestApi():
         api_under_test.reset()
         agent_cont: PlayerController | None = api_under_test.agent.controller
         assert agent_cont is not None
-        agent_cont.game_state_after_action = game_state
+        agent_cont.obs_after_action = game_state
         game_state.active_player_index = 0
         agent_cont.position = 1
 
@@ -53,7 +53,7 @@ class TestApi():
 
         agent_cont: PlayerController | None = api_under_test.agent.controller
         assert agent_cont is not None
-        agent_cont.game_state_after_action = game_state
+        agent_cont.obs_after_action = game_state
         game_state.active_player_index = 0
         agent_cont.position = 1
 

@@ -35,12 +35,12 @@ class DesktopApp():
                     cont.get_ready_for_session_consumption_predicate(),
                     cont.get_last_state_read_predicate(False)))
                 with self.renderer.obs_condition:
-                    self.renderer.observations = copy.deepcopy(self.agent.controller.game_state_before_action)
+                    self.renderer.observations = copy.deepcopy(self.agent.controller.obs_before_action)
                     cont.last_state_successfully_read = True
                     cont.state_reading_condition.notify_all()
                 logger.debug("Waiting for game state after agent action.")
                 cont.state_reading_condition.wait_for(self.agent.controller.get_last_state_read_predicate(False))
                 with self.renderer.obs_condition:
-                    self.renderer.observations = copy.deepcopy(self.agent.controller.game_state_after_action)
+                    self.renderer.observations = copy.deepcopy(self.agent.controller.obs_after_action)
                     cont.last_state_successfully_read = True
                     cont.state_reading_condition.notify_all()

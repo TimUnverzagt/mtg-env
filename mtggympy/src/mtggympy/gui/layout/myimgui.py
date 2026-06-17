@@ -13,11 +13,11 @@ import mtggympy.gui.constants as const
 #from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 #from mtggympy.gameengine.cards.catalog.lands import LandNames
 from mtggympy.gameengine.cards.catalog.lookup import FACEDOWN_CARD_NAME
-from mtggympy.gameengine.state import GameState, PlayerState
-from mtggympy.gameengine.priority.event import ActionData, EventData, PlayerEvent, event_from_step
+from mtggympy.gameengine.priority.event import ActionData, PlayerEvent, event_from_step
 from mtggympy.gameengine.constants import CardType, ManaColor
 from mtggympy.gameengine.gameobjects import CardInstance, CreatureInstance, generate_card_instance
 from mtggympy.gui.texture import ImageMetaData
+from mtggympy.server.session.observed_state import ObservedGameState, ObservedSelfState, ObservedOpponentState
 
 @dataclass
 class UiState:
@@ -55,7 +55,7 @@ def invalidate_cached_action_data(ui_state: UiState) -> None:
         ui_state.active_action_arg = []
         ui_state.cached_action_args = []
     
-def gui(ui_state: UiState, game_state: GameState|None, image_refs: dict[str, ImageMetaData], display_size: ImVec2) -> None:
+def gui(ui_state: UiState, game_state: ObservedGameState|None, image_refs: dict[str, ImageMetaData], display_size: ImVec2) -> None:
 
     add_background(image_refs[const.BACKGROUND_IMAGE_NAME].shader_ref, display_size)
     if game_state is None:
@@ -119,22 +119,22 @@ def add_card(ui_state: UiState, image_refs: dict[str, ImageMetaData], card:CardI
     imgui.pop_style_var()
     return clicked
 
-def add_meta(ui_state: UiState, game_state: GameState, parent_space_avail: ImVec2):
+def add_meta(ui_state: UiState, game_state: ObservedGameState, parent_space_avail: ImVec2):
     meta_flags = imgui.WindowFlags_.no_scrollbar
     meta_flags |= imgui.WindowFlags_.no_background
     imgui.begin_child("Meta", ImVec2(parent_space_avail.x * 0.1, 0), True, meta_flags)
     shared_space_avail: ImVec2 = ImVec2(imgui.get_content_region_avail().x, imgui.get_content_region_avail().y-10)
-    add_meta_player(ui_state, game_state.player_states[1], shared_space_avail, 2)
+    add_meta_player(ui_state, game_state.opponent_states[0], shared_space_avail, 2)
     add_meta_game(ui_state, game_state, shared_space_avail)
-    add_meta_player(ui_state, game_state.player_states[0], shared_space_avail, 1)
+    add_meta_player(ui_state, game_state.self_state, shared_space_avail, 1)
     imgui.end_child()
 
-def add_meta_player(ui_state: UiState, player_state: PlayerState, parent_space_avail: ImVec2, position: int):
+def add_meta_player(ui_state: UiState, player_state: ObservedSelfState | ObservedOpponentState, parent_space_avail: ImVec2, position: int):
     meta_p1_flags = imgui.WindowFlags_.no_scrollbar
     meta_p1_flags |= imgui.WindowFlags_.no_background
     imgui.begin_child("MetaP"+str(position), ImVec2(parent_space_avail.x, parent_space_avail.y*0.4), False, meta_p1_flags)
     imgui.bullet_text("Life: {}".format(player_state.current_life))
-    imgui.bullet_text("Library: {}".format(len(player_state.cards_in_library)))
+    imgui.bullet_text("Library: {}".format(player_state.cards_in_library))
     imgui.bullet_text("Mana_W: {}".format(player_state.floating_mana[ManaColor.WHITE]))
     imgui.bullet_text("Mana_U: {}".format(player_state.floating_mana[ManaColor.BLUE]))
     imgui.bullet_text("Mana_B: {}".format(player_state.floating_mana[ManaColor.BLACK]))
@@ -143,29 +143,29 @@ def add_meta_player(ui_state: UiState, player_state: PlayerState, parent_space_a
     imgui.bullet_text("Mana_C: {}".format(player_state.floating_mana[ManaColor.COLORLESS]))
     imgui.end_child()
 
-def add_meta_game(ui_state: UiState, game_state: GameState, parent_space_avail: ImVec2):
+def add_meta_game(ui_state: UiState, game_state: ObservedGameState, parent_space_avail: ImVec2):
     meta_game_flags = imgui.WindowFlags_.no_scrollbar
     meta_game_flags |= imgui.WindowFlags_.no_background
     child_space: ImVec2 = ImVec2(parent_space_avail.x, parent_space_avail.y*0.2)
     imgui.begin_child("MetaGame", child_space, False, meta_game_flags)
     add_wrapping_text(child_space, "Current turn: {}".format(int(game_state.halfturns_completed/2) + 1))
-    active_player_name: str = game_state.player_states[game_state.active_player_index].name
+    active_player_name: str = game_state.name_of_active_player
     add_wrapping_text(child_space, "Active Player: {}".format(active_player_name))
     add_wrapping_text(child_space, "Current Step: {}".format(game_state.step.name))
     add_wrapping_text(child_space, "Lands played: {}".format(game_state.lands_played_this_turn))
     imgui.end_child()
 
 
-def add_players(ui_state: UiState, game_state: GameState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData]):
+def add_players(ui_state: UiState, game_state: ObservedGameState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData]):
     players_flags = imgui.WindowFlags_.no_scrollbar
     players_flags |= imgui.WindowFlags_.no_background
     imgui.begin_child("Players", ImVec2(parent_space_avail.x * 0.75, 0), False, players_flags)
     shared_space_avail: ImVec2 = ImVec2(imgui.get_content_region_avail().x, imgui.get_content_region_avail().y-25)
-    add_player(ui_state, game_state.player_states[1], shared_space_avail, image_refs, hand_on_bottom=False, position=2)
-    add_player(ui_state, game_state.player_states[0], shared_space_avail, image_refs, hand_on_bottom=True, position=1)
+    add_player(ui_state, game_state.opponent_states[0], shared_space_avail, image_refs, position=2)
+    add_player(ui_state, game_state.self_state, shared_space_avail, image_refs, position=1)
     imgui.end_child()
 
-def add_player(ui_state: UiState, player_state: PlayerState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], hand_on_bottom: bool, position: int):
+def add_player(ui_state: UiState, state: ObservedSelfState | ObservedOpponentState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
     player_flags = imgui.WindowFlags_.no_scrollbar
     player_flags |= imgui.WindowFlags_.no_background
     imgui.begin_child("Player-{}".format(position), ImVec2(0, parent_space_avail.y * 0.5), True, player_flags)
@@ -174,34 +174,40 @@ def add_player(ui_state: UiState, player_state: PlayerState, parent_space_avail:
                       False,
                       imgui.WindowFlags_.no_scrollbar)
     shared_child_space_avail: ImVec2 = ImVec2(imgui.get_content_region_avail().x, imgui.get_content_region_avail().y-10)
-    if hand_on_bottom:
-        add_battlefield(ui_state, player_state, shared_child_space_avail, image_refs, position)
-        add_hand(ui_state, player_state, shared_child_space_avail, image_refs, position)
+    if isinstance(state, ObservedSelfState):
+        add_battlefield(ui_state, state, shared_child_space_avail, image_refs, position)
+        add_hand_self(ui_state, state, shared_child_space_avail, image_refs, position)
     else:
-        add_hand(ui_state, player_state, shared_child_space_avail, image_refs, position)
-        add_battlefield(ui_state, player_state,shared_child_space_avail, image_refs, position)
+        add_hand_opponent(ui_state, state, shared_child_space_avail, image_refs, position)
+        add_battlefield(ui_state, state,shared_child_space_avail, image_refs, position)
     imgui.end_child()
     imgui.same_line()
-    add_lands(ui_state, player_state, shared_space_avail, image_refs, position)
+    add_lands(ui_state, state, shared_space_avail, image_refs, position)
     imgui.end_child()
 
-def add_hand(ui_state: UiState, player_state: PlayerState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
+def add_hand_self(ui_state: UiState, state: ObservedSelfState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
     hand_flags = imgui.WindowFlags_.horizontal_scrollbar
     hand_flags |= imgui.WindowFlags_.no_background
     imgui.begin_child("Hand-{}".format(position), ImVec2(0, parent_space_avail.y * 0.5), False, hand_flags)
-    for n in range(len(player_state.cards_in_hand)):
-        if(position == 1):
-            add_card(ui_state, image_refs, player_state.cards_in_hand[n], n, False)
-        else:
-            add_card(ui_state, image_refs, generate_card_instance(FACEDOWN_CARD_NAME), n, False)
+    for n in range(len(state.cards_in_hand)):
+        add_card(ui_state, image_refs, state.cards_in_hand[n], n, False)
         imgui.same_line()
     imgui.end_child()
 
-def add_battlefield(ui_state: UiState, player_state: PlayerState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
+def add_hand_opponent(ui_state: UiState, state: ObservedOpponentState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
+    hand_flags = imgui.WindowFlags_.horizontal_scrollbar
+    hand_flags |= imgui.WindowFlags_.no_background
+    imgui.begin_child("Hand-{}".format(position), ImVec2(0, parent_space_avail.y * 0.5), False, hand_flags)
+    for n in range(state.cards_in_hand):
+        add_card(ui_state, image_refs, generate_card_instance(FACEDOWN_CARD_NAME), n, False)
+        imgui.same_line()
+    imgui.end_child()
+
+def add_battlefield(ui_state: UiState, state: ObservedSelfState | ObservedOpponentState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
     battlefield_flags = imgui.WindowFlags_.horizontal_scrollbar
     battlefield_flags |= imgui.WindowFlags_.no_background
     nonlands: list[CardInstance] = []
-    for card in player_state.cards_in_play:
+    for card in state.cards_in_play:
         if card.type is not CardType.LAND:
             nonlands.append(card)
     imgui.begin_child("Battlefield-{}".format(position), ImVec2(0, parent_space_avail.y * 0.5), False, battlefield_flags)
@@ -212,10 +218,10 @@ def add_battlefield(ui_state: UiState, player_state: PlayerState, parent_space_a
         imgui.same_line()
     imgui.end_child()
 
-def add_lands(ui_state: UiState, player_state: PlayerState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
+def add_lands(ui_state: UiState, state: ObservedSelfState | ObservedOpponentState, parent_space_avail: ImVec2, image_refs: dict[str, ImageMetaData], position: int):
     lands_flags = imgui.WindowFlags_.no_background
     lands: list[CardInstance] = []
-    for card in player_state.cards_in_play:
+    for card in state.cards_in_play:
         if card.type is CardType.LAND:
             lands.append(card)
     imgui.begin_child("Lands-{}".format(position), ImVec2(parent_space_avail.x*0.15, 0), False, lands_flags)
@@ -226,7 +232,7 @@ def add_lands(ui_state: UiState, player_state: PlayerState, parent_space_avail: 
         imgui.set_cursor_pos_y(imgui.get_cursor_pos_y() - conf.CARD_HEIGHT * 0.9)
     imgui.end_child()
 
-def add_interface(ui_state: UiState, game_state: GameState, parent_space_avail: ImVec2):
+def add_interface(ui_state: UiState, game_state: ObservedGameState, parent_space_avail: ImVec2):
     interface_flags = imgui.WindowFlags_.no_background
     interface_flags |= imgui.WindowFlags_.no_scroll_with_mouse
     interface_flags |= imgui.WindowFlags_.no_scrollbar
@@ -249,16 +255,16 @@ def add_log(ui_state: UiState, parent_space_avail: ImVec2):
         add_wrapping_text(parent_space_avail, entry)
     imgui.end_child()
 
-def add_actions(ui_state: UiState, game_state: GameState, parent_space_avail: ImVec2): 
-    event: EventData = event_from_step(game_state.step).value
+def add_actions(ui_state: UiState, game_state: ObservedGameState, parent_space_avail: ImVec2): 
+    event: PlayerEvent = event_from_step(game_state.step)
     actions_flags = imgui.WindowFlags_.no_scrollbar
     actions_flags |= imgui.WindowFlags_.no_background
     child_space_avail: ImVec2 = ImVec2(parent_space_avail.x, parent_space_avail.y*0.5)
     imgui.begin_child("Actions", child_space_avail, False, actions_flags)
     imgui.text("Action Menu")
     item_height: float = imgui.get_text_line_height_with_spacing() + 1
-    if imgui.begin_list_box("##Action", ImVec2(child_space_avail.x, item_height*len(event.possible_actions))):
-        for action in event.possible_actions:
+    if imgui.begin_list_box("##Action", ImVec2(child_space_avail.x, item_height*len(event.value.possible_actions))):
+        for action in event.value.possible_actions:
             imgui.push_id(action.name)
             is_previously_selected: bool = (ui_state.selected_action is not None) and (action == ui_state.selected_action)
             clicked, _ = imgui.selectable(action.name, is_previously_selected)
