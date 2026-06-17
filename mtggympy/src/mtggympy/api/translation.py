@@ -1,4 +1,4 @@
-from mtggympy.gameengine.priority.event import ActionData, PlayerEvent, event_from_step
+from mtggympy.gameengine.priority.event import ActionIntent, PlayerEvent, event_from_step
 from mtggympy.api.gym_types import MtgObservation, MtgAction, MtgPlayerObs
 from mtggympy.gameengine.priority.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
@@ -27,9 +27,9 @@ def event_to_index(event: PlayerEvent) -> int:
         case PlayerEvent.NO_OP:
             return 2
 
-def gym_action_to_priority_decision(upcoming_event: PlayerEvent, action: MtgAction) -> ActionData:
+def gym_action_to_priority_decision(upcoming_event: PlayerEvent, action: MtgAction) -> ActionIntent:
     logger.debug("Translating for decision [{}]".format(upcoming_event))
-    intent: ActionData = upcoming_event.value.possible_actions[action[0]]
+    intent: ActionIntent = upcoming_event.value.possible_actions[action[0]]
     logger.debug("Translated external action {} into internal intent [{}]".format(action[0], intent))
     return intent
 

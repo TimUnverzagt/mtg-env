@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from mtggympy.gameengine.constants import GameStep, ManaColor
 from mtggympy.gameengine.gameobjects import CardInstance
+from mtggympy.gameengine.priority.event import PlayerEvent
 
 @dataclass
 class ObservedSelfState:
@@ -27,6 +28,7 @@ class ObservedGameState:
     halfturns_completed: int
     self_is_active_player: bool
     step: GameStep
+    event: PlayerEvent
     self_state: ObservedSelfState
     opponent_states: list[ObservedOpponentState]
     lands_played_this_turn: int

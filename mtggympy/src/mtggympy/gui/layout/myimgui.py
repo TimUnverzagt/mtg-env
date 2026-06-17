@@ -9,16 +9,20 @@ from imgui_bundle.imgui import ImTextureRef
 import mtggympy.app_config as conf
 from mtggympy.logging_config import UI_LOG_QUEUE
 from mtggympy.logging_config import ui_log as logger
+
+from mtggympy.pubsub import DESKTOP_INTENT_QUEUE
+
 import mtggympy.gui.constants as const
+from mtggympy.gui.texture import ImageMetaData
+import mtggympy.gameengine.parsing as engine_parsing
 #from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 #from mtggympy.gameengine.cards.catalog.lands import LandNames
 from mtggympy.gameengine.cards.catalog.lookup import FACEDOWN_CARD_NAME
-from mtggympy.gameengine.priority.event import ActionData, PlayerEvent, event_from_step
+from mtggympy.gameengine.priority.event import ActionData, ActionIntent, PlayerEvent, event_from_step
 from mtggympy.gameengine.constants import CardType, ManaColor
 from mtggympy.gameengine.gameobjects import CardInstance, CreatureInstance, generate_card_instance
-from mtggympy.gui.texture import ImageMetaData
-from mtggympy.server.session.observed_state import ObservedGameState, ObservedSelfState, ObservedOpponentState
 
+from mtggympy.server.session.observed_state import ObservedGameState, ObservedSelfState, ObservedOpponentState
 @dataclass
 class UiState:
     counter = 0 # our app state
@@ -29,6 +33,8 @@ class UiState:
     selected_action: ActionData | None = field(default_factory=lambda: None)
     active_action_arg: list[int] | None = field(default_factory=lambda: None)
     cached_action_args: list[list[int]] | None = field(default_factory=lambda: None)
+    action_commited: bool = False
+    transition_induced: bool = False #TODO: GMight be fragile to unsuccessful input transfer
 
 def add_background(image_ref: ImTextureRef, display_size: ImVec2):
     imgui.set_next_window_pos((0, 0))
@@ -64,9 +70,13 @@ def gui(ui_state: UiState, game_state: ObservedGameState|None, image_refs: dict[
     new_event: PlayerEvent = event_from_step(game_state.step)
     if ui_state.current_player_event is None:
         ui_state.current_player_event = new_event
-    if ui_state.current_player_event != new_event:
+    if ui_state.transition_induced:
+        logger.info("Cleaning ui_state due to event transition")
         invalidate_cached_action_data(ui_state)
         ui_state.current_player_event = new_event
+        ui_state.action_commited = False
+        ui_state.transition_induced = False
+        logger.debug("Action blocked: {}".format(ui_state.action_commited))
     
 
     imgui.set_next_window_pos((0, 0))
@@ -280,8 +290,7 @@ def add_actions(ui_state: UiState, game_state: ObservedGameState, parent_space_a
     # Argument Input UI
     if ui_state.selected_action:
         if ui_state.selected_action.value.dimensionality <= 0:
-            if imgui.button("Commit Action"):
-                logger.debug("Deciding on {} without arguments".format(ui_state.selected_action))
+            add_commit_button(ui_state)
         else: 
             if ui_state.selected_action.value.expects_collection:
                 add_collection_input_ui(ui_state)
@@ -307,8 +316,7 @@ def add_simple_input_ui(ui_state: UiState) -> None:
         new_arg.append(new_input)
         imgui.pop_id()
     ui_state.active_action_arg = new_arg
-    if imgui.button("Commit Action"):
-        logger.debug("Deciding on {} with argument {}".format(ui_state.selected_action, ui_state.active_action_arg))
+    add_commit_button(ui_state)
     pass
 
 def add_collection_input_ui(ui_state: UiState) -> None:    
@@ -318,9 +326,8 @@ def add_collection_input_ui(ui_state: UiState) -> None:
         ui_state.cached_action_args = []
     if not ui_state.active_action_arg:
         ui_state.active_action_arg = []
-    if imgui.button("Commit Action"):
-        logger.debug("Deciding on {} with argument {}".format(ui_state.selected_action, ui_state.cached_action_args))
-        #TODO: Communicate to player controller
+    add_commit_button(ui_state)
+        
     if imgui.begin_table("args_table", 1):
         imgui.table_setup_column("Cached Arguments")
         imgui.table_headers_row()
@@ -346,5 +353,30 @@ def add_collection_input_ui(ui_state: UiState) -> None:
         logger.debug("Caching argument {}".format(ui_state.active_action_arg))
         ui_state.cached_action_args.append(new_arg)
         ui_state.active_action_arg = None
+
+def add_commit_button(ui_state: UiState) -> None:
+    assert ui_state.selected_action
+    if not ui_state.action_commited:
+        if ui_state.cached_action_args and len(ui_state.cached_action_args) > 0 :
+            if imgui.button("Commit Action"):
+                commit_action(ui_state, ui_state.selected_action, ui_state.cached_action_args)
+        elif ui_state.active_action_arg and len(ui_state.active_action_arg) > 0 :
+            if imgui.button("Commit Action"):
+                commit_action(ui_state, ui_state.selected_action, [ui_state.active_action_arg])
+        else:
+            if imgui.button("Commit Action"):
+                commit_action(ui_state, ui_state.selected_action, None)
+
+def commit_action(ui_state: UiState, action: ActionData, params: list[list[int]] | None) -> None:    
+    if params:
+        logger.debug("Deciding on {} with argument {}".format(action.name, params))
+        DESKTOP_INTENT_QUEUE.put(ActionIntent(action, engine_parsing.collection_to_numpy(params)), block=False)
+    else:
+        logger.debug("Deciding on {} without arguments".format(ui_state.selected_action))
+        DESKTOP_INTENT_QUEUE.put(ActionIntent(action, None), block=False)
+    ui_state.action_commited = True
+    ui_state.transition_induced = True
+    logger.debug("Ui Intent Queue length: {}".format(DESKTOP_INTENT_QUEUE.qsize()))
+
 
 

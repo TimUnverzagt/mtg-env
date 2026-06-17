@@ -35,7 +35,7 @@ def desktop_game_example():
     opponent = RulesBasedAgent(session, "Opp-RulesBased", target_seat=1) 
     opponent_thread: Thread = Thread(target=opponent.play_game, daemon=True)
     opponent_thread.start()
-    game: DesktopApp = DesktopApp(session, "Tim")
+    game: DesktopApp = DesktopApp(session, "Tim", take_input_from_gui=True)
     game.start()
 
 

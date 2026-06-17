@@ -6,6 +6,14 @@ from mtggympy.gameengine.state import GameState
 
 from mtggympy.logging_config import engine_log as logger
 
+import numpy as np
+
+def collection_to_numpy(collection_args: list[list[int]]) -> np.ndarray:
+    intent_array: np.ndarray = np.array(collection_args)
+    print(intent_array)
+    print(intent_array.shape)
+    return np.array(collection_args)
+
 
 def card_for_playing(acting_seat: int, intent: ActionIntent, game_state: GameState) -> CardInstance | None:
     if(intent.parameters is None):

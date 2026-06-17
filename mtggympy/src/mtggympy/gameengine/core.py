@@ -189,7 +189,7 @@ def get_initial_game_state() -> GameState:
         winner_positions=[],
         lands_played_this_turn=0
     )
-    for i in range(0,7):
+    for _ in range(0,7):
         draw_card(0, game_state)
         draw_card(1, game_state)
     return game_state

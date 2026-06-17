@@ -1,3 +1,4 @@
+from mtggympy.gameengine.priority.event import event_from_step
 from mtggympy.gameengine.state import GameState, PlayerState
 from mtggympy.server.session.observed_state import ObservedGameState, ObservedSelfState, ObservedOpponentState
 
@@ -34,6 +35,7 @@ def observe_game_state(game_state:GameState, seat_of_observer: int) -> ObservedG
         opponent_states=opponent_obs,
         self_is_active_player=(seat_of_observer == game_state.active_player_index),
         self_state=self_obs,
-        step=game_state.step
+        step=game_state.step,
+        event=event_from_step(game_state.step)
     )
 

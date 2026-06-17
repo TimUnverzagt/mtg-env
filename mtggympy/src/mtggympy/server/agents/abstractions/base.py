@@ -1,31 +1,34 @@
 from abc import ABC, abstractmethod
+from logging import Logger
+from threading import Condition
 from mtggympy.server.session.multi_client_session import MultiClientSession as GameSession
-from mtggympy.gameengine.priority.event import ActionIntent, PlayerEvent
+from mtggympy.gameengine.priority.event import ActionIntent
+from mtggympy.server.session.observed_state import ObservedGameState
 from mtggympy.server.session.player_connection import PlayerController
 from mtggympy.helpers.predicate_extensions import build_either_predicate
 
 import time
-from mtggympy.logging_config import main_log
 import mtggympy.app_config as conf
 
 class AgentBase(ABC):
 
-    def __init__(self, session: GameSession, name: str, target_seat: int | None =  None, wait_for_state_reading: bool = False) -> None:
+    def __init__(self, session: GameSession, name: str, target_seat: int | None =  None, wait_for_state_processing: bool = False) -> None:
         self.session: GameSession = session
-        self.controller: PlayerController | None
-        self.ensure_readable_state: bool = wait_for_state_reading
+        self.needs_state_processing_time: bool = wait_for_state_processing
+        maybe_controller: PlayerController | None
         if target_seat is None:
-            self.controller = session.connect(name)
+            maybe_controller = session.connect(name)
         else:
-            self.controller = session.connect_to_seat(target_seat, name)
-        assert self.controller is not None
-        self.controller.wait_for_state_reading = wait_for_state_reading
+            maybe_controller = session.connect_to_seat(target_seat, name)
+        assert maybe_controller is not None
+        self.controller: PlayerController = maybe_controller
+
+        # Shared variables
+        self.state_processing_condition: Condition = Condition()
+        self.state_to_process: ObservedGameState | None = None
 
     def play_game(self) -> None:
-        cont: PlayerController | None = self.controller
-        if cont is None:
-            main_log.error("Agent has no Connection to an active GameSession!")
-            return
+        cont: PlayerController = self.controller
         last_timestamp: float = time.time()
         delta_t: float = 0.0
         while not self.session.shutting_down:
@@ -33,49 +36,67 @@ class AgentBase(ABC):
             last_timestamp = time.time()
             if (delta_t < conf.AGENT_TICK_LENGTH):
                 time.sleep(max(conf.AGENT_TICK_LENGTH - delta_t, 0))
-
-            with cont.session_condition:
-                cont.logger.debug("{}: Waiting for my turn to act. (Signaled by session setting upcoming_decision)".format(cont.player_info.name))
-                cont.session_condition.wait_for(build_either_predicate(
-                    cont.get_ready_for_session_consumption_predicate(),
+            with cont.obs_before_action_condition:
+                # Prior State
+                cont.logger.debug("{}: Waiting for my turn to act. (Signaled by session setting prior_state)".format(cont.player_info.name))
+                cont.obs_before_action_condition.wait_for(build_either_predicate(
+                    lambda: cont.obs_before_action is not None,
                     lambda: self.session.shutting_down))
                 if self.session.shutting_down:
-                    continue
-                assert cont.upcoming_event is not None
+                    return
+                assert cont.obs_before_action
+                prior_state: ObservedGameState = cont.obs_before_action
+                self.process_prior_state(prior_state, cont.logger)
+                cont.obs_before_action = None
+                cont.obs_before_action_condition.notify_all()
                 
-                if(self.ensure_readable_state):
-                    with cont.state_reading_condition:
-                        cont.logger.debug("{}: Waiting for my game state to be read before continuing".format(cont.player_info.name))
-                        cont.state_reading_condition.notify_all()
-                        cont.state_reading_condition.wait_for(cont.get_last_state_read_predicate(True))
-                cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, cont.upcoming_event.name))
-                cont.intended_next_decision = self.decide_on_action(cont.upcoming_event)
-                cont.upcoming_event = None
-                cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intended_next_decision))
-                cont.session_condition.notify_all()
-                
-                cont.logger.debug("{}: Waiting for the session to consume my intent".format(cont.player_info.name))
-                cont.session_condition.wait_for(cont.get_intent_predicate(expected_to_be_set=False))
-                
+            # Intent
+            cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, prior_state.event.name))
+            intent: ActionIntent = self.decide_on_action(prior_state, cont.logger)
+            cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intent))
+            with cont.intent_condition:
+                cont.intent = intent
+                cont.logger.info("{}: Set intent in controller".format(cont.player_info.name))
+                cont.intent_condition.notify_all()
+                cont.intent_condition.wait_for(lambda: cont.intent is None)
+
+            with cont.obs_after_action_condition:
+                # Posterior State              
                 cont.logger.debug("{}: Waiting for response from game session.".format(cont.player_info.name))
-                cont.session_condition.wait_for(cont.get_action_result_predicate(expected_to_be_set=True))
-                cont.logger.debug("{}: Got response from game session.".format(cont.player_info.name))
-                if(self.ensure_readable_state):
-                    with cont.state_reading_condition:
-                        cont.logger.debug("{}: Waiting for my game state to be read before continuing".format(cont.player_info.name))
-                        cont.state_reading_condition.notify_all()
-                        cont.state_reading_condition.wait_for(cont.get_last_state_read_predicate(True))
-                        cont.needs_processing_time = False
-                
-                cont.logger.debug("{}: Controller ready? {}.".format(cont.player_info.name, cont.get_ready_for_next_loop_predicate()()))
-                cont.session_condition.notify_all()
+                cont.obs_after_action_condition.wait_for(lambda: cont.obs_after_action is not None)
+                assert cont.obs_after_action
+                posteriori_state: ObservedGameState = cont.obs_after_action
+                self.process_posteriori_state(posteriori_state, cont.logger)
+                cont.obs_after_action = None
+                cont.obs_after_action_condition.notify_all()
+
+
 
         cont.logger.info("Stopping because session is shutting down")
         self.shutdown()
 
+    def process_posteriori_state(self, state: ObservedGameState, logger: Logger) -> None:
+        if(self.needs_state_processing_time):
+            with self.state_processing_condition:
+                self.state_to_process = state
+                self.state_processing_condition.notify_all()
+                logger.debug("{}: Waiting for my game state to be processed before continuing".format(state.self_state.name))
+                self.state_processing_condition.wait_for(lambda: self.state_to_process is None)
+                self.state_processing_condition.notify_all()
+        pass
+
+    def process_prior_state(self, state: ObservedGameState, logger: Logger) -> None:
+        if(self.needs_state_processing_time):
+            with self.state_processing_condition:
+                self.state_to_process = state
+                self.state_processing_condition.notify_all()
+                logger.debug("{}: Waiting for my game state to be processed before continuing".format(state.self_state.name))
+                self.state_processing_condition.wait_for(lambda: self.state_to_process is None)
+                self.state_processing_condition.notify_all()
+        pass
 
     @abstractmethod
-    def decide_on_action(self, upcoming_action: PlayerEvent) -> ActionIntent:
+    def decide_on_action(self, state: ObservedGameState, logger: Logger) -> ActionIntent:
         pass
 
     def shutdown(self) -> None:

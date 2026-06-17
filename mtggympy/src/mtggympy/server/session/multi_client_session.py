@@ -113,8 +113,8 @@ class MultiClientSession():
         self.shutting_down = True
         for cont in self.seats:
             assert cont is not None
-            with cont.session_condition:
-                cont.session_condition.notify_all()
+            with cont.obs_before_action_condition:
+                cont.obs_before_action_condition.notify_all()
         return
     
     def step_without_player(self, game_state: GameState) -> bool:
@@ -137,24 +137,31 @@ class MultiClientSession():
     
     def step_with_player(self, game_state: GameState, cont: PlayerController, player_seat: int, player_event: PlayerEvent) -> bool:
             # Prompt Player Input
-            with cont.session_condition:
+            with cont.obs_before_action_condition:
+                logger.debug("SessionTick: {}: Waiting for player to have no prior state before starting".format(cont.player_info.name))
+                cont.obs_before_action_condition.wait_for(lambda: cont.obs_before_action is None)
                 logger.debug("SessionTick: {}: Prompting Player with state {}".format(
                     cont.player_info.name,
                     game_state
                     ))
-                cont.set_action_priors(observe_game_state(game_state, player_seat), player_event)
-                cont.session_condition.notify_all()
-                cont.session_condition.wait_for(cont.get_ready_for_session_consumption_predicate())
+                logger.info("SessionTick: {}: Prompting Player with event {}".format(
+                    cont.player_info.name,
+                    player_event.name
+                    ))
+                cont.set_action_priors(observe_game_state(game_state, player_seat))
+                cont.obs_before_action_condition.notify_all()                
+                cont.obs_before_action_condition.wait_for(lambda: cont.obs_before_action is None)
 
-                # Await Player Input
-                logger.debug("SessionTick: {}: Waiting for Player Input".format(cont.player_info.name))
-                cont.session_condition.wait_for(cont.get_intent_predicate(expected_to_be_set=True))
-
-                # Process Player Input and report state update
-                if cont.intended_next_decision is None:
+            # Await Player Input
+            logger.debug("SessionTick: {}: Waiting for Player Input".format(cont.player_info.name))
+            with cont.intent_condition:
+                cont.intent_condition.wait_for(lambda: cont.intent is not None)
+                if not cont.intent:
                     return False
-
-                player_intent: ActionIntent = cont.intended_next_decision
+                player_intent: ActionIntent = cont.intent
+                    
+                # Process Player Input and report state update
+                logger.debug("SessionTick: {}: Received Player Input: {}".format(cont.player_info.name, player_intent.action.name))
                 step_success: bool
                 match game_state.step:
                     case GameStep.UPKEEP | GameStep.DRAW:
@@ -175,15 +182,21 @@ class MultiClientSession():
                     if (succesor_step is not game_state.step):
                         GameEngine.empty_mana_pools(game_state)
                     game_state.step = succesor_step
+                cont.intent = None
+                cont.intent_condition.notify_all()
+
+            # Return result
+            with cont.obs_after_action_condition:
                 cont.set_action_result(observe_game_state(game_state, player_seat))
-                cont.session_condition.notify_all()
-                cont.session_condition.wait()
-                logger.debug("SessionTick: {}: Anwsered player with new state {}".format(
+                cont.obs_after_action_condition.notify_all()
+                cont.obs_after_action_condition.wait_for(lambda: cont.obs_after_action is None)
+
+                    
+                        
+                logger.debug("SessionTick: {}: Answered player with new state {}".format(
                     cont.player_info.name,
                     game_state
                 ))
-                logger.debug("SessionTick: {}: Waiting for player to be ready before continuing".format(cont.player_info.name))
-                cont.session_condition.wait_for(cont.get_ready_for_next_loop_predicate())
             return step_success
 
     def get_controller_for_target_seat(self, target_seat: int) -> Optional[PlayerController]:

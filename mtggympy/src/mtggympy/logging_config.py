@@ -27,7 +27,7 @@ def create_logger(name: str, logging_level: int, log_to_ui: bool = False) -> log
     if(log_to_ui):
         ui_handler: QueueHandler = QueueHandler(UI_LOG_QUEUE)
         ui_formatter = logging.Formatter(
-        "%(levelname)s - %(message)s"
+        "%(name)s - %(message)s"
     )
         ui_handler.setFormatter(ui_formatter)
         logger.addHandler(ui_handler)
@@ -42,6 +42,7 @@ main_log   = create_logger("main", logging.ERROR)
 ui_log = create_logger("ui", logging.DEBUG, True)
 dojo_log = create_logger("dojo", logging.ERROR)
 session_log   = create_logger("session", logging.DEBUG)
-desktop_app_log   = create_logger("dektop-app", logging.DEBUG)
+desktop_ui_log   = create_logger("dektop-ui", logging.DEBUG, True)
+desktop_api_log   = create_logger("dektop-api", logging.DEBUG, True)
 api_log   = create_logger("api", logging.ERROR)
 engine_log   = create_logger("engine", logging.DEBUG, True)
