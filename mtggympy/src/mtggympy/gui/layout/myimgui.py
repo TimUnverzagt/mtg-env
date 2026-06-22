@@ -110,7 +110,9 @@ def add_card(ui_state: UiState, image_refs: dict[str, ImageMetaData], card:CardI
     bg_col: ImVec4 = ImVec4(0.0, 0.0, 0.0, 1.0)
     tint_col: ImVec4 = ImVec4(1.0, 1.0, 1.0, 1.0); 
     if(isinstance(card, CreatureInstance) and card.summoning_sick):
-        tint_col: ImVec4 = ImVec4(0.8, 0.5, 0.5, 1.0); 
+        tint_col: ImVec4 = ImVec4(0.8, 0.75, 0.75, 0.75); 
+    if(isinstance(card, CreatureInstance) and card.attacking):
+        tint_col: ImVec4 = ImVec4(0.8, 0.3, 0.3, 1.0); 
     imgui.push_style_var(imgui.StyleVar_.frame_padding, ImVec2(0, 0))
     imgui.push_id(position)
     tapping_offset: int = int(conf.CARD_HEIGHT * (1 - conf.CARD_WH_RATIO) + 1)

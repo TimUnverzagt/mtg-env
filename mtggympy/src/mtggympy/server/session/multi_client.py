@@ -164,7 +164,7 @@ class MultiClientSession():
                 player_intent: ActionIntent = cont.intent
                     
                 # Process Player Input and report state update
-                logger.debug("SessionTick: {}: Received Player Input: {}".format(cont.player_info.name, player_intent.action.name))
+                logger.debug("SessionTick: {}: Received Player Input: {} --- {}".format(cont.player_info.name, player_intent.action.name, player_intent.parameters))
                 step_success: bool
                 match game_state.step:
                     case GameStep.UPKEEP | GameStep.DRAW:
@@ -175,9 +175,10 @@ class MultiClientSession():
                     case GameStep.MAIN_1:
                         step_success = GameEngine.main_phase(game_state.active_player_index, player_intent, game_state)
                     case GameStep.ATTACK_STEP:
-                        step_success = GameEngine.combat(game_state.active_player_index, player_intent, game_state)
+                        step_success = GameEngine.declare_attackers_step(game_state.active_player_index, player_intent, game_state)
                     case GameStep.BLOCK_STEP:
-                        step_success = True
+                        acting_seat_index: int = self.get_seat_from_active_player_onward(seat_offseat=1)
+                        step_success = GameEngine.declare_blockers_step(acting_seat_index, player_intent, game_state)
                     case GameStep.MAIN_2:
                         step_success = GameEngine.main_phase(game_state.active_player_index, player_intent, game_state)
                 if step_success:

@@ -35,6 +35,7 @@ class EventData:
 class PlayerEvent(Enum):
     MAINPHASE_EMPTY_STACK = EventData("MP:EmptyStack", 0, [ActionData.PASS, ActionData.PLAY_CARD, ActionData.ACTIVATE_LANDS])
     DECLARE_ATTACKS = EventData("COM:DeclareAttacks", 0, [ActionData.PASS, ActionData.ATTACK])
+    DECLARE_BLOCKS = EventData("COM:DeclareBlocks", 0, [ActionData.PASS, ActionData.BLOCK])
     NO_OP = EventData("Default:NoOp", 0, [ActionData.PASS]) 
 
 def event_from_step(step: GameStep) -> PlayerEvent:
@@ -43,6 +44,8 @@ def event_from_step(step: GameStep) -> PlayerEvent:
             return PlayerEvent.MAINPHASE_EMPTY_STACK
         case GameStep.ATTACK_STEP:
             return PlayerEvent.DECLARE_ATTACKS
+        case GameStep.BLOCK_STEP:
+            return PlayerEvent.DECLARE_BLOCKS
         case _:
             return PlayerEvent.NO_OP
 

@@ -21,7 +21,7 @@ class CardInstance(ActiveGameElement):
         return self.instance_id
 
     def __str__(self, verbose: bool=False) -> str:
-        return "[{}] {}".format(self.instance_id, self.card_name)
+        return "{}({})".format(self.card_name, self.instance_id)
     
 class SpellInstance(CardInstance):
     def __init__(self, info: SpellInfo) -> None:
@@ -38,6 +38,8 @@ class CreatureInstance(SpellInstance):
         self.power: int = info.power
         self.toughness: int = info.toughness
         self.summoning_sick: bool = False
+        self.attacking: bool = False
+        self.marked_damage: int = 0
 
 class WastesInstance(LandInstance, ManaProvider):
     def __init__(self) -> None:

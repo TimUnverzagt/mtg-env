@@ -20,11 +20,28 @@ class RulesBasedAgent(AgentBase):
         event: PlayerEvent = state.event
         neutral_index: int = event.value.neutral_action_index
         match event:
+            case PlayerEvent.DECLARE_ATTACKS:
+                return self.decide_on_attackers(state)
             case PlayerEvent.MAINPHASE_EMPTY_STACK:
                 return self.decide_on_mainphase_action(state)
             case _:
                 return ActionIntent(event.value.possible_actions[neutral_index], None)
     
+    def decide_on_attackers(self, state: ObservedGameState) -> ActionIntent:
+        nonlands: list[CardInstance] = list(filter(lambda card: not isinstance(card, LandInstance),state.self_state.cards_in_play))
+        possible_attackers: list[list[int]] = []
+        for idx, card in enumerate(nonlands):
+            if not isinstance(card, CreatureInstance):
+                continue
+            if card.summoning_sick:
+                continue
+            if card.tapped:
+                continue
+            possible_attackers.append([idx])
+        if len(possible_attackers) < 1:
+            return ActionIntent(ActionData.PASS, None)
+        return ActionIntent(ActionData.ATTACK, np.array(possible_attackers))
+
     def decide_on_mainphase_action(self,  state: ObservedGameState) -> ActionIntent:
         #play land if able
         if(state.lands_played_this_turn < 1):

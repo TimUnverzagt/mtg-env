@@ -2,6 +2,7 @@ from __future__ import annotations
 from collections import defaultdict
 
 import random
+from uuid import UUID
 from mtggympy.gameengine.constants import GameStep, ManaColor
 import mtggympy.gameengine.constants as const
 from mtggympy.gameengine.state.defaults import Player
@@ -38,6 +39,7 @@ def draw_step(game_state:GameState) -> bool:
         return True
     logger.info("{} will draw a card for turn".format(game_state.player_states[game_state.active_player_index].name))
     execute_action(game_state.active_player_index, game_state, draw_card)
+    check_state_based_actions(game_state)
     return True
 
 def main_phase(acting_seat: int, intent: ActionIntent, game_state: GameState) -> bool:
@@ -58,17 +60,31 @@ def main_phase(acting_seat: int, intent: ActionIntent, game_state: GameState) ->
             handle_illegal_action(intent.action, PlayerEvent.MAINPHASE_EMPTY_STACK)
             return False
 
-
-def combat(acting_seat: int, intent: ActionIntent, game_state: GameState) -> bool:
+def declare_attackers_step(acting_seat: int, intent: ActionIntent, game_state: GameState) -> bool:
     match intent.action:
         case ActionData.PASS:
-            return True
+            return attack(acting_seat, game_state, [])
         case ActionData.ATTACK:
             target_creatures: list[CreatureInstance] | None = parse.creatures_for_attacking(acting_seat, intent, game_state)
             if target_creatures is None:
-                logger.warning("No creatures recognized from parsed input!")
+                logger.warning("Could not parse input into list of attackers!")
                 return False
             return attack(acting_seat, game_state, target_creatures)
+        case _:
+            handle_illegal_action(intent.action, PlayerEvent.DECLARE_ATTACKS)
+            return False
+
+
+def declare_blockers_step(acting_seat: int, intent: ActionIntent, game_state: GameState) -> bool:
+    match intent.action:
+        case ActionData.PASS:
+            return block(acting_seat, game_state, [])
+        case ActionData.BLOCK:
+            blocker_attacker_pairs : list[tuple[CreatureInstance, CreatureInstance]] | None = parse.blocker_attacker_pairs(acting_seat, intent, game_state);
+            if blocker_attacker_pairs is None:
+                logger.warning("Could not parse input into list of blockers and attackers!")
+                return False
+            return block(acting_seat, game_state, blocker_attacker_pairs)
         case _:
             handle_illegal_action(intent.action, PlayerEvent.DECLARE_ATTACKS)
             return False
@@ -143,7 +159,6 @@ def attack(acting_seat: int, game_state: GameState, target_creatures: list[Creat
         len(game_state.player_states),
         game_state.player_states[acting_seat].name)
     )
-    total_damage: int = 0
     for creature in target_creatures:
         if creature.tapped:
             logger.error("Target creature {} is tapped and can not attack. Refusing to process intent!".format(creature.card_name))
@@ -152,9 +167,52 @@ def attack(acting_seat: int, game_state: GameState, target_creatures: list[Creat
             logger.error("Target creature {} is summoning sick and can not attack. Refusing to process intent!".format(creature.card_name))
             return False
         creature.tapped = True
-        total_damage += creature.power
-    defending_position: int =(game_state.active_player_index + 1) % len(game_state.player_states)#
-    return execute_action(acting_seat, game_state, deal_damage, defending_position, total_damage)
+        creature.attacking = True
+    return True
+
+def block(acting_seat: int, game_state: GameState, declared_pairs: list[tuple[CreatureInstance, CreatureInstance]]) -> bool:
+    defending_position: int = acting_seat 
+    engagements: dict[UUID, tuple[CreatureInstance, list[CreatureInstance]]] = {}
+    for card in game_state.player_states[game_state.active_player_index].cards_in_play:
+        if not isinstance(card, CreatureInstance):
+            continue
+        if card.attacking:
+            engagements[card.instance_id] = (card, [])
+    for pair in declared_pairs:
+        attacker: CreatureInstance = pair[1]
+        blocker: CreatureInstance = pair[0]
+        if not attacker.instance_id in engagements:
+            logger.error("Declared block {} --> {} is illegal because the second creature is not attacking. Refusing to process intent!"
+                         .format(attacker, blocker))
+            return False
+        engagements[attacker.instance_id][1].append(blocker)
+
+    damage_to_player: int = 0
+    for id in engagements:
+        engagement: tuple[CreatureInstance, list[CreatureInstance]] = engagements[id]
+        attacker: CreatureInstance = engagement[0]
+        blockers: list[CreatureInstance] = engagement[1]
+        if len(blockers) < 1:
+            logger.debug("{} was not blocked and will deal {} damage to defendig player.".format(attacker, attacker.power))
+            damage_to_player += attacker.power
+        else:
+            logger.debug("{} was blocked by {}.".format(attacker, list(map(str, blockers))))
+            if len(blockers) > 1:
+                logger.info("Multiple blockers are not fully supported yet. The engine will decide the damage distribution.")
+            damage_still_to_spread: int = attacker.power
+            damage_to_attacker: int = 0
+            for blocker in blockers: 
+                damage_to_attacker += blocker.power
+                assignable_damage: int = min(damage_still_to_spread, blocker.toughness)
+                damage_still_to_spread -= assignable_damage
+                execute_action(acting_seat, game_state, deal_damage_to_creature, blocker, assignable_damage)
+            if damage_still_to_spread > 0:
+                execute_action(acting_seat, game_state, deal_damage_to_creature, blockers[0], damage_still_to_spread)
+            execute_action(acting_seat, game_state, deal_damage_to_creature, attacker, damage_to_attacker)
+    execute_action(acting_seat, game_state, deal_damage_to_player, defending_position, damage_to_player)
+    check_state_based_actions(game_state)
+    end_combat(game_state)
+    return True
 
 ##################################    
 # Actions to be handled by proxy
@@ -167,14 +225,20 @@ def draw_card(acting_seat: int, game_state: GameState) -> None:
     hand.append(card_drawn)
     return
     
-def deal_damage(acting_seat: int, game_state: GameState, target_seat:int, damage_amount:int) -> bool:
+def deal_damage_to_player(acting_seat: int, game_state: GameState, target_seat:int, damage_amount:int) -> bool:
     game_state.player_states[target_seat].current_life -= damage_amount
     return True
+
+def deal_damage_to_creature(acting_seat: int, game_state: GameState, target_creature:CreatureInstance, damage_amount:int) -> bool:
+    target_creature.marked_damage += damage_amount
+    return True
+
 
 
 ##################################
 # Misc
 ##################################
+
 def get_initial_game_state() -> GameState:
     player1: Player = Player("Player1")
     shuffle_cards(player1.info.cards_in_library)
@@ -199,11 +263,24 @@ def shuffle_cards(cards: list[CardInstance], seed: int | None = None) -> None:
         random.seed(seed)
     random.shuffle(cards)
 
+def end_combat(game_state: GameState) -> bool:
+    for player_state in game_state.player_states:
+        creatures: list[CardInstance] = list(filter(lambda card: isinstance(card, CreatureInstance),player_state.cards_in_play))
+        for creature in creatures:
+            assert isinstance(creature, CreatureInstance)
+            creature.attacking = False
+    return True
+
 def pass_turn(game_state: GameState) -> bool:
     game_state.halfturns_completed += 1
     next_active_seat: int = (game_state.active_player_index + 1) % len(game_state.player_states)
     game_state.active_player_index = next_active_seat
     game_state.lands_played_this_turn = 0
+    for player_state in game_state.player_states:
+        creatures: list[CardInstance] = list(filter(lambda card: isinstance(card, CreatureInstance),player_state.cards_in_play))
+        for creature in creatures:
+            assert isinstance(creature, CreatureInstance)
+            creature.marked_damage = 0
     return True
 
 def get_player_position(info: PlayerState, game_state:GameState) -> int:
@@ -218,9 +295,21 @@ def handle_illegal_action(action: ActionData, event: PlayerEvent) -> None:
 
 def check_state_based_actions(game_state: GameState) -> None:
     logger.debug("Checking state-based effects")
+    check_creature_death(game_state)
     check_player_death(game_state)
     check_for_game_end(game_state)
     return
+
+def check_creature_death(game_state: GameState) -> None:
+    for player_state in game_state.player_states:
+        battlefield = player_state.cards_in_play
+        for card in battlefield:
+            if not isinstance(card, CreatureInstance):
+                continue
+            if card.marked_damage >= card.toughness:
+                battlefield.remove(card)
+    return
+
 
 def check_player_death(game_state: GameState) -> None:
     alive_player_infos: list[PlayerState] = list(filter(lambda player_info: is_player_alive(player_info), game_state.player_states))
@@ -285,6 +374,5 @@ def _execute_action_with_replacment(acting_seat: int, game_state: GameState, att
 def execute_action(acting_seat: int, game_state: GameState, attempted_action: Callable[Concatenate[int, GameState, AdditionalParam], ActionResult], 
                     *args: AdditionalParam.args, **kwargs: AdditionalParam.kwargs) -> ActionResult:
     action_result: ActionResult = _execute_action_with_replacment(acting_seat, game_state, attempted_action, *args, **kwargs)
-    check_state_based_actions(game_state)
     return action_result
 

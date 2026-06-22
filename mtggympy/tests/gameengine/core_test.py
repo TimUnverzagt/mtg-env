@@ -1,4 +1,4 @@
-from mtggympy.gameengine.state import GameState
+from mtggympy.gameengine.state.core import GameState
 from mtggympy.gameengine.state.event import PlayerEvent
 from mtggympy.gameengine.constants import Action, ManaColor, CARD_TO_PLAY
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
@@ -24,7 +24,7 @@ class TestGameEngine():
         #Setup 
         game_state: GameState = get_default_game_state()
         #Execute
-        Engine.combat(0, Action.ATTACK, game_state)
+        Engine.declare_blockers_step(0, Action.ATTACK, game_state)
         #Assert
         assert game_state.upcoming_event == PlayerEvent.MAINPHASE_1_EMPTY_STACK
         assert game_state.player_states[1].current_life == app_config.STARTING_LIFE - 1
@@ -35,6 +35,7 @@ class TestGameEngine():
         game_state: GameState = get_default_game_state()
         #Execute:
         Engine.execute_action(0, game_state, Engine.draw_card)
+        Engine.check_state_based_actions(game_state)
         #Assert
         assert len(game_state.player_states[0].cards_in_hand) == len(get_default_game_state().player_states[0].cards_in_hand) + 1
         assert len(game_state.player_states[0].cards_in_library) == len(get_default_game_state().player_states[0].cards_in_library) - 1
@@ -45,6 +46,7 @@ class TestGameEngine():
         game_state.player_states[0].cards_in_library = []
         #Execute        
         Engine.execute_action(0, game_state, Engine.draw_card)
+        Engine.check_state_based_actions(game_state)
         #Assert
         assert game_state.game_over == True
         assert 1 in game_state.winner_positions
