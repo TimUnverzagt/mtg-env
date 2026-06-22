@@ -4,7 +4,7 @@ from mtggympy.gameengine.constants import Action, ManaColor, CARD_TO_PLAY
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
 from mtggympy.gameengine.cards.logic.basiclands import Wastes, WASTES_NAME
 from mtggympy.gameengine.cards.logic.instances import CardInstance
-import mtggympy.gameengine.core as Engine
+import mtggympy.gameengine.transition as Engine
 from mtggympy import app_config
 from mtggympy.helpers.dict_operations import dicts_equal_with_default
 from tests.default_data import get_default_game_state

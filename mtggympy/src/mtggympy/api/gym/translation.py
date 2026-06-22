@@ -29,7 +29,8 @@ def event_to_index(event: PlayerEvent) -> int:
 
 def gym_action_to_priority_decision(upcoming_event: PlayerEvent, action: MtgAction) -> ActionIntent:
     logger.debug("Translating for decision [{}]".format(upcoming_event))
-    intent: ActionIntent = upcoming_event.value.possible_actions[action[0]]
+    #TODO: Get params as well
+    intent: ActionIntent = ActionIntent(upcoming_event.value.possible_actions[action[0]],None)
     logger.debug("Translated external action {} into internal intent [{}]".format(action[0], intent))
     return intent
 

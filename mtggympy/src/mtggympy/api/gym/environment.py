@@ -7,7 +7,7 @@ from typing import Optional, TypeVar, Any, cast
 
 import mtggympy.app_config as app_const
 #import game.engine as MtgEngine
-from mtggympy.gameengine.state.event import ActionIntent
+from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent
 from mtggympy.gameengine.state.core import GameState
 from mtggympy.server.session.multi_client import MultiClientSession as MtgSession
 from mtggympy.server.session.player_controller import PlayerController
@@ -70,7 +70,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         # Implement external training management
         self.game_session = MtgSession() 
 
-        # Set up extrenal agent
+        # Set up external agent
         self.agent = ApiAgent(self.game_session,"External", target_seat=1)
         agent_thread: Thread = Thread(target=self.agent.play_game, daemon=True)
 
@@ -121,7 +121,7 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         with self.agent.api_intent_condition:
             logger.debug("Waiting for upcoming decision to be set")
             self.agent.api_intent_condition.wait_for(build_either_predicate(   
-                lambda: self.agent.upcoming_event is not None,
+                lambda: self.agent.api_prior_state is not None,
                 lambda: self.game_session.shutting_down,   
             ))       
             if self.game_session.shutting_down:
@@ -130,12 +130,10 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
                 terminated = True
                 return self.get_obs(), reward, terminated, truncated, info
             
-            assert self.agent.upcoming_event is not None
-            logger.debug("Current Upcoming Decision: {}".format(self.agent.upcoming_event))
-            decision_intent: ActionIntent = gym_action_to_priority_decision(self.agent.upcoming_event, action)
-            self.agent.upcoming_event = None
-            assert self.agent.controller is not None  
-            self.agent.controller.obs_after_action = None
+            assert self.agent.api_prior_state is not None
+            event: PlayerEvent = self.agent.api_prior_state.event
+            logger.debug("Current Upcoming Decision: {}".format(event))
+            decision_intent: ActionIntent = gym_action_to_priority_decision(event, action)
             self.agent.api_intent_condition.notify()
 
             
@@ -152,15 +150,15 @@ class MtgEnv(gym.Env[MtgObservation, MtgAction]):
         assert self.agent.controller is not None  
         # TODO: Uncouple Api from controller. Doesn't need to know about the agent-session communication  
         with self.agent.api_intent_condition:
-            logger.debug("Ensuring no intent is currently set")
-            self.agent.api_intent_condition.wait_for(self.agent.get_intent_declared_predicate(expected_to_be_set=False))
+            #logger.debug("Ensuring no intent is currently set")
+            #self.agent.api_intent_condition.wait_for(self.agent.get_intent_declared_predicate(expected_to_be_set=False))
             logger.debug("Declaring decision intent from external action")
             # TODO: Translate external action to well typed decision intent
             self.agent.api_intent = decision_intent
             logger.debug("Waiting for intent to be processed")
             self.agent.api_intent_condition.wait_for(build_either_predicate(
                 lambda: self.game_session.shutting_down,
-                self.agent.controller.get_action_result_predicate(expected_to_be_set=True)
+                lambda: self.agent.api_prior_state is not None
             ))
             logger.debug("Received processing confirmation via update of game state in controller")
             obs: MtgObservation = self.get_obs()
