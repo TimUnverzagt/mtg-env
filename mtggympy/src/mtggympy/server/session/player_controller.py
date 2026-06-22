@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mtggympy.gameengine.player import PlayerState
+from mtggympy.gameengine.state.defaults import PlayerState
 from mtggympy.gameengine.state.event import ActionIntent
 from mtggympy.gameengine.state.core import GameState
 from threading import Condition

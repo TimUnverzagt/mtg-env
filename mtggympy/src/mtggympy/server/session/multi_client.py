@@ -2,10 +2,9 @@ from mtggympy.gameengine.constants import GameStep
 from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEvent, event_from_step
 from mtggympy.gameengine.state.core import GameState
 from mtggympy.server.session.player_controller import PlayerController
-import mtggympy.gameengine.core as GameEngine
+import mtggympy.gameengine.transition as GameEngine
 #from game.state import GameState
-from mtggympy.gameengine.player import PlayerState
-from mtggympy.gui.rendering.pygame_custom import SimpleRenderer
+from mtggympy.gameengine.state.defaults import PlayerState
 from mtggympy.server.session.obfuscation import observe_game_state
 
 import time
@@ -41,9 +40,10 @@ class MultiClientSession():
     def __init__(self) -> None:
         self.game_state = GameEngine.get_initial_game_state()
         self.seats: list[Optional[PlayerController]] = [None, None]
-        self.vis: SimpleRenderer | None = None
+        self.vis: None = None
         if conf.HUMAN_RENDERING:
-            self.vis = SimpleRenderer()
+            #TODO: Connect to UI
+            pass
         self.shutting_down: bool = False
 
     def connect(self, name: str) -> PlayerController | None:

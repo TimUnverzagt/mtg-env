@@ -4,7 +4,7 @@ from collections import defaultdict
 import random
 from mtggympy.gameengine.constants import GameStep, ManaColor
 import mtggympy.gameengine.constants as const
-from mtggympy.gameengine.player import Player
+from mtggympy.gameengine.state.defaults import Player
 from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent, ActionData
 from mtggympy.gameengine.cards.logic.instances import CardInstance, CreatureInstance, LandInstance
 from mtggympy.gameengine.state.core import GameState, PlayerState, is_player_alive
