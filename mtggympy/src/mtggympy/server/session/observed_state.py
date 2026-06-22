@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from mtggympy.gameengine.constants import GameStep, ManaColor
-from mtggympy.gameengine.gameobjects import CardInstance
-from mtggympy.gameengine.priority.event import PlayerEvent
+from mtggympy.gameengine.cards.logic.instances import CardInstance
+from mtggympy.gameengine.state.event import PlayerEvent
 
 @dataclass
 class ObservedSelfState:

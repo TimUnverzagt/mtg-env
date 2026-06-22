@@ -1,8 +1,8 @@
 
 from mtggympy.gameengine.constants import CardType
-from mtggympy.gameengine.gameobjects import CardInstance, CreatureInstance
-from mtggympy.gameengine.priority.event import ActionIntent
-from mtggympy.gameengine.state import GameState
+from mtggympy.gameengine.cards.logic.instances import CardInstance, CreatureInstance
+from mtggympy.gameengine.state.event import ActionIntent
+from mtggympy.gameengine.state.core import GameState
 
 from mtggympy.logging_config import engine_log as logger
 

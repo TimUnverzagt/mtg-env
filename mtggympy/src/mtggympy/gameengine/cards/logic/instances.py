@@ -1,11 +1,11 @@
-from mtggympy.gameengine.cards.info import CardInfo, CreatureInfo, LandInfo, SpellInfo
+from mtggympy.gameengine.cards.catalog.info import CardInfo, CreatureInfo, LandInfo, SpellInfo
 from mtggympy.gameengine.constants import ManaColor
-from mtggympy.gameengine.capabilities import ActiveGameElement
+from mtggympy.gameengine.cards.logic.capabilities import ActiveGameElement
 from mtggympy.gameengine.constants import CardType
 import mtggympy.gameengine.cards.catalog.lookup as lookup
 from mtggympy.gameengine.cards.catalog.lands import LandNames
 from mtggympy.gameengine.constants import ManaColor
-from mtggympy.gameengine.capabilities import ManaProvider
+from mtggympy.gameengine.cards.logic.capabilities import ManaProvider
 from uuid import UUID, uuid4
 
 from mtggympy.logging_config import engine_log as logger

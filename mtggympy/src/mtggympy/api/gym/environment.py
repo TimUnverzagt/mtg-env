@@ -7,15 +7,15 @@ from typing import Optional, TypeVar, Any, cast
 
 import mtggympy.app_config as app_const
 #import game.engine as MtgEngine
-from mtggympy.gameengine.priority.event import ActionIntent
-from mtggympy.gameengine.state import GameState
-from mtggympy.server.session.multi_client_session import MultiClientSession as MtgSession
-from mtggympy.server.session.player_connection import PlayerController
+from mtggympy.gameengine.state.event import ActionIntent
+from mtggympy.gameengine.state.core import GameState
+from mtggympy.server.session.multi_client import MultiClientSession as MtgSession
+from mtggympy.server.session.player_controller import PlayerController
 from mtggympy.server.agents.simple import Goldfish #, Monkey
 from mtggympy.server.agents.external import ApiAgent
 from mtggympy.server.agents.abstractions.base import AgentBase as Agent
-from mtggympy.api.gym_types import MtgObservation, MtgInfo, MtgAction
-from mtggympy.api.translation import gym_action_to_priority_decision, observed_state_to_obs
+from mtggympy.api.gym.types import MtgObservation, MtgInfo, MtgAction
+from mtggympy.api.gym.translation import gym_action_to_priority_decision, observed_state_to_obs
 from mtggympy.helpers.tree_map import tree_map
 from mtggympy.helpers.predicate_extensions import build_either_predicate
 

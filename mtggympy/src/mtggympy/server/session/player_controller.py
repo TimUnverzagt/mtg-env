@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from mtggympy.gameengine.player import PlayerState
-from mtggympy.gameengine.priority.event import ActionIntent
-from mtggympy.gameengine.state import GameState
+from mtggympy.gameengine.state.event import ActionIntent
+from mtggympy.gameengine.state.core import GameState
 from threading import Condition
 from logging import Logger
 from mtggympy.logging_config import create_logger

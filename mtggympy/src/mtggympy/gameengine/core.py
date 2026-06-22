@@ -5,11 +5,11 @@ import random
 from mtggympy.gameengine.constants import GameStep, ManaColor
 import mtggympy.gameengine.constants as const
 from mtggympy.gameengine.player import Player
-from mtggympy.gameengine.priority.event import ActionIntent, PlayerEvent, ActionData
-from mtggympy.gameengine.gameobjects import CardInstance, CreatureInstance, LandInstance
-from mtggympy.gameengine.state import GameState, PlayerState, is_player_alive
+from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent, ActionData
+from mtggympy.gameengine.cards.logic.instances import CardInstance, CreatureInstance, LandInstance
+from mtggympy.gameengine.state.core import GameState, PlayerState, is_player_alive
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
-from mtggympy.gameengine.capabilities import ManaProvider
+from mtggympy.gameengine.cards.logic.capabilities import ManaProvider
 import mtggympy.gameengine.parsing as parse
 
 from mtggympy.helpers.dict_operations import first_dict_can_fit_second_by_value

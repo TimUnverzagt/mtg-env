@@ -1,4 +1,4 @@
-from mtggympy.gameengine.cards.info import CardInfo, LandInfo
+from mtggympy.gameengine.cards.catalog.info import CardInfo, LandInfo
 from enum import Enum
 
 class LandNames(Enum):

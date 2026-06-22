@@ -10,7 +10,7 @@ import mtggympy.app_config as conf
 from mtggympy.logging_config import UI_LOG_QUEUE
 from mtggympy.logging_config import ui_log as logger
 
-from mtggympy.pubsub import DESKTOP_INTENT_QUEUE
+from mtggympy.helpers.pubsub import DESKTOP_INTENT_QUEUE
 
 import mtggympy.gui.constants as const
 from mtggympy.gui.texture import ImageMetaData
@@ -18,9 +18,9 @@ import mtggympy.gameengine.parsing as engine_parsing
 #from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 #from mtggympy.gameengine.cards.catalog.lands import LandNames
 from mtggympy.gameengine.cards.catalog.lookup import FACEDOWN_CARD_NAME
-from mtggympy.gameengine.priority.event import ActionData, ActionIntent, PlayerEvent, event_from_step
+from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEvent, event_from_step
 from mtggympy.gameengine.constants import CardType, ManaColor
-from mtggympy.gameengine.gameobjects import CardInstance, CreatureInstance, generate_card_instance
+from mtggympy.gameengine.cards.logic.instances import CardInstance, CreatureInstance, generate_card_instance
 
 from mtggympy.server.session.observed_state import ObservedGameState, ObservedSelfState, ObservedOpponentState
 @dataclass

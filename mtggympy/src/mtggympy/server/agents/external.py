@@ -1,12 +1,12 @@
 from logging import Logger
 
-from mtggympy.server.session.multi_client_session import MultiClientSession as GameSession
-from mtggympy.gameengine.priority.event import ActionIntent
+from mtggympy.server.session.multi_client import MultiClientSession as GameSession
+from mtggympy.gameengine.state.event import ActionIntent
 from mtggympy.server.agents.abstractions.base import AgentBase
 from threading import Condition
 
 from mtggympy.server.session.observed_state import ObservedGameState
-from mtggympy.server.session.player_connection import PlayerController
+from mtggympy.server.session.player_controller import PlayerController
 
 class ApiAgent(AgentBase):
     def __init__(self, session: GameSession, name: str, target_seat: int | None =  None, wait_for_state_reading: bool = False) -> None:

@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from logging import Logger
 from threading import Condition
-from mtggympy.server.session.multi_client_session import MultiClientSession as GameSession
-from mtggympy.gameengine.priority.event import ActionIntent
+from mtggympy.server.session.multi_client import MultiClientSession as GameSession
+from mtggympy.gameengine.state.event import ActionIntent
 from mtggympy.server.session.observed_state import ObservedGameState
-from mtggympy.server.session.player_connection import PlayerController
+from mtggympy.server.session.player_controller import PlayerController
 from mtggympy.helpers.predicate_extensions import build_either_predicate
 
 import time

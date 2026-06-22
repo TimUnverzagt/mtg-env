@@ -1,5 +1,5 @@
-from mtggympy.gameengine.priority.event import event_from_step
-from mtggympy.gameengine.state import GameState, PlayerState
+from mtggympy.gameengine.state.event import event_from_step
+from mtggympy.gameengine.state.core import GameState, PlayerState
 from mtggympy.server.session.observed_state import ObservedGameState, ObservedSelfState, ObservedOpponentState
 
 

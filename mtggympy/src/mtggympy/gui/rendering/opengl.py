@@ -19,12 +19,12 @@ from mtggympy.gameengine.constants import GameStep
 import mtggympy.gui.layout.myimgui as layout
 import mtggympy.gui.constants as const
 from mtggympy.gui.texture import ImageMetaData
-from mtggympy.gameengine.state import GameState, PlayerState
+from mtggympy.gameengine.state.core import GameState, PlayerState
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
 import mtggympy.gameengine.cards.catalog.lookup as lookup
-from mtggympy.gameengine.gameobjects import generate_card_instance
-from mtggympy.server.obfuscation import observe_game_state
+from mtggympy.gameengine.cards.logic.instances import generate_card_instance
+from mtggympy.server.session.obfuscation import observe_game_state
 from mtggympy.server.session.observed_state import ObservedGameState
     
 def load_image(path_from_asset_dir: str) -> Surface:

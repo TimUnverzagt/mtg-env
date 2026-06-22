@@ -1,10 +1,10 @@
 from mtggympy.gameengine.state import GameState
-from mtggympy.gameengine.priority.event import PlayerEvent
+from mtggympy.gameengine.state.event import PlayerEvent
 
-from mtggympy.server.obfuscation import observe_game_state
-from mtggympy.server.session.player_connection import PlayerController
-import mtggympy.api.translation as translation
-from mtggympy.api.gym_environment import MtgEnv, MtgObservation
+from mtggympy.server.session.obfuscation import observe_game_state
+from mtggympy.server.session.player_controller import PlayerController
+import mtggympy.api.gym.translation as translation
+from mtggympy.api.gym.environment import MtgEnv, MtgObservation
 
 from mtggympy.app_config import DECK_SIZE, STARTING_LIFE
 

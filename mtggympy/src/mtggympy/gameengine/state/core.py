@@ -1,4 +1,4 @@
-from mtggympy.gameengine.gameobjects import CardInstance
+from mtggympy.gameengine.cards.logic.instances import CardInstance
 from mtggympy.gameengine.constants import ManaColor, GameStep
 from mtggympy.gameengine.constants import ManaColor
 from dataclasses import dataclass

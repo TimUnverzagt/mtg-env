@@ -1,7 +1,7 @@
 from logging import Logger
 
-from mtggympy.server.session.multi_client_session import MultiClientSession as GameSession
-from mtggympy.gameengine.priority.event import ActionData, ActionIntent, EventData
+from mtggympy.server.session.multi_client import MultiClientSession as GameSession
+from mtggympy.gameengine.state.event import ActionData, ActionIntent, EventData
 #import environment.constants as EnvConsts
 from mtggympy.server.agents.abstractions.base import AgentBase
 

@@ -1,8 +1,8 @@
 from logging import Logger
 from typing import Callable
 
-from mtggympy.server.session.multi_client_session import MultiClientSession as GameSession
-from mtggympy.gameengine.priority.event import ActionData, ActionIntent, PlayerEvent
+from mtggympy.server.session.multi_client import MultiClientSession as GameSession
+from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEvent
 from mtggympy.server.agents.abstractions.base import AgentBase
 import mtggympy.gameengine.parsing as engine_parsing
 from mtggympy.server.session.observed_state import ObservedGameState

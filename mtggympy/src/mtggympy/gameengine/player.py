@@ -1,7 +1,7 @@
 from __future__ import annotations
 import mtggympy.app_config as conf
-from mtggympy.gameengine.state import PlayerState
-from mtggympy.gameengine.gameobjects import CardInstance, generate_card_instance
+from mtggympy.gameengine.state.core import PlayerState
+from mtggympy.gameengine.cards.logic.instances import CardInstance, generate_card_instance
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
 from mtggympy.app_config import DECK_SIZE

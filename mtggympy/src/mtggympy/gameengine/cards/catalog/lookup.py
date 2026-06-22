@@ -1,4 +1,4 @@
-from mtggympy.gameengine.cards.info import CardInfo, SpellInfo, CreatureInfo
+from mtggympy.gameengine.cards.catalog.info import CardInfo, SpellInfo, CreatureInfo
 from mtggympy.gameengine.cards.catalog.lands import LAND_CATALOG
 from mtggympy.gameengine.cards.catalog.creatures import CREATURE_CATALOG
 from mtggympy.gameengine.constants import CardType, ManaColor

@@ -1,6 +1,6 @@
-from mtggympy.gameengine.priority.event import ActionIntent, PlayerEvent, event_from_step
-from mtggympy.api.gym_types import MtgObservation, MtgAction, MtgPlayerObs
-from mtggympy.gameengine.priority.event import PlayerEvent
+from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent, event_from_step
+from mtggympy.api.gym.types import MtgObservation, MtgAction, MtgPlayerObs
+from mtggympy.gameengine.state.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
 
 from mtggympy.logging_config import api_log as logger

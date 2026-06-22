@@ -1,9 +1,9 @@
 from threading import Thread
-from mtggympy.api.gym_environment import MtgEnv
-from mtggympy.api.desktop_app import DesktopApp
+from mtggympy.api.gym.environment import MtgEnv
+from mtggympy.api.dektop.app import DesktopApp
 #from mtggympy.server.agents.simple import Goldfish, Monkey
 from mtggympy.server.agents.rulesbased import RulesBasedAgent
-from mtggympy.server.session.multi_client_session import MultiClientSession as MtgSession
+from mtggympy.server.session.multi_client import MultiClientSession as MtgSession
 #from api.wrapper import MtgObservation
 from mtggympy.dojo.q_learning import QLearner
 

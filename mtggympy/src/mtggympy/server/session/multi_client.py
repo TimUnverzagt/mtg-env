@@ -1,12 +1,12 @@
 from mtggympy.gameengine.constants import GameStep
-from mtggympy.gameengine.priority.event import ActionData, ActionIntent, PlayerEvent, event_from_step
-from mtggympy.gameengine.state import GameState
-from mtggympy.server.session.player_connection import PlayerController
+from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEvent, event_from_step
+from mtggympy.gameengine.state.core import GameState
+from mtggympy.server.session.player_controller import PlayerController
 import mtggympy.gameengine.core as GameEngine
 #from game.state import GameState
 from mtggympy.gameengine.player import PlayerState
 from mtggympy.gui.rendering.pygame_custom import SimpleRenderer
-from mtggympy.server.obfuscation import observe_game_state
+from mtggympy.server.session.obfuscation import observe_game_state
 
 import time
 from functools import reduce
@@ -107,8 +107,11 @@ class MultiClientSession():
                     logger.warning("Step Resolution was unsuccessful. This may result in a corrupted game state")
 
             if(conf.HUMAN_RENDERING):
-                assert self.vis is not None
-                self.vis.step(self.game_state)
+                #assert self.vis is not None
+                #self.vis.step(self.game_state)
+                #TODO: Integrate human gui here
+                logger.error("RENDERING is currently NOT IMPLEMENTED")
+                pass
         logger.info("Game concluded. Shutting down session!")
         self.shutting_down = True
         for cont in self.seats:

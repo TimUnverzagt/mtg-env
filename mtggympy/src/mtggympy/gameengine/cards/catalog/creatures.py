@@ -1,4 +1,4 @@
-from mtggympy.gameengine.cards.info import CardInfo, CreatureInfo
+from mtggympy.gameengine.cards.catalog.info import CardInfo, CreatureInfo
 from mtggympy.gameengine.constants import ManaColor as MC
 from enum import Enum
 

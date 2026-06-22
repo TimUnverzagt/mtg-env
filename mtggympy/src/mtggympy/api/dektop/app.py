@@ -1,7 +1,7 @@
 import copy
 from threading import Thread, Condition
 
-from mtggympy.gameengine.priority.event import ActionIntent
+from mtggympy.gameengine.state.event import ActionIntent
 from mtggympy.helpers.predicate_extensions import build_either_predicate
 from mtggympy.logging_config import desktop_ui_log as ui_logger
 from mtggympy.logging_config import desktop_api_log as api_logger
@@ -9,11 +9,11 @@ from mtggympy.logging_config import desktop_api_log as api_logger
 from mtggympy.server.agents.console import ConsoleAgent
 from mtggympy.server.agents.external import ApiAgent
 #from mtggympy.server.session.player_connection import PlayerController
-from mtggympy.server.session.multi_client_session import MultiClientSession as GameSession
+from mtggympy.server.session.multi_client import MultiClientSession as GameSession
 from mtggympy.server.session.observed_state import ObservedGameState
 
-from mtggympy.gui.rendering.glrender import GlRenderer
-from mtggympy.pubsub import DESKTOP_INTENT_QUEUE
+from mtggympy.gui.rendering.opengl import GlRenderer
+from mtggympy.helpers.pubsub import DESKTOP_INTENT_QUEUE
 
 
 class DesktopApp():

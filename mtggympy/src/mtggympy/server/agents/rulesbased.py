@@ -2,12 +2,12 @@
 from logging import Logger
 
 from mtggympy.gameengine.constants import CardType
-from mtggympy.gameengine.gameobjects import CardInstance, CreatureInstance, LandInstance
+from mtggympy.gameengine.cards.logic.instances import CardInstance, CreatureInstance, LandInstance
 from mtggympy.helpers.dict_operations import first_dict_can_fit_second_by_value
 from mtggympy.server.agents.abstractions.base import AgentBase
 
-from mtggympy.server.session.multi_client_session import MultiClientSession as GameSession
-from mtggympy.gameengine.priority.event import ActionData, ActionIntent, PlayerEvent
+from mtggympy.server.session.multi_client import MultiClientSession as GameSession
+from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEvent
 from mtggympy.server.session.observed_state import ObservedGameState
 
 import numpy as np
