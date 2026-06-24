@@ -1,5 +1,15 @@
+from enum import Enum
 import logging
 import os
+
+###############
+# Setup 
+###############
+class Setup(Enum):
+    Q_TRAINING = 0
+    HUMAN_VS_INTERNALS = 1
+
+CURRENT_SETUP: Setup = Setup.HUMAN_VS_INTERNALS
 
 ###############
 # Project 

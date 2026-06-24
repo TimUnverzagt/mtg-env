@@ -16,9 +16,9 @@ from pygame.time import Clock
 
 import mtggympy.app_config as conf
 from mtggympy.gameengine.constants import GameStep
-import mtggympy.gui.layout.myimgui as layout
-import mtggympy.gui.constants as const
-from mtggympy.gui.texture import ImageMetaData
+import mtggympy.api.gui.layout.myimgui as layout
+import mtggympy.api.gui.constants as const
+from mtggympy.api.gui.texture import ImageMetaData
 from mtggympy.gameengine.state.core import GameState, PlayerState
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames

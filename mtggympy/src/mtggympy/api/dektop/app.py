@@ -12,7 +12,7 @@ from mtggympy.server.agents.external import ApiAgent
 from mtggympy.server.session.multi_client import MultiClientSession as GameSession
 from mtggympy.server.session.observed_state import ObservedGameState
 
-from mtggympy.gui.rendering.opengl import GlRenderer
+from mtggympy.api.gui.rendering.opengl import GlRenderer
 from mtggympy.helpers.pubsub import DESKTOP_INTENT_QUEUE
 
 

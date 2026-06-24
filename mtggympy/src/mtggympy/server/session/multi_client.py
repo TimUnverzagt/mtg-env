@@ -194,9 +194,6 @@ class MultiClientSession():
                 cont.set_action_result(observe_game_state(game_state, player_seat))
                 cont.obs_after_action_condition.notify_all()
                 cont.obs_after_action_condition.wait_for(lambda: cont.obs_after_action is None)
-
-                    
-                        
                 logger.debug("SessionTick: {}: Answered player with new state {}".format(
                     cont.player_info.name,
                     game_state

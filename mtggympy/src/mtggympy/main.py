@@ -13,6 +13,7 @@ from mtggympy.dojo.q_learning import QLearner
 #import sys
 
 #from logging_config import main_log
+import mtggympy.app_config as conf
 
 def learning_example():
     no_of_episodes: int = 100
@@ -40,4 +41,9 @@ def desktop_game_example():
 
 
 if __name__ == "__main__":
-    desktop_game_example()
+    match conf.CURRENT_SETUP:
+        case conf.Setup.HUMAN_VS_INTERNALS:
+            desktop_game_example()
+        case conf.Setup.Q_TRAINING:
+            learning_example()
+    

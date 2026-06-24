@@ -12,8 +12,8 @@ from mtggympy.logging_config import ui_log as logger
 
 from mtggympy.helpers.pubsub import DESKTOP_INTENT_QUEUE
 
-import mtggympy.gui.constants as const
-from mtggympy.gui.texture import ImageMetaData
+import mtggympy.api.gui.constants as const
+from mtggympy.api.gui.texture import ImageMetaData
 import mtggympy.gameengine.parsing as engine_parsing
 #from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 #from mtggympy.gameengine.cards.catalog.lands import LandNames

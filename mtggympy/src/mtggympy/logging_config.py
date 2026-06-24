@@ -39,10 +39,10 @@ def create_logger(name: str, logging_level: int, log_to_ui: bool = False) -> log
 
 # Create the loggers ONCE
 main_log   = create_logger("main", logging.ERROR)
-ui_log = create_logger("ui", logging.DEBUG, True)
+ui_log = create_logger("ui", logging.DEBUG)
 dojo_log = create_logger("dojo", logging.ERROR)
-session_log   = create_logger("session", logging.DEBUG)
-desktop_ui_log   = create_logger("dektop-ui", logging.DEBUG, True)
-desktop_api_log   = create_logger("dektop-api", logging.DEBUG, True)
+session_log   = create_logger("session", logging.DEBUG, True)
+desktop_ui_log   = create_logger("dektop-ui", logging.DEBUG)
+desktop_api_log   = create_logger("dektop-api", logging.DEBUG)
 api_log   = create_logger("api", logging.ERROR)
 engine_log   = create_logger("engine", logging.DEBUG, True)
