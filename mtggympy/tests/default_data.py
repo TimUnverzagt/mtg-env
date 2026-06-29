@@ -1,11 +1,11 @@
 from mtggympy.gameengine.constants import GameStep
-from mtggympy.gameengine.state.defaults import PlayerState, get_default_library
-from mtggympy.gameengine.cards.logic.instances import generate_card_instance
+from mtggympy.config.defaults import PlayerState, get_default_library
+from mtggympy.gameengine.cards.instances.types import generate_card_instance
 from collections import defaultdict
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
 from mtggympy.gameengine.state.core import GameState
 
-from mtggympy.app_config import STARTING_LIFE
+from mtggympy.config.app_config import STARTING_LIFE
 
 def get_default_player(name: str) -> PlayerState:
     return PlayerState(

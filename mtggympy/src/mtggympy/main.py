@@ -13,7 +13,7 @@ from mtggympy.dojo.q_learning import QLearner
 #import sys
 
 #from logging_config import main_log
-import mtggympy.app_config as conf
+import mtggympy.config.app_config as conf
 
 def learning_example():
     no_of_episodes: int = 100

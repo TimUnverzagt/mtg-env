@@ -1,13 +1,10 @@
-from __future__ import annotations
-import mtggympy.app_config as conf
-from mtggympy.gameengine.state.core import PlayerState
-from mtggympy.gameengine.cards.logic.instances import CardInstance, generate_card_instance
+
+
+from mtggympy.config.app_config import DECK_SIZE
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
-from mtggympy.app_config import DECK_SIZE
-from collections import defaultdict
-
-from mtggympy.logging_config import engine_log as logger
+from mtggympy.gameengine.cards.instances.types import CardInstance
+from mtggympy.gameengine.cards.instances.factory import generate_card_instance
 
 def get_default_library() -> list[CardInstance]:
     library: list[CardInstance] = []
@@ -18,7 +15,7 @@ def get_default_library() -> list[CardInstance]:
             library.append(generate_card_instance(LandNames.WASTES.value))
     return library
 
-def get_fourty_card_library() -> list[CardInstance]:
+def get_fourty_card_colorless() -> list[CardInstance]:
     library: list[CardInstance] = []
     for i in range(0, 40):
         if i in range(0,18):
@@ -37,20 +34,24 @@ def get_fourty_card_library() -> list[CardInstance]:
             library.append(generate_card_instance(CreatureNames.HEXPLATE_GOLEM.value))
     return library
 
-class Player:
-    def __init__(self, name: str) -> None:
-        logger.info("Setting up the new player {}".format(name))
-        self.info: PlayerState = PlayerState(
-            name = name,
-            current_life = conf.STARTING_LIFE,
-            cards_in_hand = [],
-            cards_in_play=[],
-            cards_in_library = get_fourty_card_library(),
-            death_description = None,
-            floating_mana=defaultdict(lambda: 0)
-        )
+def get_fourty_card_red_green() -> list[CardInstance]:
+    library: list[CardInstance] = []
+    for i in range(0, 40):
+        if i in range(0,9):
+            library.append(generate_card_instance(LandNames.MOUNTAIN.value))
+        if i in range(10,18):
+            library.append(generate_card_instance(LandNames.FOREST.value))
+        if i in range(18,22):
+            library.append(generate_card_instance(CreatureNames.GOBLIN_ASSAILANT.value))
+        if i in range(22,26):
+            library.append(generate_card_instance(CreatureNames.GOBLIN_ROUGHRIDER.value))
+        if i in range(26,30):
+            library.append(generate_card_instance(CreatureNames.BEAR_CUB.value))
+        if i in range(30,34):
+            library.append(generate_card_instance(CreatureNames.BROODHUNTER_WURM.value))
+        if i in range(34,38):
+            library.append(generate_card_instance(CreatureNames.RHOX_BRUTE.value))
+        if i in range(38,40):
+            library.append(generate_card_instance(CreatureNames.RUINATION_WURM.value))
+    return library
 
-    def __str__(self) -> str:
-        return "\n".join([
-            str(self.info)
-        ])

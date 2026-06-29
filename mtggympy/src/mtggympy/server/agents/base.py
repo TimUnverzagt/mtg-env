@@ -8,7 +8,7 @@ from mtggympy.server.session.player_controller import PlayerController
 from mtggympy.helpers.predicate_extensions import build_either_predicate
 
 import time
-import mtggympy.app_config as conf
+import mtggympy.config.app_config as conf
 
 class AgentBase(ABC):
 

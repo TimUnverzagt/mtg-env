@@ -1,5 +1,6 @@
 from __future__ import annotations
-from mtggympy.gameengine.constants import CardType, ManaColor
+from mtggympy.gameengine.cards.manacost import ManaCost
+from mtggympy.gameengine.constants import CardType
 
 SEPERATOR: str = " -- "
 
@@ -14,9 +15,9 @@ class CardInfo:
         ])
     
 class SpellInfo(CardInfo):
-    def __init__(self, name:str, mana_cost: dict[ManaColor, int]):
+    def __init__(self, name:str, mana_cost: ManaCost):
         super().__init__(name)
-        self.mana_cost = mana_cost
+        self.mana_cost: ManaCost = mana_cost
     def __str__(self) -> str:
         return SEPERATOR.join([
             super().__str__(),
@@ -24,7 +25,7 @@ class SpellInfo(CardInfo):
         ])
     
 class CreatureInfo(SpellInfo):
-    def __init__(self, name: str, mana_cost: dict[ManaColor, int], power: int, thoughness: int):
+    def __init__(self, name: str, mana_cost: ManaCost, power: int, thoughness: int):
         super().__init__(name, mana_cost)
         self.type: CardType = CardType.CREATURE
         self.power: int = power

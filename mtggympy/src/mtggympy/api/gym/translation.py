@@ -3,7 +3,7 @@ from mtggympy.api.gym.types import MtgObservation, MtgAction, MtgPlayerObs
 from mtggympy.gameengine.state.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
 
-from mtggympy.logging_config import api_log as logger
+from mtggympy.config.logging_config import api_log as logger
 from mtggympy.server.session.observed_state import ObservedGameState, ObservedSelfState, ObservedOpponentState
 
 def observed_state_to_obs(state: ObservedGameState, agent_position: int) -> MtgObservation:
@@ -24,8 +24,10 @@ def event_to_index(event: PlayerEvent) -> int:
             return 0
         case PlayerEvent.DECLARE_ATTACKS:
             return 1 
-        case PlayerEvent.NO_OP:
+        case PlayerEvent.DECLARE_BLOCKS:
             return 2
+        case PlayerEvent.NO_OP:
+            return 3
 
 def gym_action_to_priority_decision(upcoming_event: PlayerEvent, action: MtgAction) -> ActionIntent:
     logger.debug("Translating for decision [{}]".format(upcoming_event))

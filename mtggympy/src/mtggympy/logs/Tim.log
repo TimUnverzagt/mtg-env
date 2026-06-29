@@ -1,0 +1,381 @@
+2026-06-29 18:07:46,953 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:07:46,956 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:07:46,958 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:07:46,958 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:07:46,958 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:07:53,111 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:07:53,112 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:07:53,112 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:07:53,114 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:07:53,114 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:07:53,118 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:07:53,121 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:07:53,126 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:07:53,126 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:07:53,126 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:07:54,583 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:07:54,583 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:07:54,583 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:07:54,584 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:07:54,584 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:07:54,585 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:07:54,586 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:07:54,587 - Tim - INFO - Tim: Thinking on next event 'DECLARE_ATTACKS'.
+2026-06-29 18:07:54,588 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_ATTACKS for api
+2026-06-29 18:07:54,588 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:07:55,925 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:07:55,925 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:07:55,926 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:07:55,927 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:07:55,927 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:07:55,931 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:07:55,946 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:07:55,949 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:07:55,950 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:07:55,950 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:07:57,209 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:07:57,210 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:07:57,210 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:07:57,211 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:07:57,212 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:07:57,214 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:07:57,239 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:07:57,242 - Tim - INFO - Tim: Thinking on next event 'DECLARE_BLOCKS'.
+2026-06-29 18:07:57,243 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_BLOCKS for api
+2026-06-29 18:07:57,244 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:07:59,473 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:07:59,474 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:07:59,474 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:07:59,475 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:07:59,475 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:07:59,479 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:07:59,488 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:07:59,492 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:07:59,492 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:07:59,492 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:04,717 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:04,717 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:04,717 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:04,718 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:04,718 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:04,721 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:04,725 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:04,728 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:08:04,729 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:08:04,729 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:06,657 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:06,657 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:06,657 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:06,657 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:06,657 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:06,659 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:06,660 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:06,660 - Tim - INFO - Tim: Thinking on next event 'DECLARE_ATTACKS'.
+2026-06-29 18:08:06,661 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_ATTACKS for api
+2026-06-29 18:08:06,661 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:09,108 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:09,108 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:09,108 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:09,109 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:09,110 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:09,113 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:09,120 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:09,124 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:08:09,124 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:08:09,125 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:11,513 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:11,513 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:11,513 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:11,515 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:11,515 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:11,519 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:11,542 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:11,545 - Tim - INFO - Tim: Thinking on next event 'DECLARE_BLOCKS'.
+2026-06-29 18:08:11,546 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_BLOCKS for api
+2026-06-29 18:08:11,546 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:14,952 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:14,952 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:14,952 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:14,953 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:14,953 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:14,955 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:14,959 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:14,960 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:08:14,960 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:08:14,960 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:18,530 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:18,530 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:18,530 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:18,531 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:18,531 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:18,533 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:18,535 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:18,537 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:08:18,538 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:08:18,538 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:20,430 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:20,430 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:20,430 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:20,431 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:20,431 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:20,433 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:20,434 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:20,436 - Tim - INFO - Tim: Thinking on next event 'DECLARE_ATTACKS'.
+2026-06-29 18:08:20,436 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_ATTACKS for api
+2026-06-29 18:08:20,436 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:21,574 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:21,574 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:21,574 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:21,575 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:21,575 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:21,576 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:21,582 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:21,584 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:08:21,584 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:08:21,585 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:23,223 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:23,223 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:23,223 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:23,224 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:23,224 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:23,226 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:23,242 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:23,244 - Tim - INFO - Tim: Thinking on next event 'DECLARE_BLOCKS'.
+2026-06-29 18:08:23,244 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_BLOCKS for api
+2026-06-29 18:08:23,244 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:29,262 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:29,262 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:29,262 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:29,263 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:29,263 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:29,266 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:29,271 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:29,275 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:08:29,275 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:08:29,275 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:41,951 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:41,951 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:41,951 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:41,952 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:41,952 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:41,954 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:41,955 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:41,957 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:08:41,958 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:08:41,958 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:08:54,487 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:08:54,488 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:08:54,488 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:08:54,489 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:08:54,489 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:08:54,491 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:08:54,492 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:08:54,493 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:08:54,494 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:08:54,494 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:09:00,591 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:09:00,591 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:09:00,591 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:09:00,592 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:09:00,592 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:09:00,594 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:09:00,595 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:09:00,596 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:09:00,596 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:09:00,596 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:10:23,657 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:10:23,657 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:10:23,657 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:10:23,657 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:10:23,658 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:10:23,660 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:10:23,661 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:10:23,663 - Tim - INFO - Tim: Thinking on next event 'DECLARE_ATTACKS'.
+2026-06-29 18:10:23,663 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_ATTACKS for api
+2026-06-29 18:10:23,663 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:10:25,280 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:10:25,280 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:10:25,280 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:10:25,281 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:10:25,281 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:10:25,283 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:10:25,288 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:10:25,290 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:10:25,290 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:10:25,291 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:10:27,753 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:10:27,753 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:10:27,753 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:10:27,754 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:10:27,754 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:10:27,756 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:10:27,769 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:10:27,775 - Tim - INFO - Tim: Thinking on next event 'DECLARE_BLOCKS'.
+2026-06-29 18:10:27,775 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_BLOCKS for api
+2026-06-29 18:10:27,775 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:13:04,836 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:13:04,836 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:13:04,836 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:13:04,837 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:13:04,837 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:13:04,841 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:13:04,843 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:13:04,844 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:13:04,845 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:13:04,845 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:13:11,127 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:13:11,127 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:13:11,128 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:13:11,128 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:13:11,128 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:13:11,130 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:13:11,132 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:13:11,134 - Tim - INFO - Tim: Thinking on next event 'DECLARE_ATTACKS'.
+2026-06-29 18:13:11,134 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_ATTACKS for api
+2026-06-29 18:13:11,134 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:13:13,524 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:13:13,524 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:13:13,524 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:13:13,525 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:13:13,525 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:13:13,527 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:13:13,533 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:13:13,535 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:13:13,535 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:13:13,535 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:13:40,105 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:13:40,105 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:13:40,105 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:13:40,106 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:13:40,106 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:13:40,107 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:13:40,109 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:13:40,111 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:13:40,111 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:13:40,111 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:14:02,961 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:14:02,961 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:14:02,961 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:14:02,961 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:14:02,962 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:14:02,963 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:14:02,964 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:14:02,966 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:14:02,967 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:14:02,967 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:14:05,254 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:14:05,255 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:14:05,255 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:14:05,255 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:14:05,255 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:14:05,258 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:14:05,279 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:14:05,280 - Tim - INFO - Tim: Thinking on next event 'DECLARE_BLOCKS'.
+2026-06-29 18:14:05,280 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_BLOCKS for api
+2026-06-29 18:14:05,280 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:14:10,161 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:14:10,161 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:14:10,162 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:14:10,163 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:14:10,163 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:14:10,165 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:14:10,168 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:14:10,170 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:14:10,170 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:14:10,170 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:15:02,258 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:15:02,258 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:15:02,258 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:15:02,258 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:15:02,258 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:15:02,259 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:15:02,260 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:15:02,262 - Tim - INFO - Tim: Thinking on next event 'DECLARE_ATTACKS'.
+2026-06-29 18:15:02,263 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_ATTACKS for api
+2026-06-29 18:15:02,263 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:15:06,718 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:15:06,718 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:15:06,718 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:15:06,719 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:15:06,719 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:15:06,721 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:15:06,726 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:15:06,729 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:15:06,729 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:15:06,729 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:15:13,537 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:15:13,537 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:15:13,538 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:15:13,539 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:15:13,539 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:15:13,541 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:15:13,543 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:15:13,545 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:15:13,546 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:15:13,546 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:15:17,615 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:15:17,615 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:15:17,615 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:15:17,616 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:15:17,616 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:15:17,618 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:15:17,620 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:15:17,624 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:15:17,624 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:15:17,624 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:15:23,995 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:15:23,995 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:15:23,995 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:15:23,996 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:15:23,996 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:15:23,998 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:15:24,000 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:15:24,002 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:15:24,002 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:15:24,003 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:15:27,094 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:15:27,094 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:15:27,094 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:15:27,095 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:15:27,095 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:15:27,098 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:15:27,099 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:15:27,103 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:15:27,103 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:15:27,103 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:15:29,033 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:15:29,034 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:15:29,034 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:15:29,034 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:15:29,035 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:15:29,037 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:15:29,048 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:15:29,055 - Tim - INFO - Tim: Thinking on next event 'DECLARE_BLOCKS'.
+2026-06-29 18:15:29,055 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_BLOCKS for api
+2026-06-29 18:15:29,055 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:15:32,936 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:15:32,936 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:15:32,936 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:15:32,938 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:15:32,938 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:15:32,939 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:15:32,942 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:15:32,944 - Tim - INFO - Tim: Thinking on next event 'MAINPHASE_EMPTY_STACK'.
+2026-06-29 18:15:32,944 - Tim - DEBUG - Serving decision PlayerEvent.MAINPHASE_EMPTY_STACK for api
+2026-06-29 18:15:32,944 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:15:44,281 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:15:44,281 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:15:44,281 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:15:44,281 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:15:44,281 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:15:44,283 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)
+2026-06-29 18:15:44,285 - Tim - DEBUG - Set prior state and waiting for processing
+2026-06-29 18:15:44,286 - Tim - INFO - Tim: Thinking on next event 'DECLARE_ATTACKS'.
+2026-06-29 18:15:44,286 - Tim - DEBUG - Serving decision PlayerEvent.DECLARE_ATTACKS for api
+2026-06-29 18:15:44,286 - Tim - DEBUG - Waiting declaration of intent from api
+2026-06-29 18:15:49,768 - Tim - DEBUG - Declaration of intent received and consumed
+2026-06-29 18:15:49,769 - Tim - INFO - Tim: Decided on action 'None'.
+2026-06-29 18:15:49,769 - Tim - INFO - Tim: Set intent in controller
+2026-06-29 18:15:49,770 - Tim - DEBUG - Tim: Waiting for response from game session.
+2026-06-29 18:15:49,770 - Tim - DEBUG - Set posteriori state and waiting for processing
+2026-06-29 18:15:49,772 - Tim - DEBUG - Tim: Waiting for my turn to act. (Signaled by session setting prior_state)

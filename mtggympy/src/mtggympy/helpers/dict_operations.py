@@ -3,7 +3,7 @@ from typing import TypeVar
 T = TypeVar("T")
 S = TypeVar("S")
 
-def first_dict_can_fit_second_by_value(first: dict[T, int], second: dict[T, int]) -> bool:
+def can_fit_second_dict_into_first_by_value(first: dict[T, int], second: dict[T, int]) -> bool:
     fits_so_far: bool = True
     for key in second:
         if not first.get(key):

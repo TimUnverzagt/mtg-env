@@ -4,17 +4,17 @@ from mtggympy.gameengine.state.core import GameState
 from mtggympy.server.session.player_controller import PlayerController
 import mtggympy.gameengine.transition as GameEngine
 #from game.state import GameState
-from mtggympy.gameengine.state.defaults import PlayerState
+from mtggympy.config.defaults import PlayerState
 from mtggympy.server.session.obfuscation import observe_game_state
 
 import time
 from functools import reduce
 from typing import Optional
 import operator
-import mtggympy.app_config as conf
+import mtggympy.config.app_config as conf
 from copy import deepcopy
 
-from mtggympy.logging_config import session_log as logger
+from mtggympy.config.logging_config import session_log as logger
 
 def get_next_step(previous_step: GameStep, intent: ActionIntent) -> GameStep:
     match previous_step:
@@ -75,13 +75,13 @@ class MultiClientSession():
             last_timestamp = time.time()
             if (delta_t < conf.SESSION_TICK_LENGTH):
                 time.sleep(max(conf.SESSION_TICK_LENGTH - delta_t, 0))
-            logger.debug("SessionTick: Running GameLoop")
 
             seats_filled: bool = reduce(operator.and_ ,map(lambda seat: seat is not None, self.seats), True)
             if not seats_filled: 
                 logger.debug("Waiting for more players...")
                 continue
 
+            logger.debug("SessionTick: Running GameLoop")
             step_success: bool
             target_seat: int 
             match self.game_state.step:

@@ -6,9 +6,9 @@ from queue import Empty
 from imgui_bundle import imgui, ImVec2, ImVec4
 from imgui_bundle.imgui import ImTextureRef
 
-import mtggympy.app_config as conf
-from mtggympy.logging_config import UI_LOG_QUEUE
-from mtggympy.logging_config import ui_log as logger
+import mtggympy.config.app_config as conf
+from mtggympy.config.logging_config import UI_LOG_QUEUE
+from mtggympy.config.logging_config import ui_log as logger
 
 from mtggympy.helpers.pubsub import DESKTOP_INTENT_QUEUE
 
@@ -20,7 +20,8 @@ import mtggympy.gameengine.parsing as engine_parsing
 from mtggympy.gameengine.cards.catalog.lookup import FACEDOWN_CARD_NAME
 from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEvent, event_from_step
 from mtggympy.gameengine.constants import CardType, ManaColor
-from mtggympy.gameengine.cards.logic.instances import CardInstance, CreatureInstance, generate_card_instance
+from mtggympy.gameengine.cards.instances.types import CardInstance, CreatureInstance
+from mtggympy.gameengine.cards.instances.factory import generate_card_instance
 
 from mtggympy.server.session.observed_state import ObservedGameState, ObservedSelfState, ObservedOpponentState
 @dataclass

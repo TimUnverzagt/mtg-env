@@ -2,9 +2,9 @@
 from logging import Logger
 
 from mtggympy.gameengine.constants import CardType
-from mtggympy.gameengine.cards.logic.instances import CardInstance, CreatureInstance, LandInstance
-from mtggympy.helpers.dict_operations import first_dict_can_fit_second_by_value
-from mtggympy.server.agents.abstractions.base import AgentBase
+from mtggympy.gameengine.cards.instances.types import CardInstance, CreatureInstance, LandInstance
+from mtggympy.gameengine.transition import can_pay_cost
+from mtggympy.server.agents.base import AgentBase
 
 from mtggympy.server.session.multi_client import MultiClientSession as GameSession
 from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEvent
@@ -58,7 +58,7 @@ class RulesBasedAgent(AgentBase):
         for idx, card in enumerate(state.self_state.cards_in_hand):
             if not isinstance(card, CreatureInstance):
                 continue
-            if not first_dict_can_fit_second_by_value(state.self_state.floating_mana, card.mana_cost):
+            if not can_pay_cost(state.self_state.floating_mana, card.mana_cost):
                 continue
             return ActionIntent(ActionData.PLAY_CARD, np.array(idx))
         return ActionIntent(ActionData.PASS, None)

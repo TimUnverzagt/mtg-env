@@ -14,7 +14,7 @@ from collections import defaultdict
 
 from pygame.time import Clock
 
-import mtggympy.app_config as conf
+import mtggympy.config.app_config as conf
 from mtggympy.gameengine.constants import GameStep
 import mtggympy.api.gui.layout.myimgui as layout
 import mtggympy.api.gui.constants as const
@@ -23,7 +23,7 @@ from mtggympy.gameengine.state.core import GameState, PlayerState
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
 import mtggympy.gameengine.cards.catalog.lookup as lookup
-from mtggympy.gameengine.cards.logic.instances import generate_card_instance
+from mtggympy.gameengine.cards.instances.factory import generate_card_instance
 from mtggympy.server.session.obfuscation import observe_game_state
 from mtggympy.server.session.observed_state import ObservedGameState
     

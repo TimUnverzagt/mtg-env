@@ -3,8 +3,8 @@ from threading import Thread, Condition
 
 from mtggympy.gameengine.state.event import ActionIntent
 from mtggympy.helpers.predicate_extensions import build_either_predicate
-from mtggympy.logging_config import desktop_ui_log as ui_logger
-from mtggympy.logging_config import desktop_api_log as api_logger
+from mtggympy.config.logging_config import desktop_ui_log as ui_logger
+from mtggympy.config.logging_config import desktop_api_log as api_logger
 
 from mtggympy.server.agents.console import ConsoleAgent
 from mtggympy.server.agents.external import ApiAgent

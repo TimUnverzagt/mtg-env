@@ -2,7 +2,7 @@ from logging import Logger
 
 from mtggympy.server.session.multi_client import MultiClientSession as GameSession
 from mtggympy.gameengine.state.event import ActionIntent
-from mtggympy.server.agents.abstractions.base import AgentBase
+from mtggympy.server.agents.base import AgentBase
 from threading import Condition
 
 from mtggympy.server.session.observed_state import ObservedGameState

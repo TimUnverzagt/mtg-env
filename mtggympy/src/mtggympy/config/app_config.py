@@ -16,7 +16,7 @@ CURRENT_SETUP: Setup = Setup.HUMAN_VS_INTERNALS
 ###############
 # file --> config --> module --> src
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ASSET_DIR = os.path.join(SRC_DIR, "assets")
+ASSET_DIR = os.path.join(os.path.join(SRC_DIR, ".."), "assets")
 PLAYER_LOG_LEVEL: int = logging.DEBUG
 
 ###############

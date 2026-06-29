@@ -3,9 +3,9 @@ from logging import Logger
 from mtggympy.server.session.multi_client import MultiClientSession as GameSession
 from mtggympy.gameengine.state.event import ActionData, ActionIntent, EventData
 #import environment.constants as EnvConsts
-from mtggympy.server.agents.abstractions.base import AgentBase
+from mtggympy.server.agents.base import AgentBase
 
-from mtggympy.logging_config import main_log
+from mtggympy.config.logging_config import main_log
 import random
 import sys
 import numpy as np

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from mtggympy.gameengine.state.defaults import PlayerState
+from mtggympy.config.defaults import PlayerState
 from mtggympy.gameengine.state.event import ActionIntent
 from mtggympy.gameengine.state.core import GameState
 from threading import Condition
 from logging import Logger
-from mtggympy.logging_config import create_logger
-import mtggympy.app_config as app_config
+from mtggympy.config.logging_config import create_logger
+import mtggympy.config.app_config as app_config
 from mtggympy.server.session.observed_state import ObservedGameState
 
 

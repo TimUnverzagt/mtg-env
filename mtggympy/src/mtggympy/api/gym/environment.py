@@ -5,7 +5,7 @@ from threading import Thread
 from gymnasium.spaces import Discrete, Tuple, MultiDiscrete
 from typing import Optional, TypeVar, Any, cast
 
-import mtggympy.app_config as app_const
+import mtggympy.config.app_config as app_const
 #import game.engine as MtgEngine
 from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent
 from mtggympy.gameengine.state.core import GameState
@@ -13,13 +13,13 @@ from mtggympy.server.session.multi_client import MultiClientSession as MtgSessio
 from mtggympy.server.session.player_controller import PlayerController
 from mtggympy.server.agents.simple import Goldfish #, Monkey
 from mtggympy.server.agents.external import ApiAgent
-from mtggympy.server.agents.abstractions.base import AgentBase as Agent
+from mtggympy.server.agents.base import AgentBase as Agent
 from mtggympy.api.gym.types import MtgObservation, MtgInfo, MtgAction
 from mtggympy.api.gym.translation import gym_action_to_priority_decision, observed_state_to_obs
 from mtggympy.helpers.tree_map import tree_map
 from mtggympy.helpers.predicate_extensions import build_either_predicate
 
-from mtggympy.logging_config import api_log as logger
+from mtggympy.config.logging_config import api_log as logger
 
 
 ObsType = TypeVar("ObsType")

@@ -1,18 +1,16 @@
 
 from mtggympy.gameengine.constants import CardType
-from mtggympy.gameengine.cards.logic.instances import CardInstance, CreatureInstance
+from mtggympy.gameengine.cards.instances.types import CardInstance, CreatureInstance
 from mtggympy.gameengine.state.event import ActionIntent
 from mtggympy.gameengine.state.core import GameState
 
-from mtggympy.logging_config import engine_log as logger
+from mtggympy.config.logging_config import engine_log as logger
 
 import numpy as np
 
 def collection_to_numpy(collection_args: list[list[int]]) -> np.ndarray:
     intent_array: np.ndarray = np.array(collection_args)
-    print(intent_array)
-    print(intent_array.shape)
-    return np.array(collection_args)
+    return np.array(intent_array)
 
 
 def card_for_playing(acting_seat: int, intent: ActionIntent, game_state: GameState) -> CardInstance | None:

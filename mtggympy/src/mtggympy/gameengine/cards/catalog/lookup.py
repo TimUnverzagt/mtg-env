@@ -1,7 +1,8 @@
 from mtggympy.gameengine.cards.catalog.info import CardInfo, SpellInfo, CreatureInfo
 from mtggympy.gameengine.cards.catalog.lands import LAND_CATALOG
 from mtggympy.gameengine.cards.catalog.creatures import CREATURE_CATALOG
-from mtggympy.gameengine.constants import CardType, ManaColor
+from mtggympy.gameengine.cards.manacost import ManaCost
+from mtggympy.gameengine.constants import CardType
 
 FACEDOWN_CARD_NAME = "facedown"
 
@@ -20,7 +21,7 @@ def card_type(name:str) -> CardType:
     except:
         return CardType.UNKNOWN
 
-def mana_cost(name:str) -> dict[ManaColor, int] | None:
+def mana_cost(name:str) -> ManaCost | None:
     info: CardInfo
     try:
         info = FULL_CATALOG[name]

@@ -3,20 +3,21 @@ from collections import defaultdict
 
 import random
 from uuid import UUID
+from mtggympy.gameengine.cards.manacost import ManaCost
 from mtggympy.gameengine.constants import GameStep, ManaColor
 import mtggympy.gameengine.constants as const
-from mtggympy.gameengine.state.defaults import Player
+from mtggympy.config.defaults import Player
 from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent, ActionData
-from mtggympy.gameengine.cards.logic.instances import CardInstance, CreatureInstance, LandInstance
+from mtggympy.gameengine.cards.instances.types import CardInstance, CreatureInstance, LandInstance, SpellInstance
 from mtggympy.gameengine.state.core import GameState, PlayerState, is_player_alive
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
-from mtggympy.gameengine.cards.logic.capabilities import ManaProvider
+from mtggympy.gameengine.cards.instances.capabilities import ManaProvider
 import mtggympy.gameengine.parsing as parse
 
-from mtggympy.helpers.dict_operations import first_dict_can_fit_second_by_value
+from mtggympy.helpers.dict_operations import can_fit_second_dict_into_first_by_value
 from typing import Callable, Generic, ParamSpec, TypeVar, Any, Concatenate
 
-from mtggympy.logging_config import engine_log as logger
+from mtggympy.config.logging_config import engine_log as logger
 
 
 ##################################    
@@ -129,9 +130,9 @@ def play_card(acting_seat: int, game_state:GameState, card: CardInstance) -> boo
     battlefield: list[CardInstance] = player_state.cards_in_play
     floating_mana: dict[ManaColor, int] = player_state.floating_mana
 
-    if isinstance(card, CreatureInstance):
+    if isinstance(card, SpellInstance):
         assert card.mana_cost is not None
-        if not first_dict_can_fit_second_by_value(floating_mana, card.mana_cost):
+        if not can_pay_cost(floating_mana, card.mana_cost):
             logger.error("{} is trying to play {} without having enough mana. Refusing to process intent".format(
                 player_state.name, card.card_name
             ))
@@ -139,9 +140,22 @@ def play_card(acting_seat: int, game_state:GameState, card: CardInstance) -> boo
             logger.debug("Required mana: {}".format(card.mana_cost))
             logger.debug("Cards in hand: {}".format(list(map(lambda card: card.card_name, hand))))
             return False
-        for color in card.mana_cost:
-            floating_mana[color] -= card.mana_cost[color]
-        card.summoning_sick = True
+        for color, value in card.mana_cost.fixed_cost.items():
+            floating_mana[color] -= value
+        remaining_cost: int = card.mana_cost.generic_cost 
+        for color, value in floating_mana.items():
+            if value <= remaining_cost:
+                floating_mana[color] = 0
+                remaining_cost -= value
+            else:
+                floating_mana[color] -= remaining_cost
+                remaining_cost = 0
+        if remaining_cost > 0:
+            logger.error("{} trying to pay for {} failed because not enough mana was present for the generic cost. Refusing to process intent".format(
+                player_state.name, card.card_name
+            ))
+        if isinstance(card, CreatureInstance):
+            card.summoning_sick = True
     if isinstance(card, LandInstance):
         if game_state.lands_played_this_turn >= 1:
             logger.error("{} is trying to play with {} prior land drops. Refusing to process intent".format(
@@ -238,6 +252,17 @@ def deal_damage_to_creature(acting_seat: int, game_state: GameState, target_crea
 ##################################
 # Misc
 ##################################
+
+def can_pay_cost(available_mana: dict[ManaColor, int], mana_cost: ManaCost) -> bool:
+    fixed_cost_payable: bool = can_fit_second_dict_into_first_by_value(available_mana, mana_cost.fixed_cost)
+    if not fixed_cost_payable:
+        return False
+    remaining_mana: int = 0
+    for color, value in available_mana.items():
+        remaining_mana += value - mana_cost.fixed_cost[color]
+    if remaining_mana < mana_cost.generic_cost:
+        return False
+    return True
 
 def get_initial_game_state() -> GameState:
     player1: Player = Player("Player1")

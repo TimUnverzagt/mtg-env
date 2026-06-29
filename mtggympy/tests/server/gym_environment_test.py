@@ -6,7 +6,7 @@ from mtggympy.server.session.player_controller import PlayerController
 import mtggympy.api.gym.translation as translation
 from mtggympy.api.gym.environment import MtgEnv, MtgObservation
 
-from mtggympy.app_config import DECK_SIZE, STARTING_LIFE
+from mtggympy.config.app_config import DECK_SIZE, STARTING_LIFE
 
 from tests.default_data import get_default_game_state
 

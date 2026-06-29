@@ -1,0 +1,68 @@
+2026-06-29 18:07:46,843 - engine - INFO - Setting up the new player Player1
+2026-06-29 18:07:46,843 - engine - INFO - Setting up the new player Player2
+2026-06-29 18:07:46,954 - engine - INFO - Tim will skip their draw on the first turn
+2026-06-29 18:07:55,926 - engine - WARNING - Turn 0/2: Tim is attacking!
+2026-06-29 18:07:55,942 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:07:57,216 - engine - INFO - Opp-RulesBased will draw a card for turn
+2026-06-29 18:07:57,218 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:07:57,236 - engine - WARNING - Turn 1/2: Opp-RulesBased is attacking!
+2026-06-29 18:07:59,475 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:07:59,486 - engine - INFO - Tim will draw a card for turn
+2026-06-29 18:07:59,486 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:08:09,109 - engine - WARNING - Turn 2/2: Tim is attacking!
+2026-06-29 18:08:09,117 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:08:11,521 - engine - INFO - Opp-RulesBased will draw a card for turn
+2026-06-29 18:08:11,521 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:08:11,540 - engine - WARNING - Turn 3/2: Opp-RulesBased is attacking!
+2026-06-29 18:08:14,952 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:08:14,958 - engine - INFO - Tim will draw a card for turn
+2026-06-29 18:08:14,958 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:08:21,574 - engine - WARNING - Turn 4/2: Tim is attacking!
+2026-06-29 18:08:21,579 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:08:23,228 - engine - INFO - Opp-RulesBased will draw a card for turn
+2026-06-29 18:08:23,228 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:08:23,241 - engine - WARNING - Turn 5/2: Opp-RulesBased is attacking!
+2026-06-29 18:08:29,263 - engine - DEBUG - bear-cub(c9c4f248-95b3-4a21-9769-ea625601c297) was not blocked and will deal 2 damage to defendig player.
+2026-06-29 18:08:29,263 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:08:29,270 - engine - INFO - Tim will draw a card for turn
+2026-06-29 18:08:29,270 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:10:25,280 - engine - WARNING - Turn 6/2: Tim is attacking!
+2026-06-29 18:10:25,286 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:10:27,757 - engine - INFO - Opp-RulesBased will draw a card for turn
+2026-06-29 18:10:27,757 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:10:27,768 - engine - WARNING - Turn 7/2: Opp-RulesBased is attacking!
+2026-06-29 18:13:04,837 - engine - DEBUG - bear-cub(c9c4f248-95b3-4a21-9769-ea625601c297) was blocked by ['rhox-brute(a3e7ecd3-d515-42c9-a1c5-f0bfbd4abfdf)'].
+2026-06-29 18:13:04,837 - engine - DEBUG - goblin-assailant(af75eccd-bc1a-4d2a-a8d2-2588dcb8d0dc) was not blocked and will deal 2 damage to defendig player.
+2026-06-29 18:13:04,837 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:13:04,843 - engine - INFO - Tim will draw a card for turn
+2026-06-29 18:13:04,843 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:13:13,524 - engine - WARNING - Turn 8/2: Tim is attacking!
+2026-06-29 18:13:13,530 - engine - DEBUG - rhox-brute(a3e7ecd3-d515-42c9-a1c5-f0bfbd4abfdf) was not blocked and will deal 4 damage to defendig player.
+2026-06-29 18:13:13,530 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:14:05,260 - engine - INFO - Opp-RulesBased will draw a card for turn
+2026-06-29 18:14:05,260 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:14:05,276 - engine - WARNING - Turn 9/2: Opp-RulesBased is attacking!
+2026-06-29 18:14:10,162 - engine - DEBUG - goblin-assailant(af75eccd-bc1a-4d2a-a8d2-2588dcb8d0dc) was blocked by ['broodhunter-wurm(67b5246e-a6bc-427f-aa97-28c5e3da6838)'].
+2026-06-29 18:14:10,162 - engine - DEBUG - goblin-roughrider(68747f88-5cae-482e-8622-e091af7bac2d) was not blocked and will deal 3 damage to defendig player.
+2026-06-29 18:14:10,162 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:14:10,168 - engine - INFO - Tim will draw a card for turn
+2026-06-29 18:14:10,168 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:15:06,719 - engine - WARNING - Turn 10/2: Tim is attacking!
+2026-06-29 18:15:06,724 - engine - DEBUG - rhox-brute(a3e7ecd3-d515-42c9-a1c5-f0bfbd4abfdf) was not blocked and will deal 4 damage to defendig player.
+2026-06-29 18:15:06,724 - engine - DEBUG - broodhunter-wurm(67b5246e-a6bc-427f-aa97-28c5e3da6838) was not blocked and will deal 4 damage to defendig player.
+2026-06-29 18:15:06,724 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:15:29,038 - engine - INFO - Opp-RulesBased will draw a card for turn
+2026-06-29 18:15:29,038 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:15:29,047 - engine - WARNING - Turn 11/2: Opp-RulesBased is attacking!
+2026-06-29 18:15:32,937 - engine - DEBUG - goblin-roughrider(68747f88-5cae-482e-8622-e091af7bac2d) was blocked by ['bear-cub(3f3a3d8e-6b45-45d8-8501-cadb949b8a09)'].
+2026-06-29 18:15:32,937 - engine - DEBUG - bear-cub(4eb495b9-b094-4e4c-bea9-1a924a93c51a) was not blocked and will deal 2 damage to defendig player.
+2026-06-29 18:15:32,937 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:15:32,942 - engine - INFO - Tim will draw a card for turn
+2026-06-29 18:15:32,942 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:15:49,769 - engine - WARNING - Turn 12/2: Tim is attacking!
+2026-06-29 18:15:49,774 - engine - DEBUG - rhox-brute(a3e7ecd3-d515-42c9-a1c5-f0bfbd4abfdf) was not blocked and will deal 4 damage to defendig player.
+2026-06-29 18:15:49,774 - engine - DEBUG - broodhunter-wurm(67b5246e-a6bc-427f-aa97-28c5e3da6838) was not blocked and will deal 4 damage to defendig player.
+2026-06-29 18:15:49,774 - engine - DEBUG - Checking state-based effects
+2026-06-29 18:15:49,774 - engine - WARNING - Opp-RulesBased died by having 0 or less life.
+2026-06-29 18:15:49,774 - engine - INFO - Game ended by death of player(s)
+2026-06-29 18:15:49,774 - engine - INFO - Tim won by survival

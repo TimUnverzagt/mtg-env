@@ -1,13 +1,9 @@
-from mtggympy.gameengine.cards.logic.instances import CardInstance
+from mtggympy.gameengine.cards.instances.types import CardInstance
 from mtggympy.gameengine.constants import ManaColor, GameStep
 from mtggympy.gameengine.constants import ManaColor
 from dataclasses import dataclass
 from typing import Optional
 
-
-    
-
-    
 @dataclass
 class PlayerState:
     name: str
@@ -24,7 +20,7 @@ class PlayerState:
             "Current Life: {}".format(self.current_life),
             "Cards in Hand:",
             " | ".join(map(CardInstance.__str__, self.cards_in_hand)),
-            "Cards in Library: {}".format(self.cards_in_library)
+            "Cards in Library: {}".format(len(self.cards_in_library))
         ])
 
 @dataclass
