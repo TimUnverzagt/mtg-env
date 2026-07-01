@@ -1,4 +1,4 @@
-from mtggympy.gameengine.cards.catalog.info import CardInfo, CreatureInfo, LandInfo, SpellInfo
+from mtggympy.gameengine.cards.catalog.info import CardInfo, CreatureInfo, LandInfo, SpellInfo, SorceryInfo
 from mtggympy.gameengine.cards.instances.capabilities import ActiveGameElement
 from mtggympy.gameengine.cards.manacost import ManaCost
 from uuid import UUID, uuid4
@@ -24,6 +24,10 @@ class SpellInstance(CardInstance):
     def __init__(self, info: SpellInfo) -> None:
         super().__init__(info)
         self.mana_cost: ManaCost = info.mana_cost
+
+class SorceryInstance(SpellInstance):
+    def __init__(self, info: SorceryInfo) -> None:
+        super().__init__(info)
 
 class LandInstance(CardInstance):
     def __init__(self, info: LandInfo) -> None:

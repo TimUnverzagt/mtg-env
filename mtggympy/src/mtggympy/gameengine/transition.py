@@ -4,14 +4,13 @@ from collections import defaultdict
 import random
 from uuid import UUID
 from mtggympy.gameengine.cards.manacost import ManaCost
-from mtggympy.gameengine.constants import GameStep, ManaColor
+from mtggympy.gameengine.constants import ManaColor
 import mtggympy.gameengine.constants as const
-from mtggympy.config.defaults import Player
 from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent, ActionData
 from mtggympy.gameengine.cards.instances.types import CardInstance, CreatureInstance, LandInstance, SpellInstance
 from mtggympy.gameengine.state.core import GameState, PlayerState, is_player_alive
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames as CreatureNames
-from mtggympy.gameengine.cards.instances.capabilities import ManaProvider
+from mtggympy.gameengine.cards.instances.capabilities import ManaProvider, ResolutionEffect
 import mtggympy.gameengine.parsing as parse
 
 from mtggympy.helpers.dict_operations import can_fit_second_dict_into_first_by_value
@@ -157,14 +156,18 @@ def play_card(acting_seat: int, game_state:GameState, card: CardInstance) -> boo
         if isinstance(card, CreatureInstance):
             card.summoning_sick = True
     if isinstance(card, LandInstance):
-        if game_state.lands_played_this_turn >= 1:
-            logger.error("{} is trying to play with {} prior land drops. Refusing to process intent".format(
-                player_state.name, game_state.lands_played_this_turn
+        legal_land_drops: int = 1 + player_state.additional_land_drops
+        if game_state.lands_played_this_turn >= legal_land_drops:
+            logger.error("{} is trying to play with {} of {} prior land drops. Refusing to process intent".format(
+                player_state.name, game_state.lands_played_this_turn, legal_land_drops
             ))
             return False
-        game_state.lands_played_this_turn += 1        
+        game_state.lands_played_this_turn += 1    
+    if isinstance(card, ResolutionEffect):
+        card.resolve(game_state, acting_seat)    
     hand.remove(card)
-    battlefield.append(card)
+    if isinstance(card, CreatureInstance) or isinstance(card,LandInstance):
+        battlefield.append(card)
     return True
 
 def attack(acting_seat: int, game_state: GameState, target_creatures: list[CreatureInstance]) -> bool:
@@ -264,25 +267,6 @@ def can_pay_cost(available_mana: dict[ManaColor, int], mana_cost: ManaCost) -> b
         return False
     return True
 
-def get_initial_game_state() -> GameState:
-    player1: Player = Player("Player1")
-    shuffle_cards(player1.info.cards_in_library)
-    player2: Player = Player("Player2")
-    shuffle_cards(player2.info.cards_in_library)
-    game_state: GameState = GameState(
-        halfturns_completed = 0,
-        active_player_index = 0,
-        game_over = False,
-        step=GameStep.UPKEEP,
-        player_states = [player1.info, player2.info],
-        winner_positions=[],
-        lands_played_this_turn=0
-    )
-    for _ in range(0,7):
-        draw_card(0, game_state)
-        draw_card(1, game_state)
-    return game_state
-
 def shuffle_cards(cards: list[CardInstance], seed: int | None = None) -> None:
     if seed:
         random.seed(seed)
@@ -302,6 +286,7 @@ def pass_turn(game_state: GameState) -> bool:
     game_state.active_player_index = next_active_seat
     game_state.lands_played_this_turn = 0
     for player_state in game_state.player_states:
+        player_state.additional_land_drops = 0
         creatures: list[CardInstance] = list(filter(lambda card: isinstance(card, CreatureInstance),player_state.cards_in_play))
         for creature in creatures:
             assert isinstance(creature, CreatureInstance)

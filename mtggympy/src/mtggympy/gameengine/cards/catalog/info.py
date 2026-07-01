@@ -24,6 +24,10 @@ class SpellInfo(CardInfo):
             "MV: " + str(self.mana_cost)
         ])
     
+class SorceryInfo(SpellInfo):
+    def __init__(self, name:str, mana_cost: ManaCost):
+        super().__init__(name, mana_cost)
+
 class CreatureInfo(SpellInfo):
     def __init__(self, name: str, mana_cost: ManaCost, power: int, thoughness: int):
         super().__init__(name, mana_cost)

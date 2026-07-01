@@ -16,7 +16,8 @@ class Player:
             cards_in_play=[],
             cards_in_library = decks.get_fourty_card_red_green(),
             death_description = None,
-            floating_mana=defaultdict(lambda: 0)
+            floating_mana=defaultdict(lambda: 0),
+            additional_land_drops=0
         )
 
     def __str__(self) -> str:

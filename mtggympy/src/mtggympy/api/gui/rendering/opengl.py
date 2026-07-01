@@ -22,6 +22,7 @@ from mtggympy.api.gui.texture import ImageMetaData
 from mtggympy.gameengine.state.core import GameState, PlayerState
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
+from mtggympy.gameengine.cards.catalog.info import CreatureInfo, LandInfo
 import mtggympy.gameengine.cards.catalog.lookup as lookup
 from mtggympy.gameengine.cards.instances.factory import generate_card_instance
 from mtggympy.server.session.obfuscation import observe_game_state
@@ -65,14 +66,11 @@ class GlRenderer():
         cardback: Surface = load_card_image(lookup.FACEDOWN_CARD_NAME)
         self.image_assets[lookup.FACEDOWN_CARD_NAME] = self.add_texture_to_gl(cardback)
 
-        for name in CreatureNames:
-            card_surface:Surface = load_card_image(name.value)
-            self.image_assets[name.value] = self.add_texture_to_gl(card_surface)
-            self.image_assets[name.value + const.TAPPED_MODIFIER] = self.add_texture_to_gl(pygame.transform.rotate(card_surface, 270.0))
-        for name in LandNames:
-            card_surface:Surface = load_card_image(name.value)
-            self.image_assets[name.value] = self.add_texture_to_gl(card_surface)
-            self.image_assets[name.value + const.TAPPED_MODIFIER] = self. add_texture_to_gl(pygame.transform.rotate(card_surface, 270.0))
+        for name, info in lookup.FULL_CATALOG.items():
+            card_surface:Surface = load_card_image(name)
+            self.image_assets[name] = self.add_texture_to_gl(card_surface)
+            if isinstance(info, CreatureInfo) or isinstance(info, LandInfo):
+                self.image_assets[name + const.TAPPED_MODIFIER] = self.add_texture_to_gl(pygame.transform.rotate(card_surface, 270.0))
 
     def _del_from_thread(self):
         pygame.quit()
@@ -149,7 +147,8 @@ if __name__ == "__main__":
                                                        generate_card_instance(CreatureNames.SLIVER_CONSTRUCT.value),
                                                        generate_card_instance(CreatureNames.SLIVER_CONSTRUCT.value)],
                                      death_description=None,
-                                     floating_mana=defaultdict(lambda: 0))
+                                     floating_mana=defaultdict(lambda: 0),
+                                     additional_land_drops=0)
     p2_info: PlayerState = PlayerState("Bob",
                                      current_life=20,
                                      cards_in_hand=[generate_card_instance(CreatureNames.ALPHA_MYR.value),
@@ -167,7 +166,8 @@ if __name__ == "__main__":
                                                        generate_card_instance(CreatureNames.METALLIC_SLIVER.value),
                                                        generate_card_instance(CreatureNames.METALLIC_SLIVER.value)],
                                      death_description=None,
-                                     floating_mana=defaultdict(lambda: 0))
+                                     floating_mana=defaultdict(lambda: 0),
+                                     additional_land_drops= 0)
     current_state: GameState = GameState(halfturns_completed=2, 
               active_player_index=0, 
               game_over=False,

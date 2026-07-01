@@ -3,6 +3,7 @@
 from mtggympy.config.app_config import DECK_SIZE
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
+from mtggympy.gameengine.cards.catalog.sorceries import SorceryNames
 from mtggympy.gameengine.cards.instances.types import CardInstance
 from mtggympy.gameengine.cards.instances.factory import generate_card_instance
 
@@ -47,9 +48,11 @@ def get_fourty_card_red_green() -> list[CardInstance]:
             library.append(generate_card_instance(CreatureNames.GOBLIN_ROUGHRIDER.value))
         if i in range(26,30):
             library.append(generate_card_instance(CreatureNames.BEAR_CUB.value))
-        if i in range(30,34):
+        if i in range(30,33):
             library.append(generate_card_instance(CreatureNames.BROODHUNTER_WURM.value))
-        if i in range(34,38):
+        if i in range(33,35):
+            library.append(generate_card_instance(SorceryNames.EXPLORE.value))
+        if i in range(35,38):
             library.append(generate_card_instance(CreatureNames.RHOX_BRUTE.value))
         if i in range(38,40):
             library.append(generate_card_instance(CreatureNames.RUINATION_WURM.value))

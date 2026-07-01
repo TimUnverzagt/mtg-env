@@ -15,7 +15,8 @@ def get_default_player(name: str) -> PlayerState:
     cards_in_library=get_default_library(),
     cards_in_play=[],
     death_description=None,
-    floating_mana=defaultdict(lambda: 0)
+    floating_mana=defaultdict(lambda: 0),
+    additional_land_drops=0
 )
 def get_default_game_state() -> GameState:
     return GameState(

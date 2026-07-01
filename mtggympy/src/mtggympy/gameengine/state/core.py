@@ -13,6 +13,7 @@ class PlayerState:
     cards_in_library: list[CardInstance]
     death_description: Optional[str]
     floating_mana: dict[ManaColor, int]
+    additional_land_drops: int
 
     def __str__(self) -> str:
         return "\n".join([

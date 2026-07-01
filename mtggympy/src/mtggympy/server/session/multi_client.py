@@ -1,6 +1,7 @@
 from mtggympy.gameengine.constants import GameStep
 from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEvent, event_from_step
 from mtggympy.gameengine.state.core import GameState
+from mtggympy.gameengine.state.initial import get_initial_game_state
 from mtggympy.server.session.player_controller import PlayerController
 import mtggympy.gameengine.transition as GameEngine
 #from game.state import GameState
@@ -38,7 +39,7 @@ def get_next_step(previous_step: GameStep, intent: ActionIntent) -> GameStep:
 class MultiClientSession():
 
     def __init__(self) -> None:
-        self.game_state = GameEngine.get_initial_game_state()
+        self.game_state = get_initial_game_state()
         self.seats: list[Optional[PlayerController]] = [None, None]
         self.vis: None = None
         if conf.HUMAN_RENDERING:

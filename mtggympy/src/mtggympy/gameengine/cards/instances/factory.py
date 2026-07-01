@@ -2,7 +2,9 @@
 from mtggympy.gameengine.cards.catalog import lookup
 from mtggympy.gameengine.cards.catalog.info import CardInfo, CreatureInfo, LandInfo
 from mtggympy.gameengine.cards.catalog.lands import LandNames
+from mtggympy.gameengine.cards.catalog.sorceries import SorceryNames
 from mtggympy.gameengine.cards.instances import basics
+from mtggympy.gameengine.cards.instances import sorceries
 from mtggympy.gameengine.cards.instances.types import CardInstance, CreatureInstance, LandInstance
 
 from mtggympy.config.logging_config import engine_log as logger
@@ -25,6 +27,9 @@ def generate_card_instance(card_name: str) -> CardInstance:
         return basics.MountainInstance()
     if card_name == LandNames.FOREST.value:
         return basics.ForestInstance()
+    #SORCERIES
+    if card_name == SorceryNames.EXPLORE.value:
+        return sorceries.ExploreInstance()
     #CREATURES
     if isinstance(info, CreatureInfo):
         return CreatureInstance(info)

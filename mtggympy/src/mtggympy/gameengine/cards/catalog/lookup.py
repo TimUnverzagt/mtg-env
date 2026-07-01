@@ -1,12 +1,13 @@
 from mtggympy.gameengine.cards.catalog.info import CardInfo, SpellInfo, CreatureInfo
 from mtggympy.gameengine.cards.catalog.lands import LAND_CATALOG
 from mtggympy.gameengine.cards.catalog.creatures import CREATURE_CATALOG
+from mtggympy.gameengine.cards.catalog.sorceries import SORCERY_CATALOG
 from mtggympy.gameengine.cards.manacost import ManaCost
 from mtggympy.gameengine.constants import CardType
 
 FACEDOWN_CARD_NAME = "facedown"
 
-FULL_CATALOG: dict[str, CardInfo] = LAND_CATALOG | CREATURE_CATALOG
+FULL_CATALOG: dict[str, CardInfo] = LAND_CATALOG | CREATURE_CATALOG | SORCERY_CATALOG
 FULL_CATALOG[FACEDOWN_CARD_NAME] = CardInfo(FACEDOWN_CARD_NAME)
 
 def card_info(name:str) -> CardInfo | None:
