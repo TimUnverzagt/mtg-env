@@ -115,16 +115,16 @@ class GlRenderer():
                 self.impl.process_event(event) # type: ignore
             self.impl.process_inputs()
 
-            imgui.new_frame()
-
             # Flush old frame
+            imgui.new_frame()
             gl.glClearColor(0, 0, 0, 1) # type: ignore
             gl.glClear(gl.GL_COLOR_BUFFER_BIT) # type: ignore
 
-            # --- UI ---
+            # Layout UI 
             with self.obs_condition:
                 layout.gui(ui_state, self.observations, self.image_assets, self.io.display_size)
 
+            # Render new frame
             imgui.render()
             self.impl.render(imgui.get_draw_data())
             pygame.display.flip()
@@ -179,4 +179,5 @@ if __name__ == "__main__":
     renderer: GlRenderer = GlRenderer()
     time.sleep(1)
     renderer.observations = observe_game_state(current_state, 0)
-    forever = threading.Event(); forever.wait()
+    forever = threading.Event()
+    forever.wait()

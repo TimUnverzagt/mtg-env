@@ -1,5 +1,4 @@
 from __future__ import annotations
-from collections import defaultdict
 from dataclasses import dataclass, field
 from queue import Empty
 
@@ -27,15 +26,13 @@ from mtggympy.server.session.observed_state import ObservedGameState, ObservedSe
 @dataclass
 class UiState:
     counter = 0 # our app state
-    tapped_creatures: defaultdict[int, bool] = field(default_factory=lambda: defaultdict(lambda: False))
-    tapped_lands: defaultdict[int, bool] = field(default_factory=lambda: defaultdict(lambda: False))
     log_entries: list[str] = field(default_factory=lambda: [])
     current_player_event: PlayerEvent | None = field(default_factory=lambda: None)
     selected_action: ActionData | None = field(default_factory=lambda: None)
     active_action_arg: list[int] | None = field(default_factory=lambda: None)
     cached_action_args: list[list[int]] | None = field(default_factory=lambda: None)
     action_commited: bool = False
-    transition_induced: bool = False #TODO: GMight be fragile to unsuccessful input transfer
+    transition_induced: bool = False #TODO: Might be fragile to unsuccessful input transfer
 
 def add_background(image_ref: ImTextureRef, display_size: ImVec2):
     imgui.set_next_window_pos((0, 0))

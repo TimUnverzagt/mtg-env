@@ -46,12 +46,14 @@ class ApiAgent(AgentBase):
             self.api_posteriori_state_processing_condition.notify_all()
             self.api_posteriori_state_processing_condition.wait_for(lambda: self.api_posteriori_state is None)
     
-
-
     def shutdown(self) -> None:
         cont: PlayerController | None = self.controller
         assert cont is not None
         cont.logger.info("Shutting down agent!")
+        with self.api_prior_state_processing_condition:
+            self.api_prior_state_processing_condition.notify_all()
         with self.api_intent_condition:
             self.api_intent_condition.notify()
+        with self.api_posteriori_state_processing_condition:
+            self.api_posteriori_state_processing_condition.notify_all()
         

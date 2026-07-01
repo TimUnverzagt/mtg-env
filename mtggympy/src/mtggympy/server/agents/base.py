@@ -70,8 +70,6 @@ class AgentBase(ABC):
                 cont.obs_after_action = None
                 cont.obs_after_action_condition.notify_all()
 
-
-
         cont.logger.info("Stopping because session is shutting down")
         self.shutdown()
 
