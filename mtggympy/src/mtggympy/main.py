@@ -2,10 +2,12 @@ from threading import Thread
 from mtggympy.api.gym.environment import MtgEnv
 from mtggympy.api.dektop.app import DesktopApp
 #from mtggympy.server.agents.simple import Goldfish, Monkey
+from mtggympy.server.agents.constants import InternalAgentType
 from mtggympy.server.agents.rulesbased import RulesBasedAgent
 from mtggympy.server.session.multi_client import MultiClientSession as MtgSession
 #from api.wrapper import MtgObservation
 from mtggympy.dojo.q_learning import QLearner
+import mtggympy.dojo.internal_matches as bot_match
 
 # from agents.console import ConsoleAgent
 
@@ -46,4 +48,11 @@ if __name__ == "__main__":
             desktop_game_example()
         case conf.Setup.Q_TRAINING:
             learning_example()
+        case conf.Setup.GOLDFISH_SPEED_EXP:
+            bot_match.fight_two_player(conf.EPISODES_IN_EXPERIMENT, (InternalAgentType.GOLDFISH, InternalAgentType.GOLDFISH))
+        case conf.Setup.MONKEY_SPEED_EXP:
+            bot_match.fight_two_player(conf.EPISODES_IN_EXPERIMENT, (InternalAgentType.MONKEY, InternalAgentType.MONKEY))
+        case conf.Setup.RULESBASED_SPEED_EXP:
+            bot_match.fight_two_player(conf.EPISODES_IN_EXPERIMENT, (InternalAgentType.RULESBASED, InternalAgentType.RULESBASED))
+
     

@@ -1,3 +1,5 @@
+from threading import Condition
+
 from mtggympy.gameengine.constants import GameStep
 from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEvent, event_from_step
 from mtggympy.gameengine.state.core import GameState
@@ -45,6 +47,9 @@ class MultiClientSession():
         if conf.HUMAN_RENDERING:
             #TODO: Connect to UI
             pass
+
+        # Shared variables (For monitoring during evaluation)
+        self.shutting_down_condition: Condition = Condition()
         self.shutting_down: bool = False
 
     def connect(self, name: str) -> PlayerController | None:
@@ -113,12 +118,18 @@ class MultiClientSession():
                 #TODO: Integrate human gui here
                 logger.error("RENDERING is currently NOT IMPLEMENTED")
                 pass
-        logger.info("Game concluded. Shutting down session!")
-        self.shutting_down = True
+        logger.info("Game concluded. Beginning session shutdown!")
+        with self.shutting_down_condition:
+            self.shutting_down = True
+            self.shutting_down_condition.notify_all()
+            logger.debug("Notified all directly concerned Threads about shutdown")
         for cont in self.seats:
             assert cont is not None
             with cont.obs_before_action_condition:
                 cont.obs_before_action_condition.notify_all()
+                logger.debug("Notified all seats about about shutdown")
+        with self.shutting_down_condition:
+            logger.info("reaquired shutdown lock and shutting down for good")
         return
     
     def step_without_player(self, game_state: GameState) -> bool:

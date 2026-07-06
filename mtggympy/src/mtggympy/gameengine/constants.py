@@ -47,3 +47,8 @@ class GameStep(Enum):
     BLOCK_STEP = (Phase.COMBAT, 1)
     MAIN_2 = (Phase.MAINPHASE_2, 0)
     END_STEP = (Phase.END, 0)
+
+class DeathDescription(Enum):
+    LIFETOTAL = "having 0 or less life"
+    DECKING = "drawing from an empty library"
+    

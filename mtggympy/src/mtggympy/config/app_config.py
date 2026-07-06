@@ -8,8 +8,13 @@ import os
 class Setup(Enum):
     Q_TRAINING = 0
     HUMAN_VS_INTERNALS = 1
+    GOLDFISH_SPEED_EXP = 2
+    MONKEY_SPEED_EXP = 3
+    RULESBASED_SPEED_EXP = 4
 
-CURRENT_SETUP: Setup = Setup.HUMAN_VS_INTERNALS
+CURRENT_SETUP: Setup = Setup.MONKEY_SPEED_EXP
+
+EPISODES_IN_EXPERIMENT: int = 1000
 
 ###############
 # Project 
@@ -17,7 +22,7 @@ CURRENT_SETUP: Setup = Setup.HUMAN_VS_INTERNALS
 # file --> config --> module --> src
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSET_DIR = os.path.join(os.path.join(SRC_DIR, ".."), "assets")
-PLAYER_LOG_LEVEL: int = logging.DEBUG
+PLAYER_LOG_LEVEL: int = logging.ERROR
 
 ###############
 # UI 

@@ -1,5 +1,5 @@
 from mtggympy.gameengine.cards.instances.types import CardInstance
-from mtggympy.gameengine.constants import ManaColor, GameStep
+from mtggympy.gameengine.constants import DeathDescription, ManaColor, GameStep
 from mtggympy.gameengine.constants import ManaColor
 from dataclasses import dataclass
 from typing import Optional
@@ -11,7 +11,7 @@ class PlayerState:
     cards_in_hand: list[CardInstance]
     cards_in_play: list[CardInstance]
     cards_in_library: list[CardInstance]
-    death_description: Optional[str]
+    death_description: Optional[DeathDescription]
     floating_mana: dict[ManaColor, int]
     additional_land_drops: int
 

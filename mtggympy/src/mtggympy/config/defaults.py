@@ -14,7 +14,7 @@ class Player:
             current_life = conf.STARTING_LIFE,
             cards_in_hand = [],
             cards_in_play=[],
-            cards_in_library = decks.get_fourty_card_red_green(),
+            cards_in_library = decks.get_fourty_card_colorless(),
             death_description = None,
             floating_mana=defaultdict(lambda: 0),
             additional_land_drops=0

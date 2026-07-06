@@ -4,7 +4,7 @@ from collections import defaultdict
 import random
 from uuid import UUID
 from mtggympy.gameengine.cards.manacost import ManaCost
-from mtggympy.gameengine.constants import ManaColor
+from mtggympy.gameengine.constants import DeathDescription, ManaColor
 import mtggympy.gameengine.constants as const
 from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent, ActionData
 from mtggympy.gameengine.cards.instances.types import CardInstance, CreatureInstance, LandInstance, SpellInstance
@@ -326,7 +326,7 @@ def check_player_death(game_state: GameState) -> None:
     players_dying_from_hp: list[PlayerState] = list(filter(lambda player_info: player_info.current_life <= 0, alive_player_infos))
     if len(players_dying_from_hp) > 0:
         for player_info in players_dying_from_hp:
-            handle_player_death(get_player_position(player_info, game_state), game_state, "having 0 or less life");
+            handle_player_death(get_player_position(player_info, game_state), game_state, DeathDescription.LIFETOTAL);
    
 
 def check_for_game_end(game_state: GameState):
@@ -339,10 +339,10 @@ def check_for_game_end(game_state: GameState):
         logger.info("{} won by survival".format(surviving_players[0].name))
 
 def kill_player_by_decking(victim_seat: int, game_state: GameState) -> None:
-    handle_player_death(victim_seat, game_state, "drawing from an empty library")
+    handle_player_death(victim_seat, game_state, DeathDescription.DECKING)
     return
     
-def handle_player_death(victim_seat: int, game_state: GameState, cause: str):
+def handle_player_death(victim_seat: int, game_state: GameState, cause: DeathDescription):
     game_state.player_states[victim_seat].death_description = cause
     logger.warning("{} died by {}.".format(game_state.player_states[victim_seat].name, cause))
     return
