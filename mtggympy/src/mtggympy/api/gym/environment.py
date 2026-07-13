@@ -88,7 +88,12 @@ class StandaloneEnv(gym.Env[MtgObservation, MtgAction]):
 
         # Define action space
         self.action_space =  Tuple([
-            Discrete(n=2)  #decision_intent
+            Discrete(n=2),  #decision_intent
+            Box( #Maximal possible action argument: incidence of pairs of card positions during block
+                low=np.zeros(shape=(encoding.ASSUMED_MAX_BATTLEFIELD_SIZE, encoding.ASSUMED_MAX_BATTLEFIELD_SIZE)),
+                high=np.ones(shape=(encoding.ASSUMED_MAX_BATTLEFIELD_SIZE, encoding.ASSUMED_MAX_BATTLEFIELD_SIZE)),
+                dtype=np.int8
+            )
         ])
     
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None) -> \
