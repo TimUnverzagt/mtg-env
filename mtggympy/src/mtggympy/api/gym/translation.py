@@ -1,7 +1,11 @@
+import math
 from typing import cast
 
-from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent, event_from_step
-from mtggympy.api.gym.types import MtgObservation, MtgAction, MtgPlayerObs
+import numpy as np
+
+from mtggympy.gameengine.cards.instances.types import CardInstance, CreatureInstance
+from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent
+from mtggympy.api.gym.encoding import MtgCardObs, MtgObservation, MtgAction, MtgOppObs, MtgSelfObs
 from mtggympy.gameengine.state.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
 
@@ -13,11 +17,12 @@ def observed_state_to_obs(state: ObservedGameState, observation_limits: MtgObser
     #Assume two players for the momement
     opponent_state: ObservedOpponentState = state.opponent_states[0]
     obs: MtgObservation = (
-        event_to_index(event_from_step(state.step)), #upcoming_decision
+        state.seat_position,
+        math.floor(state.halfturns_completed / 2),
+        event_to_index(state.event), #upcoming_decision
         int(state.self_is_active_player), #agent_is_active_player
-        state.seat_position, #agent_seat_position
-        player_obs_from_self(state.self_state), #agent_status 
-        player_obs_from_opponent(opponent_state), #opponents_status
+        self_obs_from_state(state.self_state), #agent_status 
+        opp_obs_from_state(opponent_state), #opponents_status
     )
     if observation_limits:
         obs = cast(MtgObservation, tree_map(min, obs, observation_limits))
@@ -41,20 +46,35 @@ def gym_action_to_player_decision(upcoming_event: PlayerEvent, action: MtgAction
     logger.debug("Translated external action {} into internal intent [{}]".format(action[0], intent))
     return intent
 
-def player_obs_from_self(state: ObservedSelfState) -> MtgPlayerObs:
-    #
+def self_obs_from_state(self_state: ObservedSelfState) -> MtgSelfObs:
     return (
-        state.current_life, #hp
-        len(state.cards_in_hand), #cards_in_hand
-        state.cards_in_library #cards_in_library
+        self_state.current_life, #hp
+        self_state.cards_in_library, #cards_in_library
+        card_obs_from_instances(self_state.cards_in_hand), #cards_in_hand
+        card_obs_from_instances(self_state.cards_in_play), #cards in play
     )
-def player_obs_from_opponent(state: ObservedOpponentState) -> MtgPlayerObs:
-    #
+def opp_obs_from_state(opp_state: ObservedOpponentState) -> MtgOppObs:
     return (
-        state.current_life, #hp
-        state.cards_in_hand, #cards_in_hand
-        state.cards_in_library #cards_in_library
+        opp_state.current_life, #hp
+        opp_state.cards_in_library, #cards_in_library
+        opp_state.cards_in_hand, #cards_in_hand
+        card_obs_from_instances(opp_state.cards_in_play), #cards in play
     )
+
+def card_obs_from_instances(cards: list[CardInstance]) -> np.ndarray:
+    card_obs: list[MtgCardObs] = []
+    for card in cards:
+        card_attacking: bool = False
+        if isinstance(CardInstance, CreatureInstance):
+            assert card is CreatureInstance
+            card_attacking = card.attacking
+        card_obs.append(np.array([
+            card_name_to_index(card.card_name),
+            int(card.tapped),
+            int(card_attacking)
+        ]))
+
+    return np.stack(card_obs)
 
 def card_index_to_name(index: int) -> str:
     card_names: list[str] = sorted(FULL_CATALOG)
