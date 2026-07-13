@@ -1,0 +1,2 @@
+main_setup,deck_name,with_backup_state,number_of_episodes,execution_date,execution_start
+Setup.RULESBASED_SPEED_EXP,False,DeckName.RED_GREEN,1000,2026-07-06,11:40:04.050058
