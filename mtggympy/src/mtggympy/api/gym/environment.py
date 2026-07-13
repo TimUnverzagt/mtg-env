@@ -1,9 +1,10 @@
 from __future__ import annotations
 from enum import Enum
+import numpy as np
 
 import gymnasium as gym
 from threading import Thread
-from gymnasium.spaces import Discrete, Tuple, MultiDiscrete
+from gymnasium.spaces import Box, Discrete, Tuple, MultiDiscrete
 from typing import Optional, TypeVar, Any, cast
 
 import mtggympy.config.app_config as app_const
@@ -18,6 +19,7 @@ from mtggympy.server.agents.simple import Goldfish #, Monkey
 from mtggympy.server.agents.external import ApiAgent
 from mtggympy.server.agents.base import AgentBase as Agent
 from mtggympy.api.gym.encoding import MtgObservation, MtgInfo, MtgAction
+import mtggympy.api.gym.encoding as encoding
 from mtggympy.api.gym.translation import gym_action_to_player_decision, observed_state_to_obs
 from mtggympy.helpers.predicate_extensions import build_either_predicate
 
@@ -47,18 +49,40 @@ class StandaloneEnv(gym.Env[MtgObservation, MtgAction]):
 
         # Define observation space
         self.observation_space = Tuple([
-            Discrete(n=2), #upcoming_decision
-            Discrete(n=2), #agent_is_active_player
             Discrete(n=2), #agent_seat_position
-            MultiDiscrete( #agent_status
-                nvec= [app_const.STARTING_LIFE+1 , #hp 
-                DECK_SIZE+1, #cards_in_hand 
-                DECK_SIZE+1] #cards_in_library
+            Discrete(n=encoding.ASSUMED_MAX_TURNS + 1), #turns played
+            Discrete(n=3), #upcoming player event
+            Discrete(n=2), #agent_is_active_player
+            ################
+            # SELF
+            ################
+            Discrete(n=encoding.ASSUMED_INITIAL_HP + 1), #agent_hp
+            Discrete(n=encoding.ASSUMED_INITIAL_DECK_SIZE), #agent cards in deck
+            Box(#cards_in_hand 
+                low=np.array([0,0,0,0]),
+                high=np.array([encoding.ASSUMED_NUMBER_OF_CARDS, 1,1, encoding.ASSUMED_MAX_HAND_SIZE]),
+                dtype=np.int8
             ),
+            Box(#cards_in_play
+                low=np.array([0,0,0,0]),
+                high=np.array([encoding.ASSUMED_NUMBER_OF_CARDS, 1,1, encoding.ASSUMED_MAX_BATTLEFIELD_SIZE]),
+                dtype=np.int8
+            ),
+            ################
+            # Opponent
+            ################
             MultiDiscrete( #opponent_status
                 nvec= [app_const.STARTING_LIFE+1 , #hp 
                 DECK_SIZE+1, #cards_in_hand 
                 DECK_SIZE+1] #cards_in_library
+            ),
+            Discrete(n=encoding.ASSUMED_INITIAL_HP + 1), #opponent_hp
+            Discrete(n=encoding.ASSUMED_INITIAL_DECK_SIZE), #opponent in deck
+            Discrete(n=encoding.ASSUMED_MAX_HAND_SIZE), #opponent_in_hand 
+            Box(#cards_in_play
+                low=np.array([0,0,0,0]),
+                high=np.array([encoding.ASSUMED_NUMBER_OF_CARDS, 1,1, encoding.ASSUMED_MAX_BATTLEFIELD_SIZE]),
+                dtype=np.int8
             ),
         ])
 
