@@ -22,6 +22,7 @@ class AgentBase(ABC):
             maybe_controller = session.connect_to_seat(target_seat, name)
         assert maybe_controller is not None
         self.controller: PlayerController = maybe_controller
+        self.initial_state: ObservedGameState = self.controller.initial_state
 
         # Shared variables
         self.state_processing_condition: Condition = Condition()
@@ -31,6 +32,7 @@ class AgentBase(ABC):
         cont: PlayerController = self.controller
         last_timestamp: float = time.time()
         delta_t: float = 0.0
+        events_processed: int = 0 
         while not self.session.shutting_down:
             delta_t = time.time() - last_timestamp
             last_timestamp = time.time()
@@ -38,11 +40,14 @@ class AgentBase(ABC):
                 time.sleep(max(conf.AGENT_TICK_LENGTH - delta_t, 0))
             with cont.obs_before_action_condition:
                 # Prior State
-                cont.logger.debug("{}: Waiting for my turn to act. (Signaled by session setting prior_state)".format(cont.player_info.name))
+                cont.logger.debug("{}-{}: Waiting for my turn to act. (Signaled by session setting prior_state)".format(
+                    cont.player_info.name, events_processed + 1))
                 cont.obs_before_action_condition.wait_for(build_either_predicate(
                     lambda: cont.obs_before_action is not None,
                     lambda: self.session.shutting_down))
                 if self.session.shutting_down:
+                    cont.logger.info("Stopping because session has terminated.")
+                    self.shutdown()
                     return
                 assert cont.obs_before_action
                 prior_state: ObservedGameState = cont.obs_before_action
@@ -51,24 +56,27 @@ class AgentBase(ABC):
                 cont.obs_before_action_condition.notify_all()
                 
             # Intent
-            cont.logger.info("{}: Thinking on next event '{}'.".format(cont.player_info.name, prior_state.event.name))
+            cont.logger.info("{}-{}: Thinking on next event '{}'.".format(cont.player_info.name, events_processed + 1 ,prior_state.event.name))
             intent: ActionIntent = self.decide_on_action(prior_state, cont.logger)
-            cont.logger.info("{}: Decided on action '{}'.".format(cont.player_info.name, cont.intent))
+            cont.logger.info("{}-{}: Decided on action '{}'.".format(cont.player_info.name, events_processed + 1,intent))
             with cont.intent_condition:
                 cont.intent = intent
-                cont.logger.info("{}: Set intent in controller".format(cont.player_info.name))
+                cont.logger.info("{}-{}: Set intent {} in controller".format(cont.intent, cont.player_info.name,events_processed + 1))
                 cont.intent_condition.notify_all()
                 cont.intent_condition.wait_for(lambda: cont.intent is None)
+                
 
             with cont.obs_after_action_condition:
                 # Posterior State              
-                cont.logger.debug("{}: Waiting for response from game session.".format(cont.player_info.name))
+                cont.logger.debug("{}-{}: Waiting for response from game session.".format(cont.player_info.name, events_processed + 1))
                 cont.obs_after_action_condition.wait_for(lambda: cont.obs_after_action is not None)
                 assert cont.obs_after_action
                 posteriori_state: ObservedGameState = cont.obs_after_action
                 self.process_posteriori_state(posteriori_state, cont.logger)
                 cont.obs_after_action = None
                 cont.obs_after_action_condition.notify_all()
+
+            events_processed += 1
 
         cont.logger.info("Stopping because session is shutting down")
         self.shutdown()

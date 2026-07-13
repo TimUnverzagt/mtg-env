@@ -6,6 +6,8 @@ import mtggympy.config.decks as decks
 
 from mtggympy.config.logging_config import engine_log as logger
 
+
+
 class Player:
     def __init__(self, name: str) -> None:
         logger.info("Setting up the new player {}".format(name))
@@ -14,7 +16,7 @@ class Player:
             current_life = conf.STARTING_LIFE,
             cards_in_hand = [],
             cards_in_play=[],
-            cards_in_library = decks.get_fourty_card_colorless(),
+            cards_in_library = decks.produce_deck(conf.DEFAULT_DECK),
             death_description = None,
             floating_mana=defaultdict(lambda: 0),
             additional_land_drops=0

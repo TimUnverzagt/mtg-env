@@ -25,6 +25,7 @@ class ObservedOpponentState:
 @dataclass
 class ObservedGameState:
     name_of_active_player: str
+    seat_position: int
     halfturns_completed: int
     self_is_active_player: bool
     step: GameStep

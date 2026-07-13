@@ -4,7 +4,7 @@ from mtggympy.gameengine.state.event import PlayerEvent
 from mtggympy.server.session.obfuscation import observe_game_state
 from mtggympy.server.session.player_controller import PlayerController
 import mtggympy.api.gym.translation as translation
-from mtggympy.api.gym.environment import MtgEnv, MtgObservation
+from mtggympy.api.gym.environment import StandaloneEnv, MtgObservation
 
 from mtggympy.config.app_config import DECK_SIZE, STARTING_LIFE
 
@@ -18,7 +18,7 @@ class TestApi():
 
     def test_raw_observations(self):
         #Setup
-        api_under_test: MtgEnv = MtgEnv()
+        api_under_test: StandaloneEnv = StandaloneEnv()
 
         game_state: GameState = get_default_game_state()
 
@@ -46,7 +46,7 @@ class TestApi():
 
     def test_limited_observations(self):
         #Setup
-        api_under_test: MtgEnv = MtgEnv()
+        api_under_test: StandaloneEnv = StandaloneEnv()
 
         game_state: GameState = get_default_game_state()
         observation_limits: MtgObservation = (1, 1, 1, (2, 0, 4), (4, 0, 2))

@@ -1,15 +1,31 @@
 
 
-from mtggympy.config.app_config import DECK_SIZE
+from enum import Enum
+
 from mtggympy.gameengine.cards.catalog.creatures import CreatureNames
 from mtggympy.gameengine.cards.catalog.lands import LandNames
 from mtggympy.gameengine.cards.catalog.sorceries import SorceryNames
 from mtggympy.gameengine.cards.instances.types import CardInstance
 from mtggympy.gameengine.cards.instances.factory import generate_card_instance
 
-def get_default_library() -> list[CardInstance]:
+DECK_SIZE: int = 40
+class DeckName(Enum):
+    GENERATED = "generated"
+    COLORLESS = "colorless"
+    RED_GREEN = "red-green"
+
+def produce_deck(deck_name: DeckName) -> list[CardInstance]:
+    match deck_name:
+        case DeckName.GENERATED:
+            return get_default_library(DECK_SIZE)
+        case DeckName.COLORLESS:
+            return get_fourty_card_colorless()
+        case DeckName.RED_GREEN:
+            return get_fourty_card_red_green()
+
+def get_default_library(deck_size: int) -> list[CardInstance]:
     library: list[CardInstance] = []
-    for i in range(0,DECK_SIZE):
+    for i in range(0,deck_size):
         if (i % 3) >= 1:
             library.append(generate_card_instance(CreatureNames.ALPHA_MYR.value))
         else:

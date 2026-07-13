@@ -1,5 +1,6 @@
 from logging import Logger
 
+from mtggympy.helpers.predicate_extensions import build_either_predicate
 from mtggympy.server.session.multi_client import MultiClientSession as GameSession
 from mtggympy.gameengine.state.event import ActionIntent
 from mtggympy.server.agents.base import AgentBase
@@ -22,14 +23,13 @@ class ApiAgent(AgentBase):
 
     def decide_on_action(self, state: ObservedGameState, logger: Logger) -> ActionIntent:
         with self.api_intent_condition:
-            self.api_intent = None
-            logger.debug("Serving decision {} for api".format(state.event))
-            self.api_intent_condition.notify()
-
+            #self.api_intent = None
+            #logger.debug("Serving decision {} for api".format(state.event))
+            #self.api_intent_condition.notify()
             logger.debug("Waiting declaration of intent from api")
             self.api_intent_condition.wait_for(lambda: self.api_intent is not None)
             assert self.api_intent
-            logger.debug("Declaration of intent received and consumed")       
+            logger.debug("Received intent {}".format(self.api_intent))       
             return self.api_intent
     
     def process_prior_state(self, state: ObservedGameState, logger: Logger) -> None:
@@ -37,7 +37,11 @@ class ApiAgent(AgentBase):
             self.api_prior_state = state
             logger.debug("Set prior state and waiting for processing")
             self.api_prior_state_processing_condition.notify_all()
-            self.api_prior_state_processing_condition.wait_for(lambda: self.api_prior_state is None)
+            self.api_prior_state_processing_condition.wait_for(build_either_predicate(
+                lambda: self.api_prior_state is None,
+                lambda: self.controller.terminate
+            ))
+            self.api_prior_state_processing_condition.notify_all()
 
     def process_posteriori_state(self, state: ObservedGameState, logger: Logger) -> None:
         with self.api_posteriori_state_processing_condition:
@@ -45,10 +49,10 @@ class ApiAgent(AgentBase):
             logger.debug("Set posteriori state and waiting for processing")
             self.api_posteriori_state_processing_condition.notify_all()
             self.api_posteriori_state_processing_condition.wait_for(lambda: self.api_posteriori_state is None)
+            self.api_posteriori_state_processing_condition.notify_all()
     
     def shutdown(self) -> None:
-        cont: PlayerController | None = self.controller
-        assert cont is not None
+        cont: PlayerController = self.controller
         cont.logger.info("Shutting down agent!")
         with self.api_prior_state_processing_condition:
             self.api_prior_state_processing_condition.notify_all()

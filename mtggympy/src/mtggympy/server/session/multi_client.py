@@ -68,7 +68,7 @@ class MultiClientSession():
             logger.error("Aborting connection: Tried to connect to an occupied seat")
             return
         player_info: PlayerState = self.game_state.player_states[seat_position]
-        cont = PlayerController(player_info, seat_position, name, deepcopy(self.game_state))
+        cont = PlayerController(player_info, seat_position, name, observe_game_state(self.game_state, seat_position))
         self.seats[seat_position] = cont
         logger.info("Seated agent at seat {} with new player {}". format(seat_position, cont.player_info.name))
         return cont
@@ -92,7 +92,7 @@ class MultiClientSession():
             target_seat: int 
             match self.game_state.step:
                 case GameStep.UPKEEP | GameStep.DRAW  | GameStep.END_STEP:
-                    step_success = self.step_without_player(self.game_state)
+                    self.game_state, step_success = self.step_without_player(self.game_state)
                 case GameStep.MAIN_1 | GameStep.ATTACK_STEP | GameStep.MAIN_2:
                     # Retrieve Player
                     target_seat = self.get_seat_from_active_player_onward()
@@ -100,7 +100,7 @@ class MultiClientSession():
                     if cont is None: 
                         continue
                     assert cont is not None
-                    step_success = self.step_with_player(self.game_state, cont, target_seat, event_from_step(self.game_state.step))
+                    self.game_state,step_success = self.step_with_player(self.game_state, cont, target_seat, event_from_step(self.game_state.step))
                 case GameStep.BLOCK_STEP: 
                     # Retrieve Player
                     target_seat = self.get_seat_from_active_player_onward(seat_offseat=1)
@@ -108,7 +108,7 @@ class MultiClientSession():
                     if cont is None: 
                         continue
                     assert cont is not None
-                    step_success = self.step_with_player(self.game_state, cont, target_seat, event_from_step(self.game_state.step))
+                    self.game_state, step_success = self.step_with_player(self.game_state, cont, target_seat, event_from_step(self.game_state.step))
             if not step_success:
                     logger.warning("Step Resolution was unsuccessful. This may result in a corrupted game state")
 
@@ -126,31 +126,36 @@ class MultiClientSession():
         for cont in self.seats:
             assert cont is not None
             with cont.obs_before_action_condition:
-                cont.obs_before_action_condition.notify_all()
-                logger.debug("Notified all seats about about shutdown")
+                cont.terminate = True
+                cont.propagate_termination()
+        logger.debug("Notified all seats about about shutdown")
         with self.shutting_down_condition:
             logger.info("reaquired shutdown lock and shutting down for good")
         return
     
-    def step_without_player(self, game_state: GameState) -> bool:
+    def step_without_player(self, game_state: GameState) -> tuple[GameState, bool]:
         step_success: bool
+        state_for_transition: GameState = deepcopy(game_state) if conf.TRASITION_WITH_STATE_BACKUP else game_state
         match game_state.step:
             case GameStep.MAIN_1 | GameStep.ATTACK_STEP | GameStep.BLOCK_STEP | GameStep.MAIN_2:
-                return False
+                return (game_state, False)
             case GameStep.UPKEEP:
-                step_success = GameEngine.upkeep(game_state)
+                step_success = GameEngine.upkeep(state_for_transition)
             case GameStep.DRAW:
-                step_success = GameEngine.draw_step(game_state)
+                step_success = GameEngine.draw_step(state_for_transition)
             case GameStep.END_STEP:
-                step_success = GameEngine.end_step(game_state)
-                step_success &= GameEngine.pass_turn(game_state)
-        succesor_step: GameStep = get_next_step(game_state.step, ActionIntent(ActionData.PASS, None))
+                step_success = GameEngine.end_step(state_for_transition)
+                step_success &= GameEngine.pass_turn(state_for_transition)
+        if not step_success:
+            logger.error("Step without player failed")
+            return (game_state, False)
+        succesor_step: GameStep = get_next_step(state_for_transition.step, ActionIntent(ActionData.PASS, None))
         if (succesor_step is not game_state.step):
-            GameEngine.empty_mana_pools(game_state)
-        game_state.step = succesor_step
-        return step_success
+            GameEngine.empty_mana_pools(state_for_transition)
+        state_for_transition.step = succesor_step
+        return (state_for_transition, True)
     
-    def step_with_player(self, game_state: GameState, cont: PlayerController, player_seat: int, player_event: PlayerEvent) -> bool:
+    def step_with_player(self, game_state: GameState, cont: PlayerController, player_seat: int, player_event: PlayerEvent) -> tuple[GameState, bool]:
             # Prompt Player Input
             with cont.obs_before_action_condition:
                 logger.debug("SessionTick: {}: Waiting for player to have no prior state before starting".format(cont.player_info.name))
@@ -172,32 +177,35 @@ class MultiClientSession():
             with cont.intent_condition:
                 cont.intent_condition.wait_for(lambda: cont.intent is not None)
                 if not cont.intent:
-                    return False
+                    return (game_state, False)
                 player_intent: ActionIntent = cont.intent
                     
                 # Process Player Input and report state update
                 logger.debug("SessionTick: {}: Received Player Input: {} --- {}".format(cont.player_info.name, player_intent.action.name, player_intent.parameters))
                 step_success: bool
+                state_for_transition: GameState = deepcopy(game_state) if conf.TRASITION_WITH_STATE_BACKUP else game_state
                 match game_state.step:
                     case GameStep.UPKEEP | GameStep.DRAW:
                         step_success = False                    
                     case GameStep.END_STEP:
-                        step_success = GameEngine.end_step(game_state)
-                        step_success &= GameEngine.pass_turn(game_state)
+                        step_success = GameEngine.end_step(state_for_transition)
+                        step_success &= GameEngine.pass_turn(state_for_transition)
                     case GameStep.MAIN_1:
-                        step_success = GameEngine.main_phase(game_state.active_player_index, player_intent, game_state)
+                        step_success = GameEngine.main_phase(state_for_transition.active_player_index, player_intent, state_for_transition)
                     case GameStep.ATTACK_STEP:
-                        step_success = GameEngine.declare_attackers_step(game_state.active_player_index, player_intent, game_state)
+                        step_success = GameEngine.declare_attackers_step(state_for_transition.active_player_index, player_intent, state_for_transition)
                     case GameStep.BLOCK_STEP:
                         acting_seat_index: int = self.get_seat_from_active_player_onward(seat_offseat=1)
-                        step_success = GameEngine.declare_blockers_step(acting_seat_index, player_intent, game_state)
+                        step_success = GameEngine.declare_blockers_step(acting_seat_index, player_intent, state_for_transition)
                     case GameStep.MAIN_2:
-                        step_success = GameEngine.main_phase(game_state.active_player_index, player_intent, game_state)
+                        step_success = GameEngine.main_phase(state_for_transition.active_player_index, player_intent, state_for_transition)
                 if step_success:
-                    succesor_step: GameStep = get_next_step(game_state.step, player_intent)
+                    succesor_step: GameStep = get_next_step(state_for_transition.step, player_intent)
                     if (succesor_step is not game_state.step):
-                        GameEngine.empty_mana_pools(game_state)
-                    game_state.step = succesor_step
+                        GameEngine.empty_mana_pools(state_for_transition)
+                    state_for_transition.step = succesor_step
+                else:
+                    logger.error("Step without player failed")
                 cont.intent = None
                 cont.intent_condition.notify_all()
 
@@ -210,7 +218,7 @@ class MultiClientSession():
                     cont.player_info.name,
                     game_state
                 ))
-            return step_success
+            return (state_for_transition, step_success)
 
     def get_controller_for_target_seat(self, target_seat: int) -> Optional[PlayerController]:
         if self.seats[0] is None or self.seats[1] is None:
@@ -220,7 +228,7 @@ class MultiClientSession():
         target_player_info: PlayerState = self.game_state.player_states[target_seat]
         for controller in self.seats:
             assert controller is not None
-            if target_player_info == controller.player_info: 
+            if target_player_info.name == controller.player_info.name: 
                 return controller
         logger.error("PlayerInfo does not align with any controller! This should never happen!!")
 

@@ -1,7 +1,7 @@
 from collections import defaultdict
 import numpy as np
 from numpy.typing import NDArray
-from mtggympy.api.gym.environment import MtgObservation, MtgAction, MtgEnv
+from mtggympy.api.gym.environment import MtgObservation, MtgAction, StandaloneEnv
 from typing import cast, DefaultDict, TypeAlias
 from tqdm import tqdm 
 from mtggympy.config.logging_config import dojo_log as logger
@@ -30,7 +30,7 @@ MtgActionSpace: TypeAlias = NDArray[np.int8]
 class QLearner:
     def __init__(
         self,
-        env: MtgEnv,
+        env: StandaloneEnv,
         learning_rate: float,
         initial_epsilon: float,
         epsilon_decay: float,

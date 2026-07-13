@@ -63,7 +63,7 @@ def main_phase(acting_seat: int, intent: ActionIntent, game_state: GameState) ->
 def declare_attackers_step(acting_seat: int, intent: ActionIntent, game_state: GameState) -> bool:
     match intent.action:
         case ActionData.PASS:
-            return attack(acting_seat, game_state, [])
+            return True
         case ActionData.ATTACK:
             target_creatures: list[CreatureInstance] | None = parse.creatures_for_attacking(acting_seat, intent, game_state)
             if target_creatures is None:
@@ -171,10 +171,11 @@ def play_card(acting_seat: int, game_state:GameState, card: CardInstance) -> boo
     return True
 
 def attack(acting_seat: int, game_state: GameState, target_creatures: list[CreatureInstance]) -> bool:
-    logger.warning("Turn {}/{}: {} is attacking!".format(
+    logger.warning("Turn {}/{}: {} is attacking with {}!".format(
         game_state.halfturns_completed,
         len(game_state.player_states),
-        game_state.player_states[acting_seat].name)
+        game_state.player_states[acting_seat].name,
+        target_creatures)
     )
     for creature in target_creatures:
         if creature.tapped:

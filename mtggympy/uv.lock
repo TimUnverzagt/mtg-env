@@ -331,6 +331,15 @@ wheels = [
 ]
 
 [[package]]
+name = "dataclass-csv"
+version = "1.4.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/be/c8/403e0b48708fc9dd9e87944ea61c5b8a2cd947bdb63c558274de453e7787/dataclass_csv-1.4.1.tar.gz", hash = "sha256:ec1df2893289bc58fa8d40a752bbfce4576f2289f6c06b8c944f802321dfba5a", size = 25412, upload-time = "2026-02-01T12:10:53.836Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b1/e8/19ad7521fcb1c38888bffa8cd63657758ae14a386c611438e193463a58c0/dataclass_csv-1.4.1-py3-none-any.whl", hash = "sha256:1e3dfc8dedb479e71116609432af06751349bf61512b03b1e7b61e38b1830a24", size = 13415, upload-time = "2026-02-01T12:10:52.473Z" },
+]
+
+[[package]]
 name = "debugpy"
 version = "1.8.21"
 source = { registry = "https://pypi.org/simple" }
@@ -1023,6 +1032,7 @@ name = "mtggympy"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "dataclass-csv" },
     { name = "gymnasium" },
     { name = "imgui-bundle", extra = ["full"] },
     { name = "keyboard" },
@@ -1042,6 +1052,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "dataclass-csv", specifier = ">=1.4.1" },
     { name = "gymnasium", specifier = "==1.2.3" },
     { name = "imgui-bundle", extras = ["full"] },
     { name = "keyboard", specifier = "==0.13.5" },

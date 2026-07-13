@@ -1,22 +1,27 @@
+from typing import cast
+
 from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent, event_from_step
 from mtggympy.api.gym.types import MtgObservation, MtgAction, MtgPlayerObs
 from mtggympy.gameengine.state.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
 
 from mtggympy.config.logging_config import api_log as logger
+from mtggympy.helpers.tree_map import tree_map
 from mtggympy.server.session.observed_state import ObservedGameState, ObservedSelfState, ObservedOpponentState
 
-def observed_state_to_obs(state: ObservedGameState, agent_position: int) -> MtgObservation:
+def observed_state_to_obs(state: ObservedGameState, observation_limits: MtgObservation | None = None) -> MtgObservation:
     #Assume two players for the momement
-    opponent_state: ObservedOpponentState = state.opponent_states[(agent_position + 1) % 2]
-    result: MtgObservation = (
+    opponent_state: ObservedOpponentState = state.opponent_states[0]
+    obs: MtgObservation = (
         event_to_index(event_from_step(state.step)), #upcoming_decision
         int(state.self_is_active_player), #agent_is_active_player
-        agent_position, #agent_seat_position
+        state.seat_position, #agent_seat_position
         player_obs_from_self(state.self_state), #agent_status 
         player_obs_from_opponent(opponent_state), #opponents_status
     )
-    return result
+    if observation_limits:
+        obs = cast(MtgObservation, tree_map(min, obs, observation_limits))
+    return obs
 
 def event_to_index(event: PlayerEvent) -> int:
     match event:
@@ -29,7 +34,7 @@ def event_to_index(event: PlayerEvent) -> int:
         case PlayerEvent.NO_OP:
             return 3
 
-def gym_action_to_priority_decision(upcoming_event: PlayerEvent, action: MtgAction) -> ActionIntent:
+def gym_action_to_player_decision(upcoming_event: PlayerEvent, action: MtgAction) -> ActionIntent:
     logger.debug("Translating for decision [{}]".format(upcoming_event))
     #TODO: Get params as well
     intent: ActionIntent = ActionIntent(upcoming_event.value.possible_actions[action[0]],None)

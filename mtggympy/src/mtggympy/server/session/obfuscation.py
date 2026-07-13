@@ -30,6 +30,7 @@ def observe_game_state(game_state:GameState, seat_of_observer: int) -> ObservedG
 
     return ObservedGameState(
         name_of_active_player=game_state.player_states[game_state.active_player_index].name,
+        seat_position=seat_of_observer,
         halfturns_completed=game_state.halfturns_completed,
         lands_played_this_turn=game_state.lands_played_this_turn,
         opponent_states=opponent_obs,

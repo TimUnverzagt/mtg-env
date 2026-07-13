@@ -1,5 +1,5 @@
 from threading import Thread
-from mtggympy.api.gym.environment import MtgEnv
+from mtggympy.api.gym.environment import StandaloneEnv
 from mtggympy.api.dektop.app import DesktopApp
 #from mtggympy.server.agents.simple import Goldfish, Monkey
 from mtggympy.server.agents.constants import InternalAgentType
@@ -20,7 +20,7 @@ import mtggympy.config.app_config as conf
 def learning_example():
     no_of_episodes: int = 100
     start_epsilon: float = 1.0
-    environment: MtgEnv = MtgEnv()
+    environment: StandaloneEnv = StandaloneEnv()
     learner: QLearner = QLearner(
         env=environment,
         learning_rate=0.1,

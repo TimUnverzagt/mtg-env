@@ -1,6 +1,7 @@
 from enum import Enum
-import logging
 import os
+
+from mtggympy.config.decks import DeckName
 
 ###############
 # Setup 
@@ -12,17 +13,20 @@ class Setup(Enum):
     MONKEY_SPEED_EXP = 3
     RULESBASED_SPEED_EXP = 4
 
-CURRENT_SETUP: Setup = Setup.MONKEY_SPEED_EXP
+CURRENT_SETUP: Setup = Setup.Q_TRAINING
+DEFAULT_DECK: DeckName = DeckName.RED_GREEN
 
 EPISODES_IN_EXPERIMENT: int = 1000
+
+TRASITION_WITH_STATE_BACKUP: bool = True
 
 ###############
 # Project 
 ###############
 # file --> config --> module --> src
-SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ASSET_DIR = os.path.join(os.path.join(SRC_DIR, ".."), "assets")
-PLAYER_LOG_LEVEL: int = logging.ERROR
+SRC_DIR = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."), "..")
+ASSET_DIR = os.path.join(SRC_DIR, "assets")
+EXPERIMENT_RESULT_DIR = os.path.join(SRC_DIR, "experiments")
 
 ###############
 # UI 
@@ -40,5 +44,3 @@ SESSION_TICK_LENGTH: float = 0#.2
 AGENT_TICK_LENGTH: float = 0#.137
 API_TICK_LENGTH: float = 0#.1
 STARTING_LIFE: int = 20
-DECK_SIZE: int = 40
-
