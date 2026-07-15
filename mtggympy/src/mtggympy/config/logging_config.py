@@ -37,13 +37,13 @@ def create_logger(name: str, logging_level: int, log_to_ui: bool = False) -> log
     return logger
 
 
-PLAYER_LOG_LEVEL: int = logging.WARN
+PLAYER_LOG_LEVEL: int = logging.DEBUG
 # Create the loggers ONCE
-main_log   = create_logger("main", logging.WARN)
-ui_log = create_logger("ui", logging.WARN)
-dojo_log = create_logger("dojo", logging.WARN)
-session_log   = create_logger("session", logging.WARN)
-desktop_ui_log   = create_logger("dektop-ui", logging.WARN)
-desktop_api_log   = create_logger("dektop-api", logging.WARN)
-api_log   = create_logger("api", logging.WARN)
-engine_log   = create_logger("engine", logging.WARN, True)
+main_log   = create_logger("main", logging.DEBUG)
+ui_log = create_logger("ui", logging.DEBUG)
+dojo_log = create_logger("dojo", logging.DEBUG)
+session_log   = create_logger("session", logging.DEBUG)
+desktop_ui_log   = create_logger("dektop-ui", logging.DEBUG)
+desktop_api_log   = create_logger("dektop-api", logging.DEBUG)
+api_log   = create_logger("api", logging.DEBUG)
+engine_log   = create_logger("engine", logging.DEBUG, True)

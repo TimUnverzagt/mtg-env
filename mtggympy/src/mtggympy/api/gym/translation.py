@@ -6,6 +6,7 @@ import numpy as np
 from mtggympy.gameengine.cards.instances.types import CardInstance, CreatureInstance
 from mtggympy.gameengine.state.event import ActionIntent, PlayerEvent
 from mtggympy.api.gym.encoding import MtgCardObs, MtgObservation, MtgAction, MtgOppObs, MtgSelfObs
+import mtggympy.api.gym.encoding as encode
 from mtggympy.gameengine.state.event import PlayerEvent
 from mtggympy.gameengine.cards.catalog.lookup import FULL_CATALOG
 
@@ -42,38 +43,44 @@ def event_to_index(event: PlayerEvent) -> int:
 def gym_action_to_player_decision(upcoming_event: PlayerEvent, action: MtgAction) -> ActionIntent:
     logger.debug("Translating for decision [{}]".format(upcoming_event))
     #TODO: Get params as well
-    intent: ActionIntent = ActionIntent(upcoming_event.value.possible_actions[action[0]],None)
-    logger.debug("Translated external action {} into internal intent [{}]".format(action[0], intent))
+    action_index: int = action[0]
+    if(action_index >= len(upcoming_event.value.possible_actions)):
+        action_index = 0
+    intent: ActionIntent = ActionIntent(upcoming_event.value.possible_actions[action_index],None)
+    logger.debug("Translated external action {} into internal intent [{}]".format(action_index, intent))
     return intent
 
 def self_obs_from_state(self_state: ObservedSelfState) -> MtgSelfObs:
     return (
         self_state.current_life, #hp
         self_state.cards_in_library, #cards_in_library
-        card_obs_from_instances(self_state.cards_in_hand), #cards_in_hand
-        card_obs_from_instances(self_state.cards_in_play), #cards in play
+        card_obs_from_instances(self_state.cards_in_hand, encode.ASSUMED_MAX_HAND_SIZE), #cards_in_hand
+        card_obs_from_instances(self_state.cards_in_play, encode.ASSUMED_MAX_BATTLEFIELD_SIZE), #cards in play
     )
 def opp_obs_from_state(opp_state: ObservedOpponentState) -> MtgOppObs:
     return (
         opp_state.current_life, #hp
         opp_state.cards_in_library, #cards_in_library
         opp_state.cards_in_hand, #cards_in_hand
-        card_obs_from_instances(opp_state.cards_in_play), #cards in play
+        card_obs_from_instances(opp_state.cards_in_play, encode.ASSUMED_MAX_BATTLEFIELD_SIZE), #cards in play
     )
 
-def card_obs_from_instances(cards: list[CardInstance]) -> np.ndarray:
+def card_obs_from_instances(cards: list[CardInstance], target_encoding_len: int) -> np.ndarray:
     card_obs: list[MtgCardObs] = []
-    for card in cards:
+    for i in range(0, target_encoding_len):
+        if i >= len(cards):
+            card_obs.append(np.array([0, 0, 0]))
+            continue
+        card = cards[i]
         card_attacking: bool = False
         if isinstance(CardInstance, CreatureInstance):
             assert card is CreatureInstance
             card_attacking = card.attacking
         card_obs.append(np.array([
-            card_name_to_index(card.card_name),
+            card_name_to_index(card.card_name) + 1, # Leave null index for empty space
             int(card.tapped),
             int(card_attacking)
         ]))
-
     return np.stack(card_obs)
 
 def card_index_to_name(index: int) -> str:

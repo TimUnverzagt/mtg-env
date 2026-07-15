@@ -12,3 +12,6 @@ Requires-Dist: tqdm==4.67.3
 Requires-Dist: py-spy==0.4.1
 Requires-Dist: imgui_bundle[full]
 Requires-Dist: dataclass-csv>=1.4.1
+Requires-Dist: torch>=2.13.0
+Requires-Dist: torchvision>=0.28.0
+Requires-Dist: more-itertools>=11.1.0

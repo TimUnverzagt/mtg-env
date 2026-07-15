@@ -13,6 +13,9 @@ dependencies = [
     "py-spy==0.4.1",
     "imgui_bundle[full]",
     "dataclass-csv>=1.4.1",
+    "torch>=2.13.0",
+    "torchvision>=0.28.0",
+    "more-itertools>=11.1.0",
 ]
 
 [build-system]
@@ -27,6 +30,19 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cpu" },
+]
+torchvision = [
+  { index = "pytorch-cpu" },
+]
 
 [dependency-groups]
 dev = [

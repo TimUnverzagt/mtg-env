@@ -8,3 +8,6 @@ tqdm==4.67.3
 py-spy==0.4.1
 imgui_bundle[full]
 dataclass-csv>=1.4.1
+torch>=2.13.0
+torchvision>=0.28.0
+more-itertools>=11.1.0
