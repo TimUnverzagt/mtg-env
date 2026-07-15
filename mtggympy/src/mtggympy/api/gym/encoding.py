@@ -13,6 +13,7 @@ ASSUMED_MAX_TURNS = ASSUMED_INITIAL_DECK_SIZE
 ASSUMED_NUMBER_OF_CARDS = 20
 ASSUMED_NUMBER_OF_PLAYER_EVENTS = 3
 ASSUMED_MAX_NUMBER_OF_POSSIBLE_ACTIONS = 3
+ASSUMED_MAX_ARGUMENTS_SIZE = ASSUMED_MAX_BATTLEFIELD_SIZE*ASSUMED_MAX_BATTLEFIELD_SIZE
 
 
 MtgCardObs: TypeAlias = NDArray[np.int8]
@@ -77,7 +78,7 @@ MtgAction: TypeAlias = tuple[
     NDArray[np.int8]] # action arguments
 ACTION_ENCODING_LIMIT: MtgAction = (
     ASSUMED_MAX_NUMBER_OF_POSSIBLE_ACTIONS - 1,
-    np.full((ASSUMED_MAX_BATTLEFIELD_SIZE, ASSUMED_MAX_BATTLEFIELD_SIZE),1)
+    np.full(ASSUMED_MAX_ARGUMENTS_SIZE,1)
     # the biggest argument space covers pairing over all possible battlefield positions
     # for shape-conformity all other argument spaces can be extended to this size
 )

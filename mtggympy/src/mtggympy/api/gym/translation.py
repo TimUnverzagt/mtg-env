@@ -43,7 +43,7 @@ def event_to_index(event: PlayerEvent) -> int:
 def gym_action_to_player_decision(upcoming_event: PlayerEvent, action: MtgAction) -> ActionIntent:
     logger.debug("Translating for decision [{}]".format(upcoming_event))
     #TODO: Get params as well
-    action_index: int = action[0]
+    action_index: int = int(action[0])
     if(action_index >= len(upcoming_event.value.possible_actions)):
         action_index = 0
     intent: ActionIntent = ActionIntent(upcoming_event.value.possible_actions[action_index],None)

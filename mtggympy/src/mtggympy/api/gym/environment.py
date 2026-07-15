@@ -76,11 +76,11 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
                 Tuple([card_space]*encoding.ASSUMED_MAX_BATTLEFIELD_SIZE), #cards_in_play
             ])
         ])
-        print(encoding.get_space_sizes(self.nested_observation_space))
-        print(sum(encoding.get_space_sizes(self.nested_observation_space)))
-        print(encoding.OBSERVATION_DIMS)
-        print(encoding.SELF_OBS_ENCODING_LIMIT[2].shape)
-        print(encoding.SELF_OBS_ENCODING_LIMIT[3].shape)
+        #print(encoding.get_space_sizes(self.nested_observation_space))
+        #print(sum(encoding.get_space_sizes(self.nested_observation_space)))
+        #print(encoding.OBSERVATION_DIMS)
+        #print(encoding.SELF_OBS_ENCODING_LIMIT[2].shape)
+        #print(encoding.SELF_OBS_ENCODING_LIMIT[3].shape)
         assert sum(encoding.get_space_sizes(self.nested_observation_space)) == encoding.OBSERVATION_DIMS
         self.observation_space: Space[FlatMtgObservation] = encoding.flatten_tuple_of_discrete_spaces(self.nested_observation_space)
 

@@ -17,7 +17,7 @@ import tqdm
 
 from mtggympy.api.gym.encoding import FlatMtgAction, FlatMtgObservation
 from mtggympy.api.gym.environment import StandaloneEnv
-from mtggympy.dojo.deepqnetwork import DeepQNetwork, ReplayMemory, Transition
+from mtggympy.dojo.policy import MultiheadNetwork, ReplayMemory, Transition
 
 device = torch.device("cpu")
 
@@ -37,11 +37,11 @@ TAU = 0.005
 LR = 3e-4
 
 env: gym.Env[FlatMtgObservation, FlatMtgAction] = StandaloneEnv()
-n_action_dims: int = len(cast(MultiDiscrete, env.action_space).nvec)
+#n_action_dims: int = len(cast(MultiDiscrete, env.action_space).nvec)
 n_obs_dims: int = len(cast(MultiDiscrete, env.observation_space).nvec)
 
-policy_net = DeepQNetwork(n_obs_dims, n_action_dims).to(device)
-target_net = DeepQNetwork(n_obs_dims, n_action_dims).to(device)
+policy_net = MultiheadNetwork(n_obs_dims).to(device)
+target_net = MultiheadNetwork(n_obs_dims).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 
 optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
@@ -58,10 +58,8 @@ def select_action(state: torch.Tensor):
     #print("State shape during select_action:{}".format(state.shape))
     if sample > eps_threshold:
         with torch.no_grad():
-            # t.max(1) will return the largest column value of each row.
-            # second column on max result is index of where max element was
-            # found, so we pick action with the larger expected reward.
-            return policy_net(state).max(1).indices.view(1, 1)
+            action_logits, action_params = policy_net(state)
+            return torch.cat([action_logits.argmax().expand(1), action_params])
     else:
         return torch.tensor(env.action_space.sample(), device=device, dtype=torch.long)
 
@@ -101,7 +99,7 @@ def optimize_model():
     # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
     # detailed explanation). This converts batch-array of Transitions
     # to Transition of batch-arrays.
-    batch = Transition(*zip(*transitions))
+    batch: Transition = Transition(*zip(*transitions))
 
     # Compute a mask of non-final states and concatenate the batch elements
     # (a final state would've been the one after which simulation ended)
@@ -114,7 +112,7 @@ def optimize_model():
     # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
     # columns of actions taken. These are the actions which would've been taken
     # for each batch state according to policy_net
-    state_action_values = policy_net(state_batch).gather(1, action_batch)
+    state_macro_action_values, _ = policy_net(state_batch)
 
     # Compute V(s_{t+1}) for all next states.
     # Expected values of actions for non_final_next_states are computed based
@@ -123,13 +121,14 @@ def optimize_model():
     # state value or 0 in case the state was final.
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     with torch.no_grad():
-        next_state_values[non_final_mask] = target_net(non_final_next_states).max(1).values
+        macro_values,_ = target_net(non_final_next_states)
+        next_state_values[non_final_mask] = macro_values.max(dim=1).values
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
     # Compute Huber loss
     criterion = nn.SmoothL1Loss()
-    loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
+    loss = criterion(state_macro_action_values.max(dim=1).values.unsqueeze(1), expected_state_action_values.unsqueeze(1))
 
     # Optimize the model
     optimizer.zero_grad()
@@ -146,7 +145,7 @@ def train(num_episodes: int) -> None:
         state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
         for t in count():
             action = select_action(state)
-            observation, reward, terminated, truncated, _ = env.step(action)
+            observation, reward, terminated, truncated, _ = env.step(torch.flatten(action))
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
 
