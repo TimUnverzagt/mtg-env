@@ -37,7 +37,7 @@ def create_logger(name: str, logging_level: int, log_to_ui: bool = False) -> log
     return logger
 
 
-PLAYER_LOG_LEVEL: int = logging.ERROR
+PLAYER_LOG_LEVEL: int = logging.INFO
 # Create the loggers ONCE
 main_log   = create_logger("main", logging.ERROR)
 ui_log = create_logger("ui", logging.ERROR)

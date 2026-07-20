@@ -64,12 +64,12 @@ def select_action(state: torch.Tensor):
         return torch.tensor(env.action_space.sample(), device=device, dtype=torch.long)
 
 
-episode_durations: list[int] = []
+episode_rewards: list[int] = []
 
 
 def plot_durations(show_result: bool=False):
     plt.figure(1) #type: ignore
-    durations_t = torch.tensor(episode_durations, dtype=torch.float)
+    durations_t = torch.tensor(episode_rewards, dtype=torch.float)
     if show_result:
         plt.title('Result') #type: ignore
     else:
@@ -121,12 +121,16 @@ def optimize_model():
     # state value or 0 in case the state was final.
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     with torch.no_grad():
-        macro_values,_ = target_net(non_final_next_states)
-        next_state_values[non_final_mask] = macro_values.max(dim=1).values
+        all_action_values, param_values = target_net(non_final_next_states)
+        max_action_value =  all_action_values.max(dim=1).values
+        combined_param_values = torch.sum(param_values, dim=1)
+        number_of_non_null_param_values = torch.count_nonzero(param_values, dim=1)
+
+        next_state_values[non_final_mask] = 0.5 * max_action_value + 0.5 * (combined_param_values / number_of_non_null_param_values) 
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
-    # Compute Huber loss
+    # Compute loss
     criterion = nn.SmoothL1Loss()
     loss = criterion(state_macro_action_values.max(dim=1).values.unsqueeze(1), expected_state_action_values.unsqueeze(1))
 
@@ -143,12 +147,13 @@ def train(num_episodes: int) -> None:
         # Initialize the environment and get its state
         state, _ = env.reset()
         state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
-        for t in count():
+        cumulative_reward: int = 0
+        for _ in count():
             action = select_action(state)
             observation, reward, terminated, truncated, _ = env.step(torch.flatten(action))
+            cumulative_reward += reward
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
-
             if terminated:
                 next_state = None
             else:
@@ -172,7 +177,8 @@ def train(num_episodes: int) -> None:
             target_net.load_state_dict(target_net_state_dict)
 
             if done:
-                episode_durations.append(t + 1)
+                episode_rewards.append(cumulative_reward)
+                print(cumulative_reward)
                 plot_durations()
                 break
     print('Complete')

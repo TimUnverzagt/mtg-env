@@ -190,6 +190,9 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
             assert self.agent.api_posteriori_state
             logger.debug("Step {}: Received processing confirmation via update of game state in controller".format(self.steps_performed + 1))
             posteriori_state = self.agent.api_posteriori_state
+            if(self.agent.controller.obs_last_action_rejected):
+                reward = -1
+                self.agent.controller.obs_last_action_rejected=False
             self.last_obs = observed_state_to_obs(posteriori_state, self.observation_limits)
             self.agent.api_posteriori_state = None
             self.agent.api_posteriori_state_processing_condition.notify_all()

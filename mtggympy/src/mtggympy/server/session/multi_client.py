@@ -110,7 +110,8 @@ class MultiClientSession():
                     assert cont is not None
                     self.game_state, step_success = self.step_with_player(self.game_state, cont, target_seat, event_from_step(self.game_state.step))
             if not step_success:
-                    logger.warning("Step Resolution was unsuccessful. This may result in a corrupted game state")
+                    logger.warning("Step Resolution was unsuccessful!")
+                    logger.warning("Configured to use backup state to avoid corruption: {}".format(conf.TRASITION_WITH_STATE_BACKUP))
 
             if(conf.HUMAN_RENDERING):
                 #assert self.vis is not None
@@ -205,13 +206,14 @@ class MultiClientSession():
                         GameEngine.empty_mana_pools(state_for_transition)
                     state_for_transition.step = succesor_step
                 else:
-                    logger.error("Step without player failed")
+                    logger.error("Step with {} failed".format(cont.player_info.name))
+
                 cont.intent = None
                 cont.intent_condition.notify_all()
 
             # Return result
             with cont.obs_after_action_condition:
-                cont.set_action_result(observe_game_state(game_state, player_seat))
+                cont.set_action_result(observe_game_state(game_state, player_seat), not step_success)
                 cont.obs_after_action_condition.notify_all()
                 cont.obs_after_action_condition.wait_for(lambda: cont.obs_after_action is None)
                 logger.debug("SessionTick: {}: Answered player with new state {}".format(

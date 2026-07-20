@@ -22,6 +22,7 @@ class PlayerController:
         self.obs_before_action: ObservedGameState | None = None
         self.obs_after_action_condition: Condition = Condition()
         self.obs_after_action: ObservedGameState | None = None
+        self.obs_last_action_rejected: bool = False
         self.intent_condition: Condition = Condition()
         self.intent: ActionIntent | None = None
 
@@ -30,9 +31,10 @@ class PlayerController:
         self.obs_before_action = new_state
         self.obs_after_action = None
 
-    def set_action_result(self, new_state: ObservedGameState) -> None:
+    def set_action_result(self, new_state: ObservedGameState, action_rejected: bool) -> None:
         self.intent = None
         self.obs_after_action = new_state
+        self.obs_last_action_rejected = action_rejected
 
     def propagate_termination(self) -> None:
         with self.obs_before_action_condition:
