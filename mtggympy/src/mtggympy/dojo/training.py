@@ -1,11 +1,7 @@
-from typing import cast
-
-
 import gymnasium as gym
 
 import math
 import random
-from gymnasium.spaces import MultiDiscrete
 import matplotlib
 import matplotlib.pyplot as plt
 import torch
@@ -15,9 +11,12 @@ from itertools import count
 
 import tqdm
 
+import mtggympy.api.gym.encoding as encoding
 from mtggympy.api.gym.encoding import FlatMtgAction, FlatMtgObservation
-from mtggympy.api.gym.environment import StandaloneEnv
-from mtggympy.dojo.policy import MultiheadNetwork, ReplayMemory, Transition
+from mtggympy.api.gym.environment import StandaloneEnv, ACTION_REJECTED_INFO_KEY, ACTION_REJECTION_REWARD
+from mtggympy.dojo.policy import ActionRejectionNetwork, ActionParameterNetwork, ActionSelectionNetwork, ReplayMemory, Transition
+
+#Based on https://docs.pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 
 device = torch.device("cpu")
 
@@ -38,13 +37,24 @@ LR = 3e-4
 
 env: gym.Env[FlatMtgObservation, FlatMtgAction] = StandaloneEnv()
 #n_action_dims: int = len(cast(MultiDiscrete, env.action_space).nvec)
-n_obs_dims: int = len(cast(MultiDiscrete, env.observation_space).nvec)
 
-policy_net = MultiheadNetwork(n_obs_dims).to(device)
-target_net = MultiheadNetwork(n_obs_dims).to(device)
-target_net.load_state_dict(policy_net.state_dict())
+action_policy_net = ActionSelectionNetwork(encoding.OBSERVATION_DIMS, encoding.ASSUMED_MAX_NUMBER_OF_POSSIBLE_ACTIONS).to(device)
+action_look_ahead_net = ActionSelectionNetwork(encoding.OBSERVATION_DIMS, encoding.ASSUMED_MAX_NUMBER_OF_POSSIBLE_ACTIONS).to(device)
+action_look_ahead_net.load_state_dict(action_policy_net.state_dict())
 
-optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
+param_policy_net = ActionParameterNetwork(encoding.OBSERVATION_DIMS + 1,
+                                          encoding.ASSUMED_MAX_ARGUMENTS_SIZE)
+param_look_ahead_net = ActionParameterNetwork(encoding.OBSERVATION_DIMS + 1,
+                                          encoding.ASSUMED_MAX_ARGUMENTS_SIZE)
+param_look_ahead_net.load_state_dict(param_policy_net.state_dict())
+
+rejection_net = ActionRejectionNetwork(encoding.OBSERVATION_DIMS 
+                                       + 1 # Selected Action 
+                                       + encoding.ASSUMED_MAX_ARGUMENTS_SIZE)
+
+action_optimizer = optim.AdamW(action_policy_net.parameters(), lr=LR, amsgrad=True)
+param_optimizer = optim.AdamW(param_policy_net.parameters(), lr=LR, amsgrad=True)
+rejection_optimizer = optim.AdamW(rejection_net.parameters(), lr=LR, amsgrad=True)
 memory = ReplayMemory(10000)
 
 steps_done = 0
@@ -58,29 +68,33 @@ def select_action(state: torch.Tensor):
     #print("State shape during select_action:{}".format(state.shape))
     if sample > eps_threshold:
         with torch.no_grad():
-            action_logits, action_params = policy_net(state)
-            return torch.cat([action_logits.argmax().expand(1), action_params])
+            action = action_policy_net(state.squeeze()).argmax().expand(1)
+            params = param_policy_net(torch.cat([state.squeeze(),action]))[0] > 0.5
+            return torch.cat([action, params])
     else:
         return torch.tensor(env.action_space.sample(), device=device, dtype=torch.long)
 
 
 episode_rewards: list[int] = []
+episode_lengths: list[int] = []
+episode_illegal_actions: list[int] = []
+episode_non_pass_actions: list[int] = []
 
 
 def plot_durations(show_result: bool=False):
     plt.figure(1) #type: ignore
-    durations_t = torch.tensor(episode_rewards, dtype=torch.float)
+    rewards = torch.tensor(episode_rewards, dtype=torch.float) 
     if show_result:
         plt.title('Result') #type: ignore
     else:
         plt.clf()
         plt.title('Training...') #type: ignore
     plt.xlabel('Episode') #type: ignore
-    plt.ylabel('Duration') #type: ignore
-    plt.plot(durations_t.numpy()) #type: ignore
+    plt.ylabel('Reward') #type: ignore
+    plt.plot(rewards.numpy()) #type: ignore
     # Take 100 episode averages and plot them too
-    if len(durations_t) >= 100:
-        means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
+    if len(rewards) >= 100:
+        means = rewards.unfold(0, 100, 1).mean(1).view(-1)
         means = torch.cat((torch.zeros(99), means))
         plt.plot(means.numpy()) #type: ignore
 
@@ -108,50 +122,103 @@ def optimize_model():
     state_batch = torch.cat(batch.state) # type: ignore
     action_batch = torch.cat(batch.action) # type: ignore
     reward_batch = torch.cat(batch.reward) # type: ignore
+    action_rejected_batch = torch.cat(batch.action_rejected) # type: ignore
 
     # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
     # columns of actions taken. These are the actions which would've been taken
     # for each batch state according to policy_net
-    state_macro_action_values, _ = policy_net(state_batch)
+    action_policy_values = action_policy_net(state_batch)
+    intermediate_transition_batch = torch.cat([action_batch.unsqueeze(dim=1), state_batch], dim=1)
+    param_policy_logits, param_policy_values = param_policy_net(intermediate_transition_batch)
+    # Collect legality estimations for reward estimations
+    full_transition_batch = torch.cat([intermediate_transition_batch, param_policy_logits > 0.5], dim=1)
+    rejection_logits = rejection_net(full_transition_batch)
 
     # Compute V(s_{t+1}) for all next states.
     # Expected values of actions for non_final_next_states are computed based
     # on the "older" target_net; selecting their best reward with max(1).values
     # This is merged based on the mask, such that we'll have either the expected
     # state value or 0 in case the state was final.
-    next_state_values = torch.zeros(BATCH_SIZE, device=device)
+    ################################
+    # Value for action selection
+    ################################
+    next_state_action_values = torch.zeros(BATCH_SIZE, device=device)
     with torch.no_grad():
-        all_action_values, param_values = target_net(non_final_next_states)
-        max_action_value =  all_action_values.max(dim=1).values
-        combined_param_values = torch.sum(param_values, dim=1)
-        number_of_non_null_param_values = torch.count_nonzero(param_values, dim=1)
-
-        next_state_values[non_final_mask] = 0.5 * max_action_value + 0.5 * (combined_param_values / number_of_non_null_param_values) 
+        action_look_ahead_values= action_look_ahead_net(non_final_next_states)
+        action_look_ahead_selections = action_look_ahead_values.max(dim=1).indices
+        action_look_ahead_max_values = action_look_ahead_values.max(dim=1).values
+        next_state_action_values[non_final_mask] = action_look_ahead_max_values
     # Compute the expected Q values
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+    action_expected_compound_values = (next_state_action_values * GAMMA) + reward_batch
+    ##################################
+    # Value for parameter selection
+    ##################################
+    # Q for parameters is summed over all selected parameters
+    # and normalized by the number of selected parameters to keep it in a similar 
+    # order of magnitude to other value estimations without touching initilization
+    next_state_param_values = torch.zeros(BATCH_SIZE, device=device)
+    with torch.no_grad():
+        intermediate_look_aheads = torch.cat([non_final_next_states, action_look_ahead_selections.unsqueeze(dim=1)], dim=1)
+        param_look_ahead_logits, param_look_ahead_values = param_look_ahead_net(intermediate_look_aheads)
+        param_look_ahead_selections = param_look_ahead_logits > 0.5
+        param_look_ahead_normalized_values =  torch.mul(param_look_ahead_selections, param_look_ahead_values).sum(dim=1).div(param_look_ahead_selections.sum(dim=1))
+        next_state_param_values[non_final_mask] = param_look_ahead_normalized_values
+        full_transition_look_ahead = torch.cat([intermediate_look_aheads, param_look_ahead_logits], dim=1)
+        rejection_look_ahead_labels = rejection_net(full_transition_look_ahead).max(dim=1).indices
+        param_look_ahead_values[rejection_look_ahead_labels] = ACTION_REJECTION_REWARD
+    # Compute the expected Q values
+    param_expected_values = (next_state_param_values * GAMMA) + reward_batch
 
     # Compute loss
-    criterion = nn.SmoothL1Loss()
-    loss = criterion(state_macro_action_values.max(dim=1).values.unsqueeze(1), expected_state_action_values.unsqueeze(1))
+    rl_criterion = nn.SmoothL1Loss()
+    action_loss = rl_criterion(action_policy_values.max(dim=1).values.unsqueeze(1), action_expected_compound_values.unsqueeze(1))
+    param_policy_selections = param_policy_logits > 0.5
+    param_policy_normalized_values =  torch.mul(param_policy_selections, param_policy_values).sum(dim=1).div(param_policy_selections.sum(dim=1))
+    param_loss = rl_criterion(param_policy_normalized_values, param_expected_values)
 
-    # Optimize the model
-    optimizer.zero_grad()
-    loss.backward()
+    # Compute classification loss for action rejection net
+    regression_criterion = rejection_net.loss
+    rejection_loss = regression_criterion(rejection_logits.squeeze(), action_rejected_batch.to(torch.float))
+
+
+    # Optimize the models
+    action_optimizer.zero_grad()
+    action_loss.backward()
+    param_optimizer.zero_grad()
+    param_loss.backward()
+    rejection_optimizer.zero_grad()
+    rejection_loss.backward()
+
     # In-place gradient clipping
-    torch.nn.utils.clip_grad_value_(policy_net.parameters(), 100)
-    optimizer.step() # type: ignore
+    torch.nn.utils.clip_grad_value_(action_policy_net.parameters(), 100)
+    torch.nn.utils.clip_grad_value_(param_policy_net.parameters(), 100)
+    torch.nn.utils.clip_grad_value_(rejection_net.parameters(), 100)
+
+    action_optimizer.step() # type: ignore
+    param_optimizer.step() # type: ignore
+    rejection_optimizer.step() #type: ignore
 
 
 def train(num_episodes: int) -> None:
-    for _ in tqdm.tqdm(range(num_episodes)):
+    for ep in tqdm.tqdm(range(num_episodes)):
         # Initialize the environment and get its state
         state, _ = env.reset()
         state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
         cumulative_reward: int = 0
+        cumulative_illegal_actions: int = 0
+        cumulative_non_null_actions: int = 0
+        cumulative_steps: int = 0
         for _ in count():
+            action_rejected: bool = False
             action = select_action(state)
-            observation, reward, terminated, truncated, _ = env.step(torch.flatten(action))
+            if action[0] != 0:
+                cumulative_non_null_actions += 1
+            observation, reward, terminated, truncated, info = env.step(torch.flatten(action))
+            cumulative_steps +=1
             cumulative_reward += reward
+            if (ACTION_REJECTED_INFO_KEY in info) and info[ACTION_REJECTED_INFO_KEY]:
+                action_rejected = True
+                cumulative_illegal_actions += 1
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
             if terminated:
@@ -160,7 +227,7 @@ def train(num_episodes: int) -> None:
                 next_state = torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
 
             # Store the transition in memory
-            memory.push(state, action, next_state, reward) # type: ignore
+            memory.push(state, action[0].unsqueeze(dim=0), action[1:], next_state, reward, torch.tensor([action_rejected])) # type: ignore
 
             # Move to the next state
             state = next_state
@@ -168,17 +235,29 @@ def train(num_episodes: int) -> None:
             # Perform one step of the optimization (on the policy network)
             optimize_model()
 
-            # Soft update of the target network's weights
+            # Soft update of the look ahead network's weights
             # θ′ ← τ θ + (1 −τ )θ′
-            target_net_state_dict = target_net.state_dict()
-            policy_net_state_dict = policy_net.state_dict()
-            for key in policy_net_state_dict:
-                target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
-            target_net.load_state_dict(target_net_state_dict)
+            # Action selection
+            action_look_ahead_state_dict = action_look_ahead_net.state_dict()
+            action_policy_state_dict = action_policy_net.state_dict()
+            for key in action_policy_state_dict:
+                action_look_ahead_state_dict[key] = action_policy_state_dict[key]*TAU + action_look_ahead_state_dict[key]*(1-TAU)
+            action_look_ahead_net.load_state_dict(action_look_ahead_state_dict)
+            # Parameter selection
+            param_look_ahead_state_dict = param_look_ahead_net.state_dict()
+            param_policy_state_dict = param_policy_net.state_dict()
+            for key in param_policy_state_dict:
+                param_look_ahead_state_dict[key] = param_policy_state_dict[key]*TAU + param_look_ahead_state_dict[key]*(1-TAU)
+            param_look_ahead_net.load_state_dict(param_look_ahead_state_dict)
 
             if done:
                 episode_rewards.append(cumulative_reward)
-                print(cumulative_reward)
+                episode_lengths.append(cumulative_steps)
+                episode_illegal_actions.append(cumulative_illegal_actions)
+                episode_non_pass_actions.append(cumulative_non_null_actions)
+                print("Episode: {}\nLength: {}\nReward: {}\nNon-Pass-Actions: {}\nIllegalActions: {}".format(
+                    ep, cumulative_steps, cumulative_reward, cumulative_non_null_actions, cumulative_illegal_actions
+                ))
                 plot_durations()
                 break
     print('Complete')

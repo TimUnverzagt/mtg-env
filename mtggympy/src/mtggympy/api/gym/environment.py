@@ -25,6 +25,11 @@ from mtggympy.helpers.predicate_extensions import build_either_predicate
 
 from mtggympy.config.logging_config import api_log as logger
 
+ACTION_REJECTED_INFO_KEY = "action_rejected"
+
+GAME_WIN_REWARD: int = 10
+GAME_LOSS_REWARD: int = -10
+ACTION_REJECTION_REWARD: int = -1
 
 ObsType = TypeVar("ObsType")
 ActType = TypeVar("ActType")
@@ -129,7 +134,7 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         opponent_thread.start()
         
         self.last_obs = observed_state_to_obs(self.agent.initial_state, self.observation_limits)
-        return self.get_obs(), self._get_inf()
+        return self.get_obs(), self._get_inf(intent_was_rejected=False)
 
     def get_obs(self) -> FlatMtgObservation:
         logger.debug("Returning last obs: {}".format(self.last_obs))
@@ -140,11 +145,10 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         state: GameState = self.game_session.game_state
         agent_cont: PlayerController | None = self.agent.controller
         assert agent_cont is not None
-        reward: int = 10
         if agent_cont.position in state.winner_positions:
-            return reward
+            return GAME_WIN_REWARD
         else:
-            return reward * -1
+            return GAME_LOSS_REWARD
 
     
     def step(self, action: FlatMtgAction) -> tuple[FlatMtgObservation, int, bool, bool, MtgInfo]:
@@ -152,7 +156,7 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         reward: int = 0
         terminated: bool = False
         truncated: bool = False
-        info: MtgInfo = {}
+        info: MtgInfo = self._get_inf(intent_was_rejected=False)
 
         with self.agent.api_prior_state_processing_condition:
             logger.debug("Step {}: Waiting for prior state to be set".format(self.steps_performed + 1))
@@ -191,7 +195,8 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
             logger.debug("Step {}: Received processing confirmation via update of game state in controller".format(self.steps_performed + 1))
             posteriori_state = self.agent.api_posteriori_state
             if(self.agent.controller.obs_last_action_rejected):
-                reward = -1
+                reward += ACTION_REJECTION_REWARD
+                info = self._get_inf(intent_was_rejected=True)
                 self.agent.controller.obs_last_action_rejected=False
             self.last_obs = observed_state_to_obs(posteriori_state, self.observation_limits)
             self.agent.api_posteriori_state = None
@@ -205,9 +210,10 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         self.steps_performed += 1
         return self.get_obs(), reward, terminated, truncated, info
 
-    def _get_inf(self) -> dict[str, Any]:
-        # TODO: Implement
-        return {}
+    def _get_inf(self, intent_was_rejected: bool) -> MtgInfo:
+        infos: dict[str, Any] = {}
+        infos[ACTION_REJECTED_INFO_KEY] = intent_was_rejected
+        return infos
 
     
 if __name__ == "__main__":
