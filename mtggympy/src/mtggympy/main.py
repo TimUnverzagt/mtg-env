@@ -15,10 +15,7 @@ import mtggympy.dojo.training as training
 #import sys
 
 #from logging_config import main_log
-import mtggympy.config.app_config as conf
-
-def learning_example():
-    training.train(50)
+import mtggympy.config.app_config as conf    
 
 def desktop_game_example():
     session: MtgSession = MtgSession() 
@@ -35,8 +32,8 @@ if __name__ == "__main__":
     match conf.CURRENT_SETUP:
         case conf.Setup.HUMAN_VS_INTERNALS:
             desktop_game_example()
-        case conf.Setup.Q_TRAINING:
-            learning_example()
+        case conf.Setup.TRAINING:
+            training.train(conf.EPISODES_IN_EXPERIMENT)
         case conf.Setup.GOLDFISH_SPEED_EXP:
             bot_match.fight_two_player(conf.EPISODES_IN_EXPERIMENT, (InternalAgentType.GOLDFISH, InternalAgentType.GOLDFISH))
         case conf.Setup.MONKEY_SPEED_EXP:

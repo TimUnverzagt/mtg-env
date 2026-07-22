@@ -177,9 +177,10 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
             self.agent.api_prior_state = None
             self.agent.api_prior_state_processing_condition.notify_all()
 
-        logger.debug("Step {}: Translating gymnasium action {} into action intent".format(self.steps_performed + 1, action))
+        flat_action: Any = encoding.explode_flat_action(action)
+        logger.info("Step {}: Got external intent {} into action intent".format(self.steps_performed + 1, flat_action[0]))
         intent: ActionIntent = gym_action_to_player_decision(prior_state.event, encoding.explode_flat_action(action))
-        logger.info("Step {}: Got action {} as translation for gymnasium action".format(self.steps_performed + 1,intent.action.name))
+        logger.info("Step {}: Got internal intent {} as translation for gymnasium action".format(self.steps_performed + 1,intent.action.name))
         logger.debug("Step {}: Extracted the following params from gymnasium action: {}".format(self.steps_performed + 1, intent.parameters))
 
         with self.agent.api_intent_condition:
@@ -197,6 +198,7 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
             if(self.agent.controller.obs_last_action_rejected):
                 reward += ACTION_REJECTION_REWARD
                 info = self._get_inf(intent_was_rejected=True)
+                logger.warning("Step {}: Intent resulted in rejected action".format(self.steps_performed + 1))
                 self.agent.controller.obs_last_action_rejected=False
             self.last_obs = observed_state_to_obs(posteriori_state, self.observation_limits)
             self.agent.api_posteriori_state = None

@@ -8,22 +8,22 @@ from mtggympy.gameengine.cards.catalog.sorceries import SorceryNames
 from mtggympy.gameengine.cards.instances.types import CardInstance
 from mtggympy.gameengine.cards.instances.factory import generate_card_instance
 
-DECK_SIZE: int = 40
+GENERATED_DECK_SIZE: int = 40
 class DeckName(Enum):
-    GENERATED = "generated"
-    COLORLESS = "colorless"
-    RED_GREEN = "red-green"
+    COLORLESS_GENERATED = "generated"
+    COLORLESS_40 = "colorless"
+    RED_GREEN_40 = "red-green"
 
 def produce_deck(deck_name: DeckName) -> list[CardInstance]:
     match deck_name:
-        case DeckName.GENERATED:
-            return get_default_library(DECK_SIZE)
-        case DeckName.COLORLESS:
+        case DeckName.COLORLESS_GENERATED:
+            return get_generated_colorless(GENERATED_DECK_SIZE)
+        case DeckName.COLORLESS_40:
             return get_fourty_card_colorless()
-        case DeckName.RED_GREEN:
+        case DeckName.RED_GREEN_40:
             return get_fourty_card_red_green()
 
-def get_default_library(deck_size: int) -> list[CardInstance]:
+def get_generated_colorless(deck_size: int) -> list[CardInstance]:
     library: list[CardInstance] = []
     for i in range(0,deck_size):
         if (i % 3) >= 1:

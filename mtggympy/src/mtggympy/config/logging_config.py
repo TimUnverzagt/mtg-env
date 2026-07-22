@@ -41,9 +41,9 @@ PLAYER_LOG_LEVEL: int = logging.INFO
 # Create the loggers ONCE
 main_log   = create_logger("main", logging.ERROR)
 ui_log = create_logger("ui", logging.ERROR)
-dojo_log = create_logger("dojo", logging.DEBUG)
+dojo_log = create_logger("dojo", logging.INFO)
 session_log   = create_logger("session", logging.WARN)
 desktop_ui_log   = create_logger("dektop-ui", logging.ERROR)
 desktop_api_log   = create_logger("dektop-api", logging.ERROR)
-api_log   = create_logger("api", logging.ERROR)
+api_log   = create_logger("api", logging.INFO)
 engine_log   = create_logger("engine", logging.ERROR, True)

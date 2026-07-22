@@ -327,11 +327,11 @@ def train(num_episodes: int) -> None:
     finish_experiment(episode_results, starting_time)
     
 def finish_experiment(results: list[EpisodeResult], starting_time: datetime)-> None:
+    save_experiment_result(starting_time, results, EpisodeResult)
     print('Complete')
     plot_results(results, show_result=True)
     plt.ioff() # type: ignore
     plt.show() # type: ignore
-    save_experiment_result(starting_time, results, EpisodeResult)
 
 if __name__ == "__main__":
     train(num_episodes=50)

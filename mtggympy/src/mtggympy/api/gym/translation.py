@@ -42,9 +42,11 @@ def event_to_index(event: PlayerEvent) -> int:
             return 3
 
 def gym_action_to_player_decision(upcoming_event: PlayerEvent, action: MtgAction) -> ActionIntent:
-    logger.debug("Translating for decision [{}]".format(upcoming_event))
+    logger.debug("Translating intent {} for event {}".format(action, upcoming_event))
+    logger.debug("Found possible actions: {}".format(upcoming_event.value.possible_actions))
     action_index: int = int(action[0])
     if(action_index >= len(upcoming_event.value.possible_actions)):
+        logger.warning("Intent index {} goes out of  bounds of possible actions: [0,{})".format(action_index, len(upcoming_event.value.possible_actions)))
         action_index = 0
     chosen_action: ActionData = upcoming_event.value.possible_actions[action_index]
     if(chosen_action.value.dimensionality == 0):
