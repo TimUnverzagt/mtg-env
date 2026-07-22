@@ -7,18 +7,18 @@ from mtggympy.config.decks import DeckName
 # Setup 
 ###############
 class Setup(Enum):
-    Q_TRAINING = 0
+    TRAINING = 0
     HUMAN_VS_INTERNALS = 1
     GOLDFISH_SPEED_EXP = 2
     MONKEY_SPEED_EXP = 3
     RULESBASED_SPEED_EXP = 4
 
-CURRENT_SETUP: Setup = Setup.GOLDFISH_SPEED_EXP
-DEFAULT_DECK: DeckName = DeckName.RED_GREEN
+CURRENT_SETUP: Setup = Setup.TRAINING
+DEFAULT_DECK: DeckName = DeckName.COLORLESS_40
 
 EPISODES_IN_EXPERIMENT: int = 100
 
-TRASITION_WITH_STATE_BACKUP: bool = False
+TRASITION_WITH_STATE_BACKUP: bool = True
 
 ###############
 # Project 

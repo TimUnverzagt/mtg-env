@@ -86,7 +86,7 @@ def declare_blockers_step(acting_seat: int, intent: ActionIntent, game_state: Ga
                 return False
             return block(acting_seat, game_state, blocker_attacker_pairs)
         case _:
-            handle_illegal_action(intent.action, PlayerEvent.DECLARE_ATTACKS)
+            handle_illegal_action(intent.action, PlayerEvent.DECLARE_BLOCKS)
             return False
 
 def end_step(game_state: GameState) -> bool:

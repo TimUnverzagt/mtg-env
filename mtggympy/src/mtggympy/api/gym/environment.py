@@ -4,7 +4,7 @@ import numpy as np
 
 
 import gymnasium as gym
-from threading import Thread
+from threading import Barrier, Thread
 from gymnasium.spaces import Discrete, Tuple, MultiDiscrete, Space
 from typing import Optional, TypeVar, Any, cast
 
@@ -51,6 +51,7 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         self.observation_limits: MtgObservation | None = None
         self.last_obs: MtgObservation | None = None
         self.steps_performed: int = 0
+        self.api_step_barrier: Barrier = Barrier(2)
 
         card_space: MultiDiscrete = MultiDiscrete(
             [encoding.ASSUMED_NUMBER_OF_CARDS +1, 2, 2])
@@ -118,7 +119,7 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         external_seat_pos = 1
         interal_seat_pos = 0
         # Set up external agent
-        self.agent = ApiAgent(self.game_session,"External", target_seat=external_seat_pos)
+        self.agent = ApiAgent(self.game_session,"External", api_barrier=self.api_step_barrier, target_seat=external_seat_pos)
         agent_thread: Thread = Thread(target=self.agent.play_game, daemon=True)
 
 
@@ -158,6 +159,9 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         truncated: bool = False
         info: MtgInfo = self._get_inf(intent_was_rejected=False)
 
+        logger.debug("Step {}: resetting api barrier".format(self.steps_performed + 1))
+        self.api_step_barrier.reset()
+
         with self.agent.api_prior_state_processing_condition:
             logger.debug("Step {}: Waiting for prior state to be set".format(self.steps_performed + 1))
             self.agent.api_prior_state_processing_condition.wait_for(build_either_predicate(   
@@ -184,6 +188,8 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         logger.debug("Step {}: Extracted the following params from gymnasium action: {}".format(self.steps_performed + 1, intent.parameters))
 
         with self.agent.api_intent_condition:
+            logger.debug("Waiting for agent to have rescinded any old intent")
+            self.agent.api_intent_condition.wait_for(lambda: self.agent.api_intent is None)
             logger.debug("Step {}: Declaring decision intent from external action".format(self.steps_performed + 1))
             self.agent.api_intent = intent
             self.agent.api_intent_condition.notify_all()
@@ -208,6 +214,10 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
             logger.info("Step {}: Controller is terminating ==> Sending terminated".format(self.steps_performed + 1))
             reward = self.get_end_of_game_reward()
             terminated = True
+        
+        logger.debug("Joining {} others waiting for barrier before ending engine step".format(self.api_step_barrier.n_waiting))
+        self.api_step_barrier.wait()
+        logger.debug("Passed barrier")
 
         self.steps_performed += 1
         return self.get_obs(), reward, terminated, truncated, info

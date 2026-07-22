@@ -5,7 +5,7 @@ from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEven
 from mtggympy.gameengine.state.core import GameState
 from mtggympy.gameengine.state.initial import get_initial_game_state
 from mtggympy.server.session.player_controller import PlayerController
-import mtggympy.gameengine.transition as GameEngine
+import mtggympy.gameengine.core as GameEngine
 #from game.state import GameState
 from mtggympy.config.defaults import PlayerState
 from mtggympy.server.session.obfuscation import observe_game_state
@@ -191,27 +191,27 @@ class MultiClientSession():
                 # Process Player Input and report state update
                 logger.debug("SessionTick: {}: Received Player Input: {} --- {}".format(cont.player_info.name, player_intent.action.name, player_intent.parameters))
                 step_success: bool
-                state_for_transition: GameState = deepcopy(game_state) if conf.TRASITION_WITH_STATE_BACKUP else game_state
+                state_copy: GameState = deepcopy(game_state) if conf.TRASITION_WITH_STATE_BACKUP else game_state
                 match game_state.step:
                     case GameStep.UPKEEP | GameStep.DRAW:
                         step_success = False                    
                     case GameStep.END_STEP:
-                        step_success = GameEngine.end_step(state_for_transition)
-                        step_success &= GameEngine.pass_turn(state_for_transition)
+                        step_success = GameEngine.end_step(state_copy)
+                        step_success &= GameEngine.pass_turn(state_copy)
                     case GameStep.MAIN_1:
-                        step_success = GameEngine.main_phase(state_for_transition.active_player_index, player_intent, state_for_transition)
+                        step_success = GameEngine.main_phase(state_copy.active_player_index, player_intent, state_copy)
                     case GameStep.ATTACK_STEP:
-                        step_success = GameEngine.declare_attackers_step(state_for_transition.active_player_index, player_intent, state_for_transition)
+                        step_success = GameEngine.declare_attackers_step(state_copy.active_player_index, player_intent, state_copy)
                     case GameStep.BLOCK_STEP:
                         acting_seat_index: int = self.get_seat_from_active_player_onward(seat_offseat=1)
-                        step_success = GameEngine.declare_blockers_step(acting_seat_index, player_intent, state_for_transition)
+                        step_success = GameEngine.declare_blockers_step(acting_seat_index, player_intent, state_copy)
                     case GameStep.MAIN_2:
-                        step_success = GameEngine.main_phase(state_for_transition.active_player_index, player_intent, state_for_transition)
+                        step_success = GameEngine.main_phase(state_copy.active_player_index, player_intent, state_copy)
                 if step_success:
-                    succesor_step: GameStep = get_next_step(state_for_transition.step, player_intent)
+                    succesor_step: GameStep = get_next_step(state_copy.step, player_intent)
                     if (succesor_step is not game_state.step):
-                        GameEngine.empty_mana_pools(state_for_transition)
-                    state_for_transition.step = succesor_step
+                        GameEngine.empty_mana_pools(state_copy)
+                    state_copy.step = succesor_step
                 else:
                     logger.error("Step with {} failed".format(cont.player_info.name))
 
@@ -231,7 +231,7 @@ class MultiClientSession():
             self.game_step_barrier.wait()
             logger.debug("Passed barrier")
 
-            return (state_for_transition, step_success)
+            return (state_copy, step_success)
 
     def get_controller_for_target_seat(self, target_seat: int) -> Optional[PlayerController]:
         if self.seats[0] is None or self.seats[1] is None:

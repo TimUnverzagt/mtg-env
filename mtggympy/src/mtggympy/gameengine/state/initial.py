@@ -3,7 +3,7 @@
 from mtggympy.config.defaults import Player
 from mtggympy.gameengine.constants import GameStep
 from mtggympy.gameengine.state.core import GameState
-from mtggympy.gameengine.transition import draw_card, shuffle_cards
+from mtggympy.gameengine.core import draw_card, shuffle_cards
 
 
 def get_initial_game_state() -> GameState:

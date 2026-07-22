@@ -2,7 +2,7 @@ from mtggympy.gameengine.cards.catalog.sorceries import SorceryNames, SORCERY_CA
 from mtggympy.gameengine.cards.instances.capabilities import ResolutionEffect
 from mtggympy.gameengine.cards.instances.types import SorceryInstance
 from mtggympy.gameengine.state.core import GameState, PlayerState
-import mtggympy.gameengine.transition as GameEngine
+import mtggympy.gameengine.core as GameEngine
 
 
 class ExploreInstance(SorceryInstance, ResolutionEffect):

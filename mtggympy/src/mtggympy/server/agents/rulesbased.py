@@ -3,7 +3,7 @@ from logging import Logger
 
 from mtggympy.gameengine.constants import CardType
 from mtggympy.gameengine.cards.instances.types import CardInstance, CreatureInstance, LandInstance
-from mtggympy.gameengine.transition import can_pay_cost
+from mtggympy.gameengine.core import can_pay_cost
 from mtggympy.server.agents.base import AgentBase
 
 from mtggympy.server.session.multi_client import MultiClientSession as GameSession
