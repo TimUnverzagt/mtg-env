@@ -223,10 +223,11 @@ class MultiClientSession():
                 cont.set_action_result(observe_game_state(game_state, player_seat), not step_success)
                 cont.obs_after_action_condition.notify_all()
                 cont.obs_after_action_condition.wait_for(lambda: cont.obs_after_action is None)
-                logger.debug("SessionTick: {}: Answered player with new state {}".format(
-                    cont.player_info.name,
-                    game_state
-                ))
+                logger.debug("SessionTick: {}: Answered player with new state.")
+                #logger.debug("SessionTick: {}: Answered player with new state {}".format(
+                #    cont.player_info.name,
+                #    game_state
+                #))
             logger.debug("Joining {} others waiting for barrier before ending engine step".format(self.game_step_barrier.n_waiting))
             self.game_step_barrier.wait()
             logger.debug("Passed barrier")

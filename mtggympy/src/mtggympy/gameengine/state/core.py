@@ -1,4 +1,4 @@
-from mtggympy.gameengine.cards.instances.types import CardInstance
+from mtggympy.gameengine.cards.instances.types import CardInstance, LandInstance
 from mtggympy.gameengine.constants import DeathDescription, ManaColor, GameStep
 from mtggympy.gameengine.constants import ManaColor
 from dataclasses import dataclass
@@ -19,9 +19,13 @@ class PlayerState:
         return "\n".join([
             "Name: {}".format(self.name),
             "Current Life: {}".format(self.current_life),
+            "Cards in Library: {}".format(len(self.cards_in_library)),
             "Cards in Hand:",
             " | ".join(map(CardInstance.__str__, self.cards_in_hand)),
-            "Cards in Library: {}".format(len(self.cards_in_library))
+            "Lands in play:",
+            " | ".join(map(CardInstance.__str__, filter(lambda card: isinstance(card, LandInstance),self.cards_in_play))),
+            "Nonlands in play:",
+            " | ".join(map(CardInstance.__str__, filter(lambda card: not isinstance(card, LandInstance),self.cards_in_play))),
         ])
 
 @dataclass

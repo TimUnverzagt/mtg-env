@@ -135,6 +135,7 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         opponent_thread.start()
         
         self.last_obs = observed_state_to_obs(self.agent.initial_state, self.observation_limits)
+        self.api_step_barrier.reset()
         return self.get_obs(), self._get_inf(intent_was_rejected=False)
 
     def get_obs(self) -> FlatMtgObservation:
@@ -151,14 +152,20 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         else:
             return GAME_LOSS_REWARD
 
+    def _return_game_termination(self, message: str) -> tuple[FlatMtgObservation, int, bool, bool, MtgInfo]:
+        logger.info(message + "==> Sending terminated")
+        terminated: bool = True
+        truncated: bool = False
+        info: MtgInfo = {}
+        return (self.get_obs(), self.get_end_of_game_reward(), terminated, truncated, info)
     
     def step(self, action: FlatMtgAction) -> tuple[FlatMtgObservation, int, bool, bool, MtgInfo]:
-        logger.debug("Performing a step of the enironment")
+        logger.debug("Performing a step of the environment")
         reward: int = 0
+        # Collect step information
         terminated: bool = False
         truncated: bool = False
         info: MtgInfo = self._get_inf(intent_was_rejected=False)
-
         logger.debug("Step {}: resetting api barrier".format(self.steps_performed + 1))
         self.api_step_barrier.reset()
 
@@ -169,11 +176,7 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
                 lambda: self.agent.api_prior_state is not None  
             ))       
             if self.agent.controller.terminate:
-                logger.info("Step {}: Game ended between steps! ==> Sending terminated".format(self.steps_performed + 1))
-                terminated = True
-                return (self.get_obs(),
-                    self.get_end_of_game_reward(),
-                    terminated, truncated, info)
+                return self._return_game_termination("Step {}: Game ended between steps!".format(self.steps_performed + 1))
             assert self.agent.api_prior_state
             prior_state: ObservedGameState = self.agent.api_prior_state
             self.last_obs = observed_state_to_obs(prior_state, self.observation_limits)
@@ -197,7 +200,11 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
 
         with self.agent.api_posteriori_state_processing_condition:
             logger.debug("Step {}: waiting for response from agent".format(self.steps_performed + 1))
-            self.agent.api_posteriori_state_processing_condition.wait_for(lambda: self.agent.api_posteriori_state is not None)
+            self.agent.api_posteriori_state_processing_condition.wait_for(build_either_predicate(   
+                lambda: self.agent.controller.terminate,
+                lambda: self.agent.api_posteriori_state is not None))
+            if self.agent.controller.terminate:
+                return self._return_game_termination("Step {}: Game ended before agent could propagate last state!".format(self.steps_performed + 1))
             assert self.agent.api_posteriori_state
             logger.debug("Step {}: Received processing confirmation via update of game state in controller".format(self.steps_performed + 1))
             posteriori_state = self.agent.api_posteriori_state

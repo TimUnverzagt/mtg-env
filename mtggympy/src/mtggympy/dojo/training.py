@@ -37,7 +37,7 @@ BATCH_SIZE = 128
 GAMMA = 0.99
 EPS_START = 0.9
 EPS_END = 0.01
-EPS_DECAY = 2500
+EPS_DECAY_ETIME_RATIO = 0.33
 TAU = 0.005
 LR = 3e-4
 
@@ -61,22 +61,26 @@ class EpisodeResult:
     total_parameter_loss: float | None = None
     total_rejection_loss: float | None = None
 
-def log_ep_result(result: EpisodeResult) -> None:
+def log_ep_result(result: EpisodeResult, epsilon: float) -> None:
     logger.info(("-"*10 + " Episode {} " + "-"*10).format(result.position_in_training))
     logger.info("Length: {}".format(result.length))
-    logger.info("Average Reward: {}".format(result.reward / result.length))
-    logger.info("Average Illegal Actions: {}".format(result.illegal_actions / result.length))
-    logger.info("Average Non-Pass Actions: {}".format(result.non_pass_actions / result.length))
+    logger.info("Total Reward: {}".format(result.reward))
+    logger.info("Total Legal Non-Pass Actions: {}".format(result.non_pass_actions - result.illegal_actions))
+    logger.info("Average Reward: {}".format(round(result.reward / result.length, 3)))
+    logger.info("Average Illegal Actions: {}".format(round(result.illegal_actions / result.length, 3)))
+    logger.info("Average Non-Pass Actions: {}".format(round(result.non_pass_actions / result.length, 3)))
+    # The following hold because passing is legal (ignores parameters)
+    logger.info("Current Epsilon: {}".format(epsilon))
     if result.total_action_loss:
-        logger.info("Average Action Loss: {}".format(result.total_action_loss / result.length))
+        logger.info("Average Action Loss: {}".format(round(result.total_action_loss / result.length, 3)))
     else:
         logger.info("Average Action Loss: N/A")
     if result.total_parameter_loss:
-        logger.info("Average Parameter Loss: {}".format(result.total_parameter_loss / result.length))
+        logger.info("Average Parameter Loss: {}".format(round(result.total_parameter_loss / result.length, 3)))
     else:
         logger.info("Average Parameter Loss: N/A")
     if result.total_rejection_loss:
-        logger.info("Average Rejection Loss: {}".format(result.total_rejection_loss / result.length))
+        logger.info("Average Rejection Loss: {}".format(round(result.total_rejection_loss / result.length, 3)))
     else:
         logger.info("Average Rejection Loss: N/A")
     return
@@ -105,14 +109,17 @@ memory = ReplayMemory(10000)
 
 steps_done = 0
 
-def select_action(state: torch.Tensor):
+def get_current_epsilon(absolvation_ratio: float) -> float:
+    eps_decay:float  =  math.exp(-1. * absolvation_ratio/EPS_DECAY_ETIME_RATIO)
+    return EPS_END + (EPS_START - EPS_END) * eps_decay
+
+def select_action(state: torch.Tensor, absolvation_ratio: float):
     global steps_done
     sample = random.random()
-    eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-        math.exp(-1. * steps_done / EPS_DECAY)
+     #Replaces a fixed EPS_DECAY to scale for longer training
     steps_done += 1
     #print("State shape during select_action:{}".format(state.shape))
-    if sample > eps_threshold:
+    if sample > get_current_epsilon(absolvation_ratio):
         with torch.no_grad():
             action = action_policy_net(state.squeeze()).argmax().expand(1)
             params = param_policy_net(torch.cat([state.squeeze(),action]))[0] > 0.5
@@ -259,15 +266,24 @@ def train(num_episodes: int) -> None:
         cumulative_rejection_loss: float | None = 0
         for _ in count():
             action_rejected: bool = False
-            action = select_action(state)
+            absolvation_ratio: float = ep_position/num_episodes
+            action = select_action(state, absolvation_ratio) #type: ignore
             if action[0] != 0:
                 cumulative_non_null_actions += 1
-            observation, reward, terminated, truncated, info = env.step(torch.flatten(action))
-            cumulative_steps +=1
-            cumulative_reward += int(reward)
+            observation, reward, terminated, truncated, info = env.step(torch.flatten(action))#type: ignore
             if (ACTION_REJECTED_INFO_KEY in info) and info[ACTION_REJECTED_INFO_KEY]:
                 action_rejected = True
                 cumulative_illegal_actions += 1
+            #####################
+            # Reward substition
+            #####################
+            #reward = 0
+            #if not action_rejected and action[0] != 0:
+            #    reward = 1
+            #####################
+            cumulative_steps +=1
+            cumulative_reward += int(reward)#type: ignore
+            
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
             if terminated:
@@ -321,7 +337,7 @@ def train(num_episodes: int) -> None:
                     total_rejection_loss=cumulative_rejection_loss
                 )
                 episode_results.append(ep_result)
-                log_ep_result(ep_result)
+                log_ep_result(ep_result, epsilon=get_current_epsilon(absolvation_ratio))
                 plot_results(episode_results)
                 break
     finish_experiment(episode_results, starting_time)

@@ -43,7 +43,14 @@ class AgentBase(ABC):
             with self.controller.barrier_condition:
                 cont.logger.debug("{}-{}: Waiting for game step barrier to be passed to me.".format(
                                     cont.player_info.name, events_processed + 1))
-                self.controller.barrier_condition.wait_for(lambda: self.controller.game_step_barrier is not None)
+                self.controller.barrier_condition.wait_for(build_either_predicate(
+                    lambda: self.controller.game_step_barrier is not None,
+                    lambda: self.session.shutting_down
+                ))
+                if self.session.shutting_down:
+                    cont.logger.info("Stopping because session has terminated.")
+                    self.shutdown()
+                    return
                 assert self.controller.game_step_barrier
 
             with cont.obs_before_action_condition:

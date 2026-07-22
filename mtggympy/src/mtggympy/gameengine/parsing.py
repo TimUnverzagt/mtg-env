@@ -14,10 +14,10 @@ def collection_to_numpy(collection_args: list[list[int]]) -> np.ndarray:
 
 
 def card_for_playing(acting_seat: int, intent: ActionIntent, game_state: GameState) -> CardInstance | None:
-    if(intent.parameters is None):
+    if(intent.parameters is None or len(intent.parameters) < 1):
         logger.error("{}: Parsing: Arguments are missing. Refusing to process intent!".format(intent.action.name))
         return None
-    if(intent.parameters.size != 1):
+    if(intent.parameters.size > 1):
         logger.error("{}: Parsing: More than one argument. Refusing to process intent!".format(intent.action.name))
         return None
     card_index: int = intent.parameters.sum() # This colapses various shapes
@@ -27,7 +27,7 @@ def card_for_playing(acting_seat: int, intent: ActionIntent, game_state: GameSta
     return game_state.player_states[acting_seat].cards_in_hand[card_index]
 
 def lands_for_activation(acting_seat: int, intent: ActionIntent, game_state: GameState) -> list[CardInstance] | None:
-    if(intent.parameters is None):
+    if(intent.parameters is None or len(intent.parameters) < 1):
         logger.error("{}: Parsing: Arguments are missing. Refusing to process intent!".format(intent.action.name))
         return None
     if((len(intent.parameters.shape) < 2) or (intent.parameters.shape[1] != 1)):
@@ -43,7 +43,7 @@ def lands_for_activation(acting_seat: int, intent: ActionIntent, game_state: Gam
     return target_lands
 
 def creatures_for_attacking(acting_seat: int, intent: ActionIntent, game_state: GameState) -> list[CreatureInstance] | None:
-    if(intent.parameters is None):
+    if(intent.parameters is None or len(intent.parameters) < 1):
         logger.error("{}: Parsing: Arguments are missing. Refusing to process intent!".format(intent.action.name))
         return None
     if((len(intent.parameters.shape) < 2) or (intent.parameters.shape[1] != 1)):
@@ -64,7 +64,7 @@ def creatures_for_attacking(acting_seat: int, intent: ActionIntent, game_state: 
 
     
 def blocker_attacker_pairs(acting_seat: int, intent: ActionIntent, game_state: GameState) -> list[tuple[CreatureInstance, CreatureInstance]] | None:
-    if(intent.parameters is None):
+    if(intent.parameters is None or len(intent.parameters) < 1):
         logger.error("{}: Parsing: Arguments are missing. Refusing to process intent!".format(intent.action.name))
         return None
     if((len(intent.parameters.shape) < 2) or (intent.parameters.shape[1] != 2)):

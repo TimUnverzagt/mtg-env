@@ -50,8 +50,8 @@ class ActionRejectionNetwork(nn.Module):
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         encoded: torch.Tensor = F.relu(self.base_encoder(x))
-        legality_deduction: torch.Tensor = F.sigmoid(self.legality_layer(encoded))
-        return legality_deduction
+        legality_logit: torch.Tensor = self.legality_layer(encoded)
+        return legality_logit
     
 Transition = namedtuple('Transition',
                         ('state', 'action', 'params', 'next_state', 'reward', 'action_rejected')) # type: ignore

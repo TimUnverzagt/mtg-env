@@ -26,7 +26,7 @@ class ApiAgent(AgentBase):
         with self.api_intent_condition:
             self.api_intent = None
             self.api_intent_condition.notify_all()
-            logger.debug("Waiting declaration of intent from api")
+            logger.debug("Waiting for declaration of intent from api")
             self.api_intent_condition.wait_for(lambda: self.api_intent is not None)
             assert self.api_intent
             logger.debug("Received intent {}".format(self.api_intent))       
