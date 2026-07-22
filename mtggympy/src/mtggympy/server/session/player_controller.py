@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from mtggympy.config.defaults import PlayerState
 from mtggympy.gameengine.state.event import ActionIntent
-from threading import Condition
+from threading import Barrier, Condition
 from logging import Logger
 from mtggympy.config.logging_config import create_logger, PLAYER_LOG_LEVEL
 from mtggympy.server.session.observed_state import ObservedGameState
@@ -18,6 +18,8 @@ class PlayerController:
         self.initial_state: ObservedGameState = initial_game_state
 
         # Shared variables
+        self.barrier_condition: Condition = Condition()
+        self.game_step_barrier: Barrier | None = None
         self.obs_before_action_condition: Condition = Condition()
         self.obs_before_action: ObservedGameState | None = None
         self.obs_after_action_condition: Condition = Condition()

@@ -1,4 +1,4 @@
-from threading import Condition
+from threading import Barrier, Condition
 
 from mtggympy.gameengine.constants import GameStep
 from mtggympy.gameengine.state.event import ActionData, ActionIntent, PlayerEvent, event_from_step
@@ -51,6 +51,7 @@ class MultiClientSession():
         # Shared variables (For monitoring during evaluation)
         self.shutting_down_condition: Condition = Condition()
         self.shutting_down: bool = False
+        self.game_step_barrier: Barrier = Barrier(2)
 
     def connect(self, name: str) -> PlayerController | None:
         logger.info("Trying to seat a new agent at session")
@@ -82,7 +83,7 @@ class MultiClientSession():
             if (delta_t < conf.SESSION_TICK_LENGTH):
                 time.sleep(max(conf.SESSION_TICK_LENGTH - delta_t, 0))
 
-            seats_filled: bool = reduce(operator.and_ ,map(lambda seat: seat is not None, self.seats), True)
+            seats_filled: bool = reduce(operator.and_ ,map(lambda seat: seat is not None, self.seats), True) # type: ignore
             if not seats_filled: 
                 logger.debug("Waiting for more players...")
                 continue
@@ -158,6 +159,13 @@ class MultiClientSession():
     
     def step_with_player(self, game_state: GameState, cont: PlayerController, player_seat: int, player_event: PlayerEvent) -> tuple[GameState, bool]:
             # Prompt Player Input
+            with cont.barrier_condition:
+                logger.debug("SessionTick: {}: Waiting for player to have rescinded last barrier".format(cont.player_info.name))
+                cont.barrier_condition.wait_for(lambda: cont.game_step_barrier is None)
+                self.game_step_barrier.reset()
+                cont.game_step_barrier = self.game_step_barrier
+                cont.barrier_condition.notify_all()
+
             with cont.obs_before_action_condition:
                 logger.debug("SessionTick: {}: Waiting for player to have no prior state before starting".format(cont.player_info.name))
                 cont.obs_before_action_condition.wait_for(lambda: cont.obs_before_action is None)
@@ -177,8 +185,7 @@ class MultiClientSession():
             logger.debug("SessionTick: {}: Waiting for Player Input".format(cont.player_info.name))
             with cont.intent_condition:
                 cont.intent_condition.wait_for(lambda: cont.intent is not None)
-                if not cont.intent:
-                    return (game_state, False)
+                assert cont.intent
                 player_intent: ActionIntent = cont.intent
                     
                 # Process Player Input and report state update
@@ -220,6 +227,10 @@ class MultiClientSession():
                     cont.player_info.name,
                     game_state
                 ))
+            logger.debug("Joining {} others waiting for barrier before ending engine step".format(self.game_step_barrier.n_waiting))
+            self.game_step_barrier.wait()
+            logger.debug("Passed barrier")
+
             return (state_for_transition, step_success)
 
     def get_controller_for_target_seat(self, target_seat: int) -> Optional[PlayerController]:

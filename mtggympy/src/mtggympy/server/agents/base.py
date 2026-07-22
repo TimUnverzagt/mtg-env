@@ -38,6 +38,14 @@ class AgentBase(ABC):
             last_timestamp = time.time()
             if (delta_t < conf.AGENT_TICK_LENGTH):
                 time.sleep(max(conf.AGENT_TICK_LENGTH - delta_t, 0))
+
+            
+            with self.controller.barrier_condition:
+                cont.logger.debug("{}-{}: Waiting for game step barrier to be passed to me.".format(
+                                    cont.player_info.name, events_processed + 1))
+                self.controller.barrier_condition.wait_for(lambda: self.controller.game_step_barrier is not None)
+                assert self.controller.game_step_barrier
+
             with cont.obs_before_action_condition:
                 # Prior State
                 cont.logger.debug("{}-{}: Waiting for my turn to act. (Signaled by session setting prior_state)".format(
@@ -76,6 +84,12 @@ class AgentBase(ABC):
                 cont.obs_after_action = None
                 cont.obs_after_action_condition.notify_all()
 
+            cont.logger.debug("{}-{}: Joining {} others waiting for barrier before ending engine step".format(
+                cont.player_info.name, events_processed + 1, self.controller.game_step_barrier.n_waiting))
+            self.controller.game_step_barrier.wait()
+            with self.controller.barrier_condition:
+                self.controller.game_step_barrier = None
+                self.controller.barrier_condition.notify_all()
             events_processed += 1
 
         cont.logger.info("Stopping because session is shutting down")
