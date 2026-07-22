@@ -1,13 +1,13 @@
 from threading import Thread
-from mtggympy.api.gym.environment import StandaloneEnv
+#from mtggympy.api.gym.environment import StandaloneEnv
 from mtggympy.api.dektop.app import DesktopApp
 #from mtggympy.server.agents.simple import Goldfish, Monkey
 from mtggympy.server.agents.constants import InternalAgentType
 from mtggympy.server.agents.rulesbased import RulesBasedAgent
 from mtggympy.server.session.multi_client import MultiClientSession as MtgSession
 #from api.wrapper import MtgObservation
-from mtggympy.dojo.q_learning import QLearner
 import mtggympy.dojo.internal_matches as bot_match
+import mtggympy.dojo.training as training
 
 # from agents.console import ConsoleAgent
 
@@ -18,18 +18,7 @@ import mtggympy.dojo.internal_matches as bot_match
 import mtggympy.config.app_config as conf
 
 def learning_example():
-    no_of_episodes: int = 100
-    start_epsilon: float = 1.0
-    environment: StandaloneEnv = StandaloneEnv()
-    learner: QLearner = QLearner(
-        env=environment,
-        learning_rate=0.1,
-        initial_epsilon=start_epsilon,
-        epsilon_decay = start_epsilon / (no_of_episodes * 3/4),
-        final_epsilon=0.1
-    )
-
-    learner.learn(no_of_episodes)
+    training.train(50)
 
 def desktop_game_example():
     session: MtgSession = MtgSession() 

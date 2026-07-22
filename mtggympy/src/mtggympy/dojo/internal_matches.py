@@ -1,16 +1,11 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from dataclass_csv import DataclassWriter
-from datetime import datetime, date, time
+from datetime import datetime, time
 from threading import Thread
 import time
-import os
-from pathlib import Path
 from tqdm import tqdm
-
-from mtggympy.config.app_config import Setup
-from mtggympy.config.decks import DeckName
 from mtggympy.config.logging_config import dojo_log as logger
+from mtggympy.dojo.persistence import save_experiment_result
 from mtggympy.gameengine.cards.instances.types import CardInstance, LandInstance
 from mtggympy.gameengine.constants import DeathDescription
 from mtggympy.gameengine.state.core import GameState
@@ -19,18 +14,6 @@ from mtggympy.server.agents.constants import InternalAgentType
 from mtggympy.server.agents.simple import Goldfish, Monkey
 from mtggympy.server.agents.rulesbased import RulesBasedAgent
 from mtggympy.server.session.multi_client import MultiClientSession as MtgSession
-import mtggympy.config.app_config as app_conf
-
-DATE_FORMAT: str = "%Y-%m-%d"
-
-@dataclass
-class ExperimentMetadata:
-    main_setup: Setup 
-    deck_name: DeckName
-    with_backup_state: bool
-    number_of_episodes: int
-    execution_date: date
-    execution_start: time
 
 @dataclass
 class GameResult:
@@ -46,15 +29,7 @@ class GameResult:
     seat_1_hand_size: int
 
 def fight_two_player(no_of_episodes: int, agent_types: tuple[InternalAgentType, InternalAgentType]):
-    metadata: ExperimentMetadata = ExperimentMetadata(
-        app_conf.CURRENT_SETUP,
-        app_conf.DEFAULT_DECK,
-        app_conf.TRASITION_WITH_STATE_BACKUP,
-        no_of_episodes,
-        datetime.now().date(),
-        datetime.now().time(),
-    )
-    print (metadata)
+    starting_time: datetime = datetime.now()
     game_results: list[GameResult] = []
     for episode in tqdm(range(no_of_episodes)):
         start_time: float = time.time()
@@ -86,27 +61,9 @@ def fight_two_player(no_of_episodes: int, agent_types: tuple[InternalAgentType, 
     print("Winrate for seat 0: {}".format(
         sum(result.winning_seat == 0 for result in game_results) / len(game_results)
     ))
-    save_experiment_result(metadata, game_results)
+    save_experiment_result(starting_time, game_results, GameResult)
     return
 
-def save_experiment_result(metadata: ExperimentMetadata, game_results: list[GameResult]) -> None:
-    print("SRC-PATH: {}".format(app_conf.SRC_DIR))
-    print("RESULT-PATH: {}".format(app_conf.EXPERIMENT_RESULT_DIR))
-    date_path: str = os.path.join(app_conf.EXPERIMENT_RESULT_DIR, metadata.execution_date.strftime(DATE_FORMAT))
-    Path(date_path).mkdir(parents=True, exist_ok=True)
-    prior_folder_names: list[str] = os.listdir(date_path)
-    experiment_no : int = 1
-    if len(prior_folder_names) > 0:
-        experiment_no = max(map(int, prior_folder_names)) + 1
-    exp_path: str = os.path.join(date_path, str(experiment_no))
-    Path(exp_path).mkdir(parents=True, exist_ok=True)
-    with open(os.path.join(exp_path, "game_results.csv"), "w") as csv:
-        writer = DataclassWriter(csv, game_results, GameResult)
-        writer.write()
-    with open(os.path.join(exp_path, "metadata.csv"), "w") as csv:
-        writer = DataclassWriter(csv, [metadata], ExperimentMetadata)
-        writer.write()
-    return
     
 
 def produce_agent(type: InternalAgentType, session: MtgSession, target_seat: int) -> AgentBase:

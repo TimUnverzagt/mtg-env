@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Callable
+
 import gymnasium as gym
 
 import math
@@ -15,6 +19,8 @@ import mtggympy.api.gym.encoding as encoding
 from mtggympy.api.gym.encoding import FlatMtgAction, FlatMtgObservation
 from mtggympy.api.gym.environment import StandaloneEnv, ACTION_REJECTED_INFO_KEY, ACTION_REJECTION_REWARD
 from mtggympy.dojo.policy import ActionRejectionNetwork, ActionParameterNetwork, ActionSelectionNetwork, ReplayMemory, Transition
+from mtggympy.dojo.persistence import save_experiment_result
+from mtggympy.config.logging_config import dojo_log as logger
 
 #Based on https://docs.pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 
@@ -34,6 +40,46 @@ EPS_END = 0.01
 EPS_DECAY = 2500
 TAU = 0.005
 LR = 3e-4
+
+@dataclass
+class TrainingMetadata:
+    # main_setup: Setup 
+    # deck_name: DeckName
+    with_backup_state: bool
+    number_of_episodes: int
+    # execution_date: date
+    # execution_start: time
+
+@dataclass
+class EpisodeResult:
+    position_in_training: int
+    reward: int
+    length: int
+    illegal_actions: int
+    non_pass_actions: int 
+    total_action_loss: float | None = None
+    total_parameter_loss: float | None = None
+    total_rejection_loss: float | None = None
+
+def log_ep_result(result: EpisodeResult) -> None:
+    logger.info(("-"*10 + " Episode {} " + "-"*10).format(result.position_in_training))
+    logger.info("Length: {}".format(result.length))
+    logger.info("Average Reward: {}".format(result.reward / result.length))
+    logger.info("Average Illegal Actions: {}".format(result.illegal_actions / result.length))
+    logger.info("Average Non-Pass Actions: {}".format(result.non_pass_actions / result.length))
+    if result.total_action_loss:
+        logger.info("Average Action Loss: {}".format(result.total_action_loss / result.length))
+    else:
+        logger.info("Average Action Loss: N/A")
+    if result.total_parameter_loss:
+        logger.info("Average Parameter Loss: {}".format(result.total_parameter_loss / result.length))
+    else:
+        logger.info("Average Parameter Loss: N/A")
+    if result.total_rejection_loss:
+        logger.info("Average Rejection Loss: {}".format(result.total_rejection_loss / result.length))
+    else:
+        logger.info("Average Rejection Loss: N/A")
+    return
 
 env: gym.Env[FlatMtgObservation, FlatMtgAction] = StandaloneEnv()
 #n_action_dims: int = len(cast(MultiDiscrete, env.action_space).nvec)
@@ -75,14 +121,10 @@ def select_action(state: torch.Tensor):
         return torch.tensor(env.action_space.sample(), device=device, dtype=torch.long)
 
 
-episode_rewards: list[int] = []
-episode_lengths: list[int] = []
-episode_illegal_actions: list[int] = []
-episode_non_pass_actions: list[int] = []
-
-
-def plot_durations(show_result: bool=False):
+def plot_results(results: list[EpisodeResult], show_result: bool=False,):
     plt.figure(1) #type: ignore
+    reward_getter: Callable[[EpisodeResult], int] = lambda res: res.reward
+    episode_rewards: list[int] = list(map(reward_getter, results))
     rewards = torch.tensor(episode_rewards, dtype=torch.float) 
     if show_result:
         plt.title('Result') #type: ignore
@@ -106,7 +148,7 @@ def plot_durations(show_result: bool=False):
         else:
             display.display(plt.gcf()) #type: ignore
 
-def optimize_model():
+def optimize_model() -> tuple[float, float, float] | None:
     if len(memory) < BATCH_SIZE:
         return
     transitions = memory.sample(BATCH_SIZE)
@@ -198,9 +240,13 @@ def optimize_model():
     param_optimizer.step() # type: ignore
     rejection_optimizer.step() #type: ignore
 
+    return action_loss.item(), param_loss.item(), rejection_loss.item()
+
 
 def train(num_episodes: int) -> None:
-    for ep in tqdm.tqdm(range(num_episodes)):
+    episode_results: list[EpisodeResult] = []
+    starting_time: datetime = datetime.now()
+    for ep_position in tqdm.tqdm(range(num_episodes)):
         # Initialize the environment and get its state
         state, _ = env.reset()
         state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
@@ -208,6 +254,9 @@ def train(num_episodes: int) -> None:
         cumulative_illegal_actions: int = 0
         cumulative_non_null_actions: int = 0
         cumulative_steps: int = 0
+        cumulative_action_loss: float | None = None
+        cumulative_parameter_loss: float | None = 0
+        cumulative_rejection_loss: float | None = 0
         for _ in count():
             action_rejected: bool = False
             action = select_action(state)
@@ -215,7 +264,7 @@ def train(num_episodes: int) -> None:
                 cumulative_non_null_actions += 1
             observation, reward, terminated, truncated, info = env.step(torch.flatten(action))
             cumulative_steps +=1
-            cumulative_reward += reward
+            cumulative_reward += int(reward)
             if (ACTION_REJECTED_INFO_KEY in info) and info[ACTION_REJECTED_INFO_KEY]:
                 action_rejected = True
                 cumulative_illegal_actions += 1
@@ -233,7 +282,17 @@ def train(num_episodes: int) -> None:
             state = next_state
 
             # Perform one step of the optimization (on the policy network)
-            optimize_model()
+            optimizing_losses = optimize_model()
+            if optimizing_losses:
+                if not cumulative_action_loss:
+                    cumulative_action_loss = 0
+                if not cumulative_parameter_loss:
+                    cumulative_parameter_loss = 0
+                if not cumulative_rejection_loss:
+                    cumulative_rejection_loss = 0
+                cumulative_action_loss += optimizing_losses[0]
+                cumulative_parameter_loss += optimizing_losses[1]
+                cumulative_rejection_loss += optimizing_losses[2]
 
             # Soft update of the look ahead network's weights
             # θ′ ← τ θ + (1 −τ )θ′
@@ -251,19 +310,28 @@ def train(num_episodes: int) -> None:
             param_look_ahead_net.load_state_dict(param_look_ahead_state_dict)
 
             if done:
-                episode_rewards.append(cumulative_reward)
-                episode_lengths.append(cumulative_steps)
-                episode_illegal_actions.append(cumulative_illegal_actions)
-                episode_non_pass_actions.append(cumulative_non_null_actions)
-                print("Episode: {}\nLength: {}\nReward: {}\nNon-Pass-Actions: {}\nIllegalActions: {}".format(
-                    ep, cumulative_steps, cumulative_reward, cumulative_non_null_actions, cumulative_illegal_actions
-                ))
-                plot_durations()
+                ep_result: EpisodeResult = EpisodeResult(
+                    position_in_training=ep_position,
+                    reward=cumulative_reward,
+                    length=cumulative_steps,
+                    illegal_actions= cumulative_illegal_actions,
+                    non_pass_actions=cumulative_non_null_actions,
+                    total_action_loss=cumulative_action_loss,
+                    total_parameter_loss=cumulative_parameter_loss,
+                    total_rejection_loss=cumulative_rejection_loss
+                )
+                episode_results.append(ep_result)
+                log_ep_result(ep_result)
+                plot_results(episode_results)
                 break
+    finish_experiment(episode_results, starting_time)
+    
+def finish_experiment(results: list[EpisodeResult], starting_time: datetime)-> None:
     print('Complete')
-    plot_durations(show_result=True)
+    plot_results(results, show_result=True)
     plt.ioff() # type: ignore
     plt.show() # type: ignore
+    save_experiment_result(starting_time, results, EpisodeResult)
 
 if __name__ == "__main__":
     train(num_episodes=50)
