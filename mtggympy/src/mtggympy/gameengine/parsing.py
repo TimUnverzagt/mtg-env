@@ -14,7 +14,7 @@ def collection_to_numpy(collection_args: list[list[int]]) -> np.ndarray:
 
 
 def card_for_playing(acting_seat: int, intent: ActionIntent, game_state: GameState) -> CardInstance | None:
-    if(intent.parameters is None or len(intent.parameters) < 1):
+    if(intent.parameters is None):
         logger.error("{}: Parsing: Arguments are missing. Refusing to process intent!".format(intent.action.name))
         return None
     if(intent.parameters.size > 1):
