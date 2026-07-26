@@ -93,14 +93,14 @@ action_look_ahead_net = ActionSelectionNetwork(encoding.OBSERVATION_DIMS, encodi
 action_look_ahead_net.load_state_dict(action_policy_net.state_dict())
 
 param_policy_net = ActionParameterNetwork(encoding.OBSERVATION_DIMS + 1,
-                                          encoding.ASSUMED_MAX_ARGUMENTS_SIZE)
+                                          encoding.ASSUMED_MAX_ARGUMENTS_SIZE).to(device)
 param_look_ahead_net = ActionParameterNetwork(encoding.OBSERVATION_DIMS + 1,
-                                          encoding.ASSUMED_MAX_ARGUMENTS_SIZE)
+                                          encoding.ASSUMED_MAX_ARGUMENTS_SIZE).to(device)
 param_look_ahead_net.load_state_dict(param_policy_net.state_dict())
 
 rejection_net = ActionRejectionNetwork(encoding.OBSERVATION_DIMS 
                                        + 1 # Selected Action 
-                                       + encoding.ASSUMED_MAX_ARGUMENTS_SIZE)
+                                       + encoding.ASSUMED_MAX_ARGUMENTS_SIZE).to(device)
 
 action_optimizer = optim.AdamW(action_policy_net.parameters(), lr=LR, amsgrad=True)
 param_optimizer = optim.AdamW(param_policy_net.parameters(), lr=LR, amsgrad=True)

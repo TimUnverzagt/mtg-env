@@ -5,3 +5,6 @@ assets/*
 **/imgui.ini
 **/imgui*.ini
 *.ini
+
+## Build artifacts
+**/*.egg-info

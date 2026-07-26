@@ -6,7 +6,6 @@ from collections import deque, namedtuple
 import random
 from typing import Any
 
-
 # Multiclass (multiple exlusive actions)
 class ActionSelectionNetwork(nn.Module):
     def __init__(self, input_dims: int, output_dims: int) -> None:
@@ -52,6 +51,7 @@ class ActionRejectionNetwork(nn.Module):
         encoded: torch.Tensor = F.relu(self.base_encoder(x))
         legality_logit: torch.Tensor = self.legality_layer(encoded)
         return legality_logit
+
     
 Transition = namedtuple('Transition',
                         ('state', 'action', 'params', 'next_state', 'reward', 'action_rejected')) # type: ignore
