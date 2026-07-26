@@ -7,4 +7,4 @@ assets/*
 *.ini
 
 ## Build artifacts
-**/*.egg-info
+**/*.egg-info/
