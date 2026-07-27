@@ -19,6 +19,7 @@ class ExperimentMetadata:
     main_setup: Setup 
     deck_name: DeckName
     with_backup_state: bool
+    pass_on_rejection: bool
     number_of_episodes: int
     execution_date: date
     execution_start: time
@@ -33,6 +34,7 @@ def produce_metadata(number_of_episodes: int, start_datetime: datetime) -> Exper
         app_conf.CURRENT_SETUP,
         app_conf.DEFAULT_DECK,
         app_conf.TRASITION_WITH_STATE_BACKUP,
+        app_conf.PASS_ON_REJECTED_ACTION,
         number_of_episodes,
         start_datetime.date(),
         start_datetime.time(),

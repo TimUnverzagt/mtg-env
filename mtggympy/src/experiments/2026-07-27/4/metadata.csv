@@ -1,0 +1,2 @@
+main_setup,deck_name,with_backup_state,pass_on_rejection,number_of_episodes,execution_date,execution_start
+Setup.MONKEY_SPEED_EXP,DeckName.COLORLESS_40,True,False,100,2026-07-27,09:29:01.559766

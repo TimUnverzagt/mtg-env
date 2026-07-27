@@ -213,7 +213,12 @@ class MultiClientSession():
                         GameEngine.empty_mana_pools(state_copy)
                     state_copy.step = succesor_step
                 else:
-                    logger.error("Step with {} failed".format(cont.player_info.name))
+                    logger.warning("Step with {} failed! Rejcting action!".format(cont.player_info.name))
+                    if conf.PASS_ON_REJECTED_ACTION:
+                        succesor_step: GameStep = get_next_step(state_copy.step, ActionIntent(ActionData.PASS, None))
+                        if (succesor_step is not game_state.step):
+                            GameEngine.empty_mana_pools(state_copy)
+
 
                 cont.intent = None
                 cont.intent_condition.notify_all()
