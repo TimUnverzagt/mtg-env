@@ -1,4 +1,6 @@
 from enum import Enum
+from typing import TypeAlias, Union
+
 
 class InternalAgentType(Enum):
     GOLDFISH = 0
@@ -8,3 +10,5 @@ class InternalAgentType(Enum):
 class ExternalAgentType(Enum):
     CONSOLE = 0
     API = 1
+
+AgentType: TypeAlias = Union[InternalAgentType, ExternalAgentType]

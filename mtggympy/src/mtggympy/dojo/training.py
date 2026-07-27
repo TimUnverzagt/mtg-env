@@ -21,6 +21,7 @@ from mtggympy.api.gym.environment import StandaloneEnv, ACTION_REJECTED_INFO_KEY
 from mtggympy.dojo.policy import ActionRejectionNetwork, ActionParameterNetwork, ActionSelectionNetwork, ReplayMemory, Transition
 from mtggympy.dojo.persistence import save_experiment_result
 from mtggympy.config.logging_config import dojo_log as logger
+from mtggympy.server.agents.constants import InternalAgentType, ExternalAgentType, AgentType
 
 #Based on https://docs.pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 
@@ -40,15 +41,8 @@ EPS_END = 0.01
 EPS_DECAY_ETIME_RATIO = 0.33
 TAU = 0.005
 LR = 3e-4
-
-@dataclass
-class TrainingMetadata:
-    # main_setup: Setup 
-    # deck_name: DeckName
-    with_backup_state: bool
-    number_of_episodes: int
-    # execution_date: date
-    # execution_start: time
+OPPONENT_TYPE: InternalAgentType = InternalAgentType.GOLDFISH
+AGENT_SEAT_POS: int = 1
 
 @dataclass
 class EpisodeResult:
@@ -85,7 +79,8 @@ def log_ep_result(result: EpisodeResult, epsilon: float) -> None:
         logger.info("Average Rejection Loss: N/A")
     return
 
-env: gym.Env[FlatMtgObservation, FlatMtgAction] = StandaloneEnv()
+
+env: gym.Env[FlatMtgObservation, FlatMtgAction] = StandaloneEnv(opponent_type=OPPONENT_TYPE, seat_for_external=AGENT_SEAT_POS)
 #n_action_dims: int = len(cast(MultiDiscrete, env.action_space).nvec)
 
 action_policy_net = ActionSelectionNetwork(encoding.OBSERVATION_DIMS, encoding.ASSUMED_MAX_NUMBER_OF_POSSIBLE_ACTIONS).to(device)
@@ -340,10 +335,15 @@ def train(num_episodes: int) -> None:
                 log_ep_result(ep_result, epsilon=get_current_epsilon(absolvation_ratio))
                 plot_results(episode_results)
                 break
-    finish_experiment(episode_results, starting_time)
+    agent_types: tuple[AgentType, AgentType]
+    if (AGENT_SEAT_POS == 0):
+        agent_types = (ExternalAgentType.API, OPPONENT_TYPE)
+    else:
+        agent_types = (OPPONENT_TYPE, ExternalAgentType.API)
+    finish_experiment(episode_results, starting_time, agent_types)
     
-def finish_experiment(results: list[EpisodeResult], starting_time: datetime)-> None:
-    save_experiment_result(starting_time, results, EpisodeResult)
+def finish_experiment(results: list[EpisodeResult], starting_time: datetime, agent_types: tuple[AgentType, AgentType])-> None:
+    save_experiment_result(starting_time, results, EpisodeResult, agent_types)
     print('Complete')
     plot_results(results, show_result=True)
     plt.ioff() # type: ignore

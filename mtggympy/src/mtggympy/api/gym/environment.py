@@ -1,5 +1,4 @@
 from __future__ import annotations
-from enum import Enum
 import numpy as np
 
 
@@ -15,13 +14,15 @@ from mtggympy.gameengine.state.core import GameState
 from mtggympy.server.session.multi_client import MultiClientSession as MtgSession
 from mtggympy.server.session.observed_state import ObservedGameState
 from mtggympy.server.session.player_controller import PlayerController
-from mtggympy.server.agents.simple import Goldfish #, Monkey
+from mtggympy.server.agents.simple import Goldfish , Monkey
+from mtggympy.server.agents.rulesbased import RulesBasedAgent
 from mtggympy.server.agents.external import ApiAgent
 from mtggympy.server.agents.base import AgentBase as Agent
 from mtggympy.api.gym.encoding import FlatMtgAction, FlatMtgObservation, MtgObservation, MtgInfo, MtgAction
 import mtggympy.api.gym.encoding as encoding
 from mtggympy.api.gym.translation import gym_action_to_player_decision, observed_state_to_obs
 from mtggympy.helpers.predicate_extensions import build_either_predicate
+from mtggympy.server.agents.constants import InternalAgentType
 
 from mtggympy.config.logging_config import api_log as logger
 
@@ -34,19 +35,15 @@ ACTION_REJECTION_REWARD: int = -1
 ObsType = TypeVar("ObsType")
 ActType = TypeVar("ActType")
 
-class ObservationTarget(Enum):
-    LAST = 0
-    INITIAL = 1
-    BEFORE_ACTION = 2
-    AFTER_ACTION = 3
-
 class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
 
-    def __init__(self) -> None:      
+    def __init__(self, opponent_type: InternalAgentType, seat_for_external: int) -> None:      
         # Set execution parameters
         self.agent: ApiAgent
         self.game_session: MtgSession
         self.session_thread: Thread
+        self.seat_for_external: int = seat_for_external
+        self.opponent_type: InternalAgentType = opponent_type
         self.internal_agents: list[Agent]
         self.observation_limits: MtgObservation | None = None
         self.last_obs: MtgObservation | None = None
@@ -99,7 +96,6 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         ])
         self.action_space: Space[FlatMtgAction] = encoding.flatten_tuple_of_discrete_spaces(self.nested_action_space)
 
-        print(encoding.get_space_sizes(self.nested_action_space))
         assert sum(encoding.get_space_sizes(self.nested_action_space)) == encoding.ACTION_DIMS
     
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None) -> \
@@ -116,16 +112,23 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
         self.game_session = MtgSession() 
         self.steps_performed = 0
 
-        external_seat_pos = 1
-        interal_seat_pos = 0
         # Set up external agent
-        self.agent = ApiAgent(self.game_session,"External", api_barrier=self.api_step_barrier, target_seat=external_seat_pos)
+        self.agent = ApiAgent(self.game_session,"External", api_barrier=self.api_step_barrier, target_seat=self.seat_for_external)
         agent_thread: Thread = Thread(target=self.agent.play_game, daemon=True)
 
 
         # Set up internal agent for the opponent
         self.internal_agents = []
-        opponent = Goldfish(self.game_session, "Opp-Goldfish", target_seat=interal_seat_pos) 
+        seat_for_opp = (self.seat_for_external + 1) % 2
+
+        match self.opponent_type:
+            case InternalAgentType.GOLDFISH:
+                opponent = Goldfish(self.game_session, "Opp-Goldfish", target_seat=seat_for_opp) 
+            case InternalAgentType.MONKEY:
+                opponent = Monkey(self.game_session, "Opp-Monkey", target_seat=seat_for_opp) 
+            case InternalAgentType.RULESBASED:
+                opponent = RulesBasedAgent(self.game_session, "Opp-Monkey", target_seat=seat_for_opp) 
+
         self.internal_agents.append(opponent)
         opponent_thread: Thread = Thread(target=opponent.play_game, daemon=True)
 
@@ -236,7 +239,7 @@ class StandaloneEnv(gym.Env[FlatMtgObservation, FlatMtgAction]):
 
     
 if __name__ == "__main__":
-    env = StandaloneEnv()
+    env = StandaloneEnv(opponent_type=InternalAgentType.GOLDFISH, seat_for_external=0)
     print("")
     print("-" * 50)
     print("-" * 10 + " Observation Space Info")

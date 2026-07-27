@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, ClassVar, Dict, Protocol, Sequence
+
 from dataclass_csv import DataclassWriter
 import os
 from pathlib import Path
@@ -8,6 +9,8 @@ from datetime import date, time, datetime
 from mtggympy.config.app_config import Setup
 from mtggympy.config.decks import DeckName
 from mtggympy.config import app_config as app_conf
+
+from mtggympy.server.agents.constants import AgentType
 
 
 
@@ -18,6 +21,8 @@ DATE_FORMAT: str = "%Y-%m-%d"
 class ExperimentMetadata:
     main_setup: Setup 
     deck_name: DeckName
+    agent_at_0: AgentType
+    agent_at_1: AgentType
     with_backup_state: bool
     pass_on_rejection: bool
     number_of_episodes: int
@@ -29,10 +34,12 @@ class IsDataclass(Protocol):
     # the most reliable way to ascertain that something is a dataclass
     __dataclass_fields__: ClassVar[Dict[str, Any]] 
 
-def produce_metadata(number_of_episodes: int, start_datetime: datetime) -> ExperimentMetadata:
+def produce_metadata(number_of_episodes: int, start_datetime: datetime, agent_types: tuple[AgentType, AgentType]) -> ExperimentMetadata:
     return ExperimentMetadata(
         app_conf.CURRENT_SETUP,
         app_conf.DEFAULT_DECK,
+        agent_types[0],
+        agent_types[1],
         app_conf.TRASITION_WITH_STATE_BACKUP,
         app_conf.PASS_ON_REJECTED_ACTION,
         number_of_episodes,
@@ -40,8 +47,8 @@ def produce_metadata(number_of_episodes: int, start_datetime: datetime) -> Exper
         start_datetime.time(),
     )
 
-def save_experiment_result(start_datetime: datetime, results: Sequence[IsDataclass], dataclass: type[IsDataclass]) -> None:
-    metadata: ExperimentMetadata =  produce_metadata(len(results), start_datetime)
+def save_experiment_result(start_datetime: datetime, results: Sequence[IsDataclass], dataclass: type[IsDataclass], agent_types: tuple[AgentType, AgentType]) -> None:
+    metadata: ExperimentMetadata =  produce_metadata(len(results), start_datetime, agent_types)
     date_path: str = os.path.join(app_conf.EXPERIMENT_RESULT_DIR, metadata.execution_date.strftime(DATE_FORMAT))
     Path(date_path).mkdir(parents=True, exist_ok=True)
     prior_folder_names: list[str] = os.listdir(date_path)

@@ -61,7 +61,7 @@ def fight_two_player(no_of_episodes: int, agent_types: tuple[InternalAgentType, 
     print("Winrate for seat 0: {}".format(
         sum(result.winning_seat == 0 for result in game_results) / len(game_results)
     ))
-    save_experiment_result(starting_time, game_results, GameResult)
+    save_experiment_result(starting_time, game_results, GameResult, agent_types)
     return
 
     
