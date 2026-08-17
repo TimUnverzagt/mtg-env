@@ -1,0 +1,2 @@
+main_setup,deck_name,agent_at_0,agent_at_1,with_backup_state,pass_on_rejection,number_of_episodes,execution_date,execution_start
+Setup.TRAINING,DeckName.COLORLESS_40,ExternalAgentType.API,InternalAgentType.RULESBASED,True,True,100,2026-08-03,13:10:20.267419
