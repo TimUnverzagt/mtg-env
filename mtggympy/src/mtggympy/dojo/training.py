@@ -21,7 +21,8 @@ from mtggympy.api.gym.environment import StandaloneEnv, ACTION_REJECTED_INFO_KEY
 from mtggympy.dojo.policy import ActionRejectionNetwork, ActionParameterNetwork, ActionSelectionNetwork, ReplayMemory, Transition
 from mtggympy.dojo.persistence import save_experiment_result
 from mtggympy.config.logging_config import dojo_log as logger
-from mtggympy.server.agents.constants import InternalAgentType, ExternalAgentType, AgentType
+from mtggympy.config.training_config import *
+from mtggympy.server.agents.constants import ExternalAgentType, AgentType
 
 #Based on https://docs.pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
 
@@ -33,16 +34,6 @@ if is_ipython:
     from IPython import display
 
 plt.ion() # type: ignore
-
-BATCH_SIZE = 128
-GAMMA = 0.99
-EPS_START = 0.9
-EPS_END = 0.01
-EPS_DECAY_ETIME_RATIO = 0.33
-TAU = 0.005
-LR = 3e-4
-OPPONENT_TYPE: InternalAgentType = InternalAgentType.GOLDFISH
-AGENT_SEAT_POS: int = 1
 
 @dataclass
 class EpisodeResult:

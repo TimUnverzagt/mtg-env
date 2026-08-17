@@ -28,8 +28,8 @@ from mtggympy.config.logging_config import api_log as logger
 
 ACTION_REJECTED_INFO_KEY = "action_rejected"
 
-GAME_WIN_REWARD: int = 10
-GAME_LOSS_REWARD: int = -10
+GAME_WIN_REWARD: int = 400
+GAME_LOSS_REWARD: int = -1* GAME_WIN_REWARD
 ACTION_REJECTION_REWARD: int = -1
 
 ObsType = TypeVar("ObsType")

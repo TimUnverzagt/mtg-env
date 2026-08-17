@@ -4,7 +4,7 @@ from mtggympy.config.defaults import PlayerState
 from mtggympy.gameengine.state.event import ActionIntent
 from threading import Barrier, Condition
 from logging import Logger
-from mtggympy.config.logging_config import create_logger, PLAYER_LOG_LEVEL
+from mtggympy.config.logging_config import player_0_log, player_1_log
 from mtggympy.server.session.observed_state import ObservedGameState
 
 
@@ -12,7 +12,11 @@ class PlayerController:
     def __init__(self, player_info: PlayerState, position: int, name: str, initial_game_state: ObservedGameState):
         self.player_info: PlayerState = player_info
         self.player_info.name = name
-        self.logger: Logger = create_logger(name, PLAYER_LOG_LEVEL)
+        self.logger: Logger
+        if(position == 0):
+            self.logger = player_0_log
+        else:
+            self.logger = player_1_log
         self.terminate: bool = False
         self.position: int = position
         self.initial_state: ObservedGameState = initial_game_state

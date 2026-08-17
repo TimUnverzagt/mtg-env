@@ -2,7 +2,7 @@ from logging import Logger
 
 from mtggympy.helpers.predicate_extensions import build_either_predicate
 from mtggympy.server.session.multi_client import MultiClientSession as GameSession
-from mtggympy.gameengine.state.event import ActionIntent
+from mtggympy.gameengine.state.event import ActionData, ActionIntent
 from mtggympy.server.agents.base import AgentBase
 from threading import Barrier, Condition
 
@@ -27,7 +27,11 @@ class ApiAgent(AgentBase):
             self.api_intent = None
             self.api_intent_condition.notify_all()
             logger.debug("Waiting for declaration of intent from api")
-            self.api_intent_condition.wait_for(lambda: self.api_intent is not None)
+            #Recover from lock by stimeout and setting intent to pass
+            self.api_intent_condition.wait_for(lambda: self.api_intent is not None, timeout=1)
+            if not self.api_intent:
+                self.api_intent = ActionIntent(ActionData.PASS, None)
+            # ---------- 
             assert self.api_intent
             logger.debug("Received intent {}".format(self.api_intent))       
             return self.api_intent

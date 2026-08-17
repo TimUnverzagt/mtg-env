@@ -15,11 +15,19 @@ class Setup(Enum):
 
 CURRENT_SETUP: Setup = Setup.TRAINING
 DEFAULT_DECK: DeckName = DeckName.COLORLESS_40
+STARTING_LIFE: int = 20
 
 EPISODES_IN_EXPERIMENT: int = 100
 
 TRASITION_WITH_STATE_BACKUP: bool = True
 PASS_ON_REJECTED_ACTION: bool = True
+
+###############
+# Sync Debug
+###############
+SESSION_TICK_LENGTH: float = 0#.2
+AGENT_TICK_LENGTH: float = 0#.137
+API_TICK_LENGTH: float = 0#.1
 
 ###############
 # Project 
@@ -37,11 +45,3 @@ UI_STARTING_WIDTH = 1920
 UI_STARTING_HEIGHT = 1080
 CARD_HEIGHT = 187
 CARD_WH_RATIO = 63/88
-
-###############
-# Logic
-###############
-SESSION_TICK_LENGTH: float = 0#.2
-AGENT_TICK_LENGTH: float = 0#.137
-API_TICK_LENGTH: float = 0#.1
-STARTING_LIFE: int = 20
